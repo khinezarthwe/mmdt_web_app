@@ -13,10 +13,13 @@ https://github.com/users/khinezarthwe/projects/1/views/1
 - Aye Mya Han
 - Khin Kyaing Kyaing Thein
 
-#Features
+# Features
 - Home Page for Myanmar Data Tech Team
 - Blog Pages for Team
-- Polls application for Team Survey
+- Polls application for sTeam Survey
 - User Management
+
+# Todo 
+- Khine Zar will update how to setup project
 
 

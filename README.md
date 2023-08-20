@@ -60,4 +60,3 @@ You can now access the following URLs in your web browser:
 - [http://127.0.0.1:8000/](http://127.0.0.1:8000/): Home Page/Blog Page 
 - [http://127.0.0.1:8000/admin](http://127.0.0.1:8000/admin): Admin Panel
 - [http://127.0.0.1:8000/polls](http://127.0.0.1:8000/polls): Polls Application [Optionals]
-

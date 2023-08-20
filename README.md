@@ -2,7 +2,8 @@
 
 ## Introduction
 
-Welcome to the Myanmar Data Tech Team Web Application Project! This project is designed for WiT (Women in Tech) students who are beginners in web development. Here, we'll explain the project and how to get started.
+Welcome to the Myanmar Data Tech Team Web Application Project! 
+Here, we'll explain the project and how to get started.
 
 ## Project Page
 
@@ -10,7 +11,7 @@ For more details and project tracking, visit our [Project Page](https://github.c
 
 ## Meet the Team
 
-Meet our awesome team members who have been working hard on this project:
+Meet our team members who have been working hard on this project:
 - Htet Kay Khine
 - Myat Po Po Aung
 - Nang Seng Lean Pein
@@ -51,9 +52,9 @@ Let's set up the project step by step:
      python manage.py migrate
      ```
 
-6. **Create an Admin User**: Use this command to create an admin user for managing the application: You'll be prompted to enter a username, email, and password for the admin user.
+6. **Create an Admin User**: Use this command `python manage.py createsuperuser` to create an admin user for managing the application: You'll be prompted to enter a username, email, and password for the admin user.
 
-7. **Run the Project**: Start the web application by running:
+7. **Run the Project**: Start the web application by running: `python manage.py runserver`
 
 8. **Access the Application**:
 You can now access the following URLs in your web browser:

@@ -1,12 +1,93 @@
 {% extends "base.html" %}
-{% load static  %}
+{% load static %}
 {% block content %}
 <style>
 </style>
 <div class="container mt-4">
+    <!-- Myanmar Data Tech Team -->
     <div class="row">
-        <!-- Blog List Column -->
-        <div class="col-md-8">
+        <div class="col-md-6">
+            <img src="{% static 'blog/images/data.png' %}" class="img-fluid img-box-shadow mt-4">
+        </div>
+        <div class="col-md-6">
+            <blockquote class="text-justify mt-4 ">
+                The <em><b>Myanmar Data Tech Team (MMDT)</b></em> was established in 2022, comprising a group of experts
+                from
+                the data industry in collaboration with the Founder of VigorZwe. The primary focus of MMDT is on
+                harnessing the power of data and technology to drive advancements within the education sector.
+                Through meticulous research and analysis, the team aims to generate valuable insights and develop
+                innovative solutions that contribute to the overall improvement of education in Myanmar.
+                Despite being relatively new, the MMDT has already demonstrated its capabilities by successfully
+                securing grants and undertaking various research projects.
+            </blockquote>
+        </div>
+    </div>
+    <hr class="mt-5">
+    <!-- Study of Myanmar -->
+    <div class="row">
+        <div class="col">
+            <blockquote class="text-justify mt-4 overlay-text">
+                One notable endeavor currently underway is the <em><b>”Study of Myanmar’s Ongoing Higher Education Gap
+                        in
+                        the Digital Space” (2023)</b></em>. This comprehensive nationwide survey is aimed at collecting
+                crucial
+                insights and data pertaining to the higher education gap in Myanmar. By leveraging the acquired
+                information, the team anticipates making significant contributions to the educational landscape of
+                the country.With a commitment to data-driven research and a wealth of expertise in the field, the MMDT
+                is
+                well-positioned to address the challenges and opportunities within Myanmar’s education sector. MMDT is
+                dedicated to
+                thoroughly analyzing the survey findings, identifying existing gaps, and formulating actionable
+                recommendations to bridge the educational divide and instigate positive change. As the Myanmar Data
+                Tech Team continues to evolve, MMDT’s unwavering dedication to improving education through
+                data-driven research and innovative solutions remains resolute. The Myanmar Data Tech Team (MMDT) was established in 2022, comprising a group of experts from the data
+                industry in collaboration.
+            </blockquote>
+        </div>
+    </div>
+    <hr class="mt-5">
+
+    <div class="row my-5">
+        <div class="col-md-4">
+            <div class="card card-box-shadow">
+                <img src="{% static 'blog/images/sample.jpg' %}" alt="" class="card-img-tople">
+                <div class="card-body">
+                    <h6 class="card-title font-weight-bold">Founder of VigorZwe Co. Ltd</h6>
+                    <p class="card-text">Founder of VigorZwe Co. Ltd</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card card-box-shadow">
+                <img src="{% static 'blog/images/sample.jpg' %}" alt="" class="card-img-top">
+                <div class="card-body">
+                    <h6 class="card-title font-weight-bold">Dr Myo thida </h6>
+                    <p class="card-text">www.drmyothida.org</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card card-box-shadow">
+                <img src="{% static 'blog/images/sample.jpg' %}" alt="" class="card-img-top">
+                <div class="card-body">
+                    <h6 class="card-title font-weight-bold">Ms. Khine Zar Thwe</h6>
+                    <p class="card-text"> Founder of Thingaha </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            {% for post in post_list %}
+            <div class="card">
+
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="row">
+        <!-- Blog List Column-->
+        <div class="col-md-12">
             {% for post in post_list %}
             <div class="card shadow-lg mt-4 pl-lg-2 pl-md-0 bg-dark-400">
                 <div class="row card-row">
@@ -24,7 +105,7 @@
                                 <small class="text-muted">{{ post.author }} | {{ post.created_on}}</small>
                             </div>
                             <div class="card-text  justify-content-evenly">
-                                {{post.content|slice:":200" }}
+                                {{post.content|slice:":100" }}
                             </div>
                         </div>
                     </div>
@@ -37,16 +118,12 @@
             </div>
             {% endfor %}
         </div>
-        <!-- Side Bar-->
-        {% block sidebar %}
-        {% include 'sidebar.html' %}
-        {% endblock sidebar %}
     </div>
-    <!-- Page Navigation -->
+    <!-- Page Navigation
     <div class="row my-4">
         {% if post_list.has_other_pages %}
         <div aria-label="Page navigation container" class="col-lg-1 offset-lg-3 col-sm-1 offset-sm-3">
-            <ul class="pagination m-auto">
+            <ul class="pagination mt-5">
                 {% if post_list.has_previous %}
                 <li class="page-item mx-2">
                     <a href="?page={{ post_list.previous_page_number }}" class="page-link" aria-label="Previous">
@@ -65,13 +142,10 @@
                 {% endif %}
             </ul>
         </div>
-    </div>
+    </div> -->
 </div>
 
-<!-- Include jQuery -->
-<script src="{% static 'blog/js/jquery-3.6.0.min.js' %}"></script>
-<script src="{% static 'blog/js/popper.min.js' %}"></script>
-<script src="{% static 'blog/js/bootstrap.min.js' %}"></script>
+
 <script>
     $(document).ready(function () {
         // Get the height of the navbar
@@ -89,7 +163,7 @@
             var $image = $('<img>', {
                 src: "{% static 'blog/images/purple.jpg' %}",
                 alt: 'blog image',
-                class: 'w-100 h-100 mt-lg-4 m-sm-0 p-sm-0 '
+                class: 'w-75 h-50 mt-lg-4 m-sm-0 p-sm-0 blog-ls-img'
             });
             // Append image
             $imgCol.append($image);

@@ -2,6 +2,11 @@
 {% load static %}
 {% block content %}
 <style>
+    .featured-image-list{
+        object-fit: contain;
+        width:300px;
+        height:200px;
+    }
 </style>
 <div class="container mt-4">
     <!-- Myanmar Data Tech Team -->
@@ -86,6 +91,7 @@
                         <div class="card-body">
                             <div class="card-title h4">
                                 {{ post.title }}
+                                <span> ({{ post.view_count }} views)</span>
                             </div>
                             <div class="card-text mb-2">
                                 <small class="text-muted">{{ post.author }} | {{ post.created_on}}</small>
@@ -95,6 +101,9 @@
                                 <a href="{% url 'post_detail' post.slug  %}" class="mt-0 mb-3">
                                     Read More
                                 </a>
+                                {% if post.image %}
+                                <img src="{{ post.image.url }}" class="rounded featured-image-list">
+                                {% endif %}
                             </div>
                         </div>
                     </div>

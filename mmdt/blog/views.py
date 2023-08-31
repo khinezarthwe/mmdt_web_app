@@ -28,6 +28,9 @@ class PostList(generic.ListView):
 class PostDetail(generic.DetailView):
     def post_detail(request, slug):
         post = get_object_or_404(Post, slug=slug)
+        if post:
+            post.view_count = post.view_count + 1
+            post.save()
         comments = post.comments.filter(active=True)
         new_comment = None    # Comment posted
         if request.method == 'POST':
@@ -44,4 +47,8 @@ class PostDetail(generic.DetailView):
         return render(request, 'post_detail.html', {'post': post,
                                                'comments': comments,
                                                'new_comment': new_comment,
+
                                                'comment_form': comment_form})
+
+
+

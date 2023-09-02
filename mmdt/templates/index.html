@@ -40,20 +40,21 @@
                 thoroughly analyzing the survey findings, identifying existing gaps, and formulating actionable
                 recommendations to bridge the educational divide and instigate positive change. As the Myanmar Data
                 Tech Team continues to evolve, MMDT’s unwavering dedication to improving education through
-                data-driven research and innovative solutions remains resolute. The Myanmar Data Tech Team (MMDT) was established in 2022, comprising a group of experts from the data
+                data-driven research and innovative solutions remains resolute. The Myanmar Data Tech Team (MMDT) was
+                established in 2022, comprising a group of experts from the data
                 industry in collaboration.
             </blockquote>
         </div>
     </div>
     <hr class="mt-5">
 
-    <div class="row my-5">
+    <div class="row mt-5 mb-5">
         <div class="col-md-4">
             <div class="card card-box-shadow">
                 <img src="{% static 'blog/images/sample.jpg' %}" alt="" class="card-img-tople">
                 <div class="card-body">
-                    <h6 class="card-title font-weight-bold">Founder of VigorZwe Co. Ltd</h6>
-                    <p class="card-text">Founder of VigorZwe Co. Ltd</p>
+                    <h6 class="card-title"> VigorZwe </h6>
+                    <p class="card-text"><a href="" class="person-link">Founder of VigorZwe Co. Ltd</a></p>
                 </div>
             </div>
         </div>
@@ -61,8 +62,8 @@
             <div class="card card-box-shadow">
                 <img src="{% static 'blog/images/sample.jpg' %}" alt="" class="card-img-top">
                 <div class="card-body">
-                    <h6 class="card-title font-weight-bold">Dr Myo thida </h6>
-                    <p class="card-text">www.drmyothida.org</p>
+                    <h6 class="card-title">Dr Myo thida </h6>
+                    <p class="card-text"><a href="" class="person-link">www.drmyothida.org</a></p>
                 </div>
             </div>
         </div>
@@ -70,55 +71,42 @@
             <div class="card card-box-shadow">
                 <img src="{% static 'blog/images/sample.jpg' %}" alt="" class="card-img-top">
                 <div class="card-body">
-                    <h6 class="card-title font-weight-bold">Ms. Khine Zar Thwe</h6>
-                    <p class="card-text"> Founder of Thingaha </p>
+                    <h6 class="card-title">Ms. Khine Zar Thwe</h6>
+                    <p class="card-text"><a href="" class="person-link">Founder of Thingaha</a></p>
                 </div>
             </div>
         </div>
     </div>
-    <div class="row">
+    <div class="row py-3">
         <div class="col-md-12">
             {% for post in post_list %}
-            <div class="card">
-
-            </div>
-            {% endfor %}
-        </div>
-    </div>
-    <div class="row">
-        <!-- Blog List Column-->
-        <div class="col-md-12">
-            {% for post in post_list %}
-            <div class="card shadow-lg mt-4 pl-lg-2 pl-md-0 bg-dark-400">
-                <div class="row card-row">
-                    <div class="col-lg-4 col-md-12" id="img-column">
-                        <div class="img-over-lay">
-                            <!-- Image is added from JQuery -->
-                        </div>
-                    </div>
+            <div class="card my-5 shadow">
+                <div class="row card-row mb-0 pb-0 mx-2">
                     <div class="col-lg-8 col-md-12">
                         <div class="card-body">
-                            <div class="card-title h3">
+                            <div class="card-title h4">
                                 {{ post.title }}
                             </div>
-                            <div class="card-text mb-3">
+                            <div class="card-text mb-2">
                                 <small class="text-muted">{{ post.author }} | {{ post.created_on}}</small>
                             </div>
-                            <div class="card-text  justify-content-evenly">
-                                {{post.content|slice:":100" }}
+                            <div class="card-text  justify-content-evenly pb-0 mb-0">
+                                {{post.content|slice:":120" }} <span>...</span>
+                                <a href="{% url 'post_detail' post.slug  %}" class="mt-0 mb-3">
+                                    Read More
+                                </a>
                             </div>
                         </div>
                     </div>
-                </div>
-                <div class="col-lg-2 offset-lg-8 col-md-1 offset-md-8 col-sm-1 offset-sm-8">
-                    <a href="{% url 'post_detail' post.slug  %}" class="btn btn-sm btn-warning font-weight-bold mb-3">
-                        Read More
-                    </a>
+                    <div class="col-lg-4 col-md-12" id="img-column">
+                        <!-- Images are added through JQuery -->
+                    </div>
                 </div>
             </div>
             {% endfor %}
         </div>
     </div>
+
     <!-- Page Navigation
     <div class="row my-4">
         {% if post_list.has_other_pages %}
@@ -163,7 +151,7 @@
             var $image = $('<img>', {
                 src: "{% static 'blog/images/purple.jpg' %}",
                 alt: 'blog image',
-                class: 'w-75 h-50 mt-lg-4 m-sm-0 p-sm-0 blog-ls-img'
+                class: 'w-50 h-50  blog-ls-img'
             });
             // Append image
             $imgCol.append($image);

@@ -54,67 +54,96 @@ strong {
 
 /* Quotes */
 blockquote {
-    font-size: 18px;
+  font-size: 18px;
   border-left: 3px solid #ff9900;
   padding-left: 20px;
 }
 
 /* Box Shadow */
-.img-box-shadow{
-    box-shadow: 10px 10px 5px #66a3ff ;
+.img-box-shadow {
+  box-shadow: 10px 10px 5px #66a3ff;
 }
 
-.img-box-shadow2{
-    box-shadow: 10px 10px 5px #66a3ff ;
+.img-box-shadow2 {
+  box-shadow: 10px 10px 5px #66a3ff;
 }
 
 /* Image Border */
-.img-border{
-    border-top: 1px solid #003399;
-    border-left:  1px solid #003399;
-    border-right: 5px solid #ffaa00;
-    border-bottom: 5px solid #ffaa00;
-    box-shadow: 10px 10px 5px #66a3ff;
+.img-border {
+  border-top: 1px solid #003399;
+  border-left: 1px solid #003399;
+  border-right: 5px solid #ffaa00;
+  border-bottom: 5px solid #ffaa00;
+  box-shadow: 10px 10px 5px #66a3ff;
 }
 
 /* Card Box Shadow */
-.card-box-shadow{
-    box-shadow: 10px 10px 8px  #cccccc;
+.card-box-shadow {
+  box-shadow: 10px 10px 8px #cccccc;
 }
 
 /* Blog List Image */
-.blog-ls-img{
-    border-radius: 5%;
-    box-shadow: 8px 8px 3px #66a3ff;
+.blog-ls-img {
+  border-radius: 0%;
+  box-shadow: 6px 6px 3px #66a3ff;
+  margin: 20px;
+  float: right;
 }
+
+/* Person Name */
+.person-name {
+  border: 1px solid #66a3ff;
+  color: black;
+}
+
+.person-link {
+  font-family: 'Playfair Display SC', serif;
+  font-weight: 700;
+  color: #004080;
+}
+ p > a:link,
+a:visited
+ {
+  padding: 3px;
+  text-decoration: none;
+  display: inline-block;
+  box-shadow:6px 6px 2px #66a3ff;
+}
+p >a:hover,
+a:active {
+  background-color: #003399;
+  color: #f0f5ff;
+}
+
 /* base.html */
 .navbar-brand {
-    width: 30px;
+  width: 30px;
 }
 
 .navbar-brand>img {
-    width: 100%;
+  width: 100%;
 }
-body{
-    background-color: #F0F5FF;
 
+body {
+  background-color: #F0F5FF;
+  color: #333333;
 }
-body{
-    color: #333333;
-}
+
 
 
 /* Responsive Typography */
 @media (max-width: 768px) {
+
   /* Adjust font sizes or styles for smaller screens */
   h1 {
     font-size: 28px;
   }
+
   h2 {
     font-size: 24px;
   }
+
   h3 {
     font-size: 20px;
   }
 }
-

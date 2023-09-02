@@ -1,68 +1,82 @@
+
 <!DOCTYPE html>
 <html>
+<head>
+    {% load static %}
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-    <head>
-        <title>WiTProject</title>
-        <link href="https://fonts.googleapis.com/css?family=Roboto:400,700" rel="stylesheet">
-        <meta name="google" content="notranslate" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
-            crossorigin="anonymous" />
-    </head>
-
-    <body>
-        <style>
-            body {
-            font-family: "Roboto", sans-serif;
-            font-size: 17px;
-            background-color: #fdfdfd;
-        }
-        .shadow {
-            box-shadow: 0 4px 2px -2px rgba(0, 0, 0, 0.1);
-        }
-        .btn-danger {
-            color: #fff;
-            background-color: #f00000;
-            border-color: #dc281e;
-        }
-        .masthead {
-            background: #3398E1;
-            height: auto;
-            padding-bottom: 15px;
-            box-shadow: 0 16px 48px #E3E7EB;
-            padding-top: 10px;
-        }
-    </style>
-
-        <!-- Navigation -->
-        <nav class="navbar navbar-expand-lg navbar-light bg-light shadow" id="mainNav">
-            <div class="container-fluid">
-                <a class="navbar-brand" href="{% url 'home' %}">WiT Software Engineering Group</a>
-                <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarResponsive"
-                    aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="collapse navbar-collapse" id="navbarResponsive">
-                    <ul class="navbar-nav ml-auto">
-                        <li class="nav-item text-black">
-                            <a class="nav-link text-black font-weight-bold" href="#">About</a>
-                        </li>
-                        <li class="nav-item text-black">
-                            <a class="nav-link text-black font-weight-bold" href="#">Policy</a>
-                        </li>
-                        <li class="nav-item text-black">
-                            <a class="nav-link text-black font-weight-bold" href="#">Contact</a>
-                        </li>
-                    </ul>
-                </div>
+    <title>WiTProject</title>
+    <link href="https://fonts.googleapis.com/css?family=Roboto:400,700" rel="stylesheet">
+    <meta name="google" content="notranslate"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <link rel="stylesheet" href="{% static 'blog/css/bootstrap.min.css' %}"/>
+    <link rel="stylesheet" href="{% static 'blog/css/style.css' %}"/>
+    <!-- Include Javascript Library -->
+    <script src="{% static 'blog/js/jquery-3.6.0.min.js' %}"></script>
+    <script src="{% static 'blog/js/popper.min.js' %}"></script>
+    <script src="{% static 'blog/js/bootstrap.min.js' %}"></script>
+</head>
+<body>
+<!-- Navigation  -->
+<nav class="navbar navbar-expand-lg fixed-top navbar-light py-0  shadow" style="background-color: #003399;"
+     id="mainNav">
+    <!-- <div class="container-fluid"> -->
+    <a class="navbar-brand text-light" href="{% url 'home' %}">
+        <img src="{% static 'blog/images/logo.png' %}" alt="Myanmar Data Tech Team Logo"
+             class="border border-warning rounded  m-2">
+        <span class="d-none d-lg-inline h5">Myanmar Data Tech Team</span>
+        <br/>
+    </a>
+    <button class="navbar-toggler navbar-toggler-warning" type="button" data-toggle="collapse"
+            data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false"
+            aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse font-weight-bold" id="navbarResponsive">
+        <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+                <a class="nav-link text-light" href="#">About</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-light" href="#">Policy</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-light" href="#">Contact</a>
+            </li>
+        </ul>
+    </div>
+    <!-- </div> -->
+</nav>
+{% block content %}
+<!-- Content Goes here -->
+{% endblock content %}
+<!-- Footer -->
+{% load bootstrap_icons %}
+<footer class="py-3 bg-grey">
+    <div class="container d-flex justify-content-center mb-4">
+        <div class="row">
+            <div class="col">
+                <a href="#">
+                    {% bs_icon 'facebook' size='2em' color='#0055FF' %}
+                </a>
             </div>
-        </nav>
-        {% block content %}
-        <!-- Content Goes here -->
-        {% endblock content %}
-        <!-- Footer -->
-        <footer class="py-3 bg-grey">
-            <p class="m-0 text-dark text-center ">Copyright &copy; WiT Myanmar Team</p>
-        </footer>
-    </body>
+            <div class="col">
+                <a href="#">
+                    {% bs_icon 'linkedin' size='2em' color='#0055FF' %}
+                </a>
+            </div>
+            <div class="col">
+                <a href="#">
+                    {% bs_icon 'telegram' size='2em' color='#0055FF' %}
+                </a>
+            </div>
+        </div>
+    </div>
+    <p class="text-dark text-center mb-0"><small>Copyright &copy; WiT Myanmar Team</small></p>
+    <p class="text-center mt-0"><small> By WiT-Phase3 Group 3</small></p>
+</footer>
+
+</body>
+
 </html>

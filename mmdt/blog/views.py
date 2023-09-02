@@ -1,6 +1,7 @@
+from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.shortcuts import render, get_object_or_404
 from django.views import generic
-from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
+
 from .forms import CommentForm
 from .models import Post
 

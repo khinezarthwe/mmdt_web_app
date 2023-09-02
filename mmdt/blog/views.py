@@ -28,6 +28,9 @@ class PostList(generic.ListView):
 class PostDetail(generic.DetailView):
     def post_detail(request, slug):
         post = get_object_or_404(Post, slug=slug)
+        if post:
+            post.view_count += 1
+            post.save()
         comments = post.comments.filter(active=True)
         new_comment = None    # Comment posted
         if request.method == 'POST':

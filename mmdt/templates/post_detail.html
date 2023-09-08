@@ -1,28 +1,22 @@
 {% extends 'base.html' %}
 {% load crispy_forms_tags %}
 {% block content %}
-<style>
-    .featured-image-list{
-    width:500px;
-    height:500px;
-    }
-</style>
 <div class="container">
     <div class="row  mt-5">
-        <div class="col-md-12 card my-5">
-            <div class="card-body">
+        <div class="col-md-12 my-5">
+            <div class=" blog-detail-card">
                 <h1>{% block title %} {{ post.title }} {% endblock title %}</h1>
-                <span>{{ post.view_count }} views</span>
-                <p class=" text-muted">{{ post.author }} | {{ post.created_on }}</p>
-                <p class="card-text">{{ post.content | escape }}</p>
-            </div>
-            <div>
+                <span class="view-count px-2">{{ post.view_count }} views</span>
+                <p class="text-muted">{{ post.author }} | {{ post.created_on }}</p>
+                <div>
                     {% if post.image %}
-                    <img src="{{ post.image.url }}" class="rounded featured-image-list">
+                    <img src="{{ post.image.url }}" class="blog-detail-img p-3">
                     {% endif %}
                 </div>
+                <p class="text-justify">{{ post.content | escape }}</p>
+                <div class="clear-float"></div>
+            </div>
         </div>
-
         <div class="col-md-8 card mb-4  mt-3 ">
             <div class="card-body">
                 <!-- comments -->
@@ -32,8 +26,8 @@
                     <p class="font-weight-bold">
                         {{ comment.name }}
                         <span class=" text-muted font-weight-normal">
-              {{ comment.created_on }}
-            </span>
+                            {{ comment.created_on }}
+                        </span>
                     </p>
                     {{ comment.body | linebreaks }}
                 </div>

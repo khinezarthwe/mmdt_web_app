@@ -35,6 +35,7 @@ h3 {
   color: #0066cc;
 }
 
+
 /* Body Text */
 p {
   font-size: 16px;
@@ -50,6 +51,10 @@ em {
 /* Bold Text */
 strong {
   font-weight: bold;
+}
+
+small {
+  line-height: 80%;
 }
 
 /* Quotes */
@@ -82,14 +87,6 @@ blockquote {
   box-shadow: 10px 10px 8px #cccccc;
 }
 
-/* Blog List Image */
-.blog-ls-img {
-  border-radius: 0%;
-  box-shadow: 6px 6px 3px #66a3ff;
-  margin: 20px;
-  float: right;
-}
-
 /* Person Name */
 .person-name {
   border: 1px solid #66a3ff;
@@ -101,18 +98,119 @@ blockquote {
   font-weight: 700;
   color: #004080;
 }
- p > a:link,
-a:visited
- {
+
+p>a:link,
+a:visited {
   padding: 3px;
   text-decoration: none;
   display: inline-block;
-  box-shadow:6px 6px 2px #66a3ff;
+  box-shadow: 6px 6px 2px #66a3ff;
 }
-p >a:hover,
+
+p>a:hover,
 a:active {
   background-color: #003399;
   color: #f0f5ff;
+}
+
+/* Blog List Image */
+.blog-ls-img {
+  width: 100%;
+  max-width: 300px;
+  border-radius: 24px;
+  margin-bottom: -40px;
+}
+
+.blog-created-img {
+  width: 100%;
+  max-width: 32px;
+}
+
+.card {
+  border-radius: 24px;
+}
+
+.card-img-top {
+  border-radius: 24px;
+  box-shadow: 10x 10px 5px #FFFFF0;
+}
+
+.blog-card {
+  max-width: 400px;
+  height: 200px;
+  background-color: #FFFFF0;
+  position: relative;
+}
+
+.blog-card>img {
+  width: 100%;
+  max-width: cover;
+  height: 200px;
+  box-shadow: 0 4px 8px rgb(225, 225, 240, 0.5);
+}
+
+.blog-card-text {
+  /* color: #333333; */
+  color: #f0f5ff;
+  font-size: 14px;
+  position: absolute;
+  top: 70%;
+  left: 5%;
+  right: 5%;
+  text-align: justify;
+  /* background: rgba(225,225, 240, 0.5); */
+  background-color: #66a3ff;
+  /* box-shadow: 0 4px 8px rgb(225,225,240,0.5); */
+  box-shadow: 0 4px 8px rgb(102, 163, 255, 0.5);
+  border-radius: 12px;
+  padding-inline: 15px;
+}
+
+.blog-card-text:hover {
+  box-shadow: 0 8px 16px rgb(102, 163, 255, 0.5);
+}
+
+.blog-card-text small {
+  /* color: #0066cc; */
+  color: #f0f5ff;
+}
+
+.card-title {
+  font-weight: 900;
+}
+
+/* post_detail.html */
+.blog-detail-card {
+  border: 1px solid #cccccc;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 25px;
+}
+
+.view-count {
+  float: right;
+  background-color: #ffaa00;
+  color: #f0f5ff;
+  border: 1px solid #ffaa00;
+  border-radius: 4px;
+  box-shadow: 4px 4px 8px (240, 245, 255, 0.2);
+}
+
+.blog-detail-img {
+  width: 100%;
+  max-width: 450px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px (255, 255, 240, 0.2);
+  float: right;
+
+}
+
+.blog-detail-card img:hover {
+  box-shadow: 0 8px 16px (255, 255, 240, 0.2);
+}
+
+.clear-float {
+  clear: both;
 }
 
 /* base.html */
@@ -128,8 +226,6 @@ body {
   background-color: #F0F5FF;
   color: #333333;
 }
-
-
 
 /* Responsive Typography */
 @media (max-width: 768px) {

@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% load static %}
+{% block content %}
+<div class="container">
+    <div class="row py-5">
+        {% if post_list|length == 0%}
+        <div class="col-md-12">
+            <h1 class="text-muted my-5 py-5 text-center">New Posts are coming...</h1>
+        </div>
+        {% else %}
+        {% for post in post_list %}
+        <div class="col-md-4 mb-5 pb-5">
+            <div class="card blog-card my-5">
+                {% if post.image %}
+                <img src="{{ post.image.url }}" class="card-img-top" alt="Blog Post Image">
+                {% endif %}
+                <div class="blog-card-text">
+                    <div>
+                        <img src="{% static 'blog/images/logo.png' %}" alt="MMDT logo" class="blog-created-img">
+                        <small>{{ post.created_on }}</small>
+                    </div>
+                    <div class="card-title mb-0">
+                        {{ post.title}}
+                    </div>
+                    <div class="card-text">
+                        <small>{{ post.author }} | {{ post.view_count }}</small>
+                    </div>
+                    <div class="card-text">
+                        {{ post.content|slice:":120" }} <span>...</span>
+                        <a href="{% url 'post_detail' post.slug  %}" class="mt-0 mb-3">
+                            Read More
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        {% endif %}
+    </div>
+</div>
+{% endblock content %}

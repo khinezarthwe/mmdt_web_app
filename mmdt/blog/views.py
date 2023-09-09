@@ -1,10 +1,13 @@
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.shortcuts import render, get_object_or_404
 from django.views import generic
+from django.views.generic import TemplateView
 
 from .forms import CommentForm
 from .models import Post
 
+class Home(TemplateView):
+    template_name = 'index.html'
 
 class PostList(generic.ListView):
     def post_list(request):
@@ -20,7 +23,7 @@ class PostList(generic.ListView):
             # If page is out of range deliver last page of results
             post_list = paginator.page(paginator.num_pages)
         return render(request,
-                      'index.html',
+                      'post_list.html',
                       {'page': page,
                        'post_list': post_list})
 

@@ -1,13 +1,14 @@
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.shortcuts import render, get_object_or_404
 from django.views import generic
-from django.views.generic import TemplateView
 
 from .forms import CommentForm
 from .models import Post
 
-class Home(TemplateView):
+
+class Home(generic.TemplateView):
     template_name = 'index.html'
+
 
 class PostList(generic.ListView):
     def post_list(request):

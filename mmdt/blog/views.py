@@ -9,6 +9,15 @@ from .models import Post
 class Home(TemplateView):
     template_name = 'index.html'
 
+class AboutUs(TemplateView):
+    template_name = 'about.html'
+
+class Policy(TemplateView):
+    template_name = 'policy.html'
+
+class ContactUs(TemplateView):
+    template_name = 'contact.html'
+
 class PostList(generic.ListView):
     def post_list(request):
         object_list = Post.objects.filter(status=1).order_by('-created_on')

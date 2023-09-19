@@ -18,6 +18,10 @@ class Policy(TemplateView):
 class ContactUs(TemplateView):
     template_name = 'contact.html'
 
+class Home(generic.TemplateView):
+    template_name = 'index.html'
+
+
 class PostList(generic.ListView):
     def post_list(request):
         object_list = Post.objects.filter(status=1).order_by('-created_on')

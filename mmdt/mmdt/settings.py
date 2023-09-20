@@ -10,9 +10,10 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
-from pathlib import Path
-from decouple import config
 import os
+from pathlib import Path
+
+from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -154,7 +155,7 @@ X_FRAME_OPTIONS = 'SAMEORIGIN'
 
 AWS_ACCESS_KEY_ID = config('AWS_ACCESS_KEY_ID')
 AWS_SECRET_ACCESS_KEY = config('AWS_SECRET_ACCESS_KEY')
-AWS_STORAGE_BUCKET_NAME = 'backendsaveimages'
+AWS_STORAGE_BUCKET_NAME = config('AWS_STORAGE_BUCKET_NAME')
 AWS_S3_SIGNATURE_NAME = "s3v4"
 AWS_S3_REGION_NAME = "us-west-1"
 AWS_S3_FILE_OVERWRITE = False

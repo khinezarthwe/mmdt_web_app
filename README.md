@@ -44,6 +44,14 @@ Let's set up the project step by step:
 3. **Create a Virtual Environment** (Recommended): It's a good practice to isolate project dependencies. You can create a virtual environment by following [these instructions](https://docs.python.org/3/tutorial/venv.html).
 
 4. **Install Project Dependencies**: Run the command `pip install -r requirement.txt` to install the necessary libraries.
+   - create .env in file under mmdt-web-app/mmdt/.env and add the following key:value pair
+    ```
+    AWS_ACCESS_KEY_ID = 'your AWS S3 key'
+    AWS_SECRET_ACCESS_KEY = 'your AWS S3 secret key '
+    AWS_STORAGE_BUCKET_NAME = 'your S3 bucketname '
+    DEBUG = True or False
+    ```
+   
 
 5. **Database Setup**:
    - Run these commands to set up the database:
@@ -61,3 +69,6 @@ You can now access the following URLs in your web browser:
 - [http://127.0.0.1:8000/](http://127.0.0.1:8000/): Home Page/Blog Page 
 - [http://127.0.0.1:8000/admin](http://127.0.0.1:8000/admin): Admin Panel
 - [http://127.0.0.1:8000/polls](http://127.0.0.1:8000/polls): Polls Application [Optionals]
+9. **DBdiagram**:
+Our Database Design
+![DB](https://github.com/khinezarthwe/mmdt_web_app/assets/135047040/742ecd9f-40d1-4476-92a9-a7c0b79390ab)

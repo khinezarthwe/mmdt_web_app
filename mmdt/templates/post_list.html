@@ -38,5 +38,31 @@
         {% endfor %}
         {% endif %}
     </div>
+    <!-- Page Navigation -->
+    <div class="row mb-5 mt-0">
+        <div class="col-md-12">
+            {% if post_list.has_other_pages %}
+            <div aria-label="Page navigation container">
+                <ul class="pagination justify-content-center">
+                    {% if post_list.has_previous %}
+                    <li class="page-item mx-2">
+                        <a href="?page={{ post_list.previous_page_number }}" class="page-link" aria-label="Previous">
+                            <span aria-hidden="true">&laquo;Previous</span>
+                            <span class="sr-only">Previous</span>
+                        </a>
+                    </li>
+                    {% endif %} {% if post_list.has_next %}
+                    <li class="page-item mx-2">
+                        <a class="page-link" href="?page={{ post_list.next_page_number }}" aria-label="Next">
+                            <span aria-hidden="true">&raquo;Next</span>
+                            <span class="sr-only">Next</span>
+                        </a>
+                    </li>
+                    {% endif %}
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock content %}

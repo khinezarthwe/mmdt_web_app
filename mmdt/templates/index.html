@@ -1,131 +1,69 @@
 {% extends "base.html" %}
 {% load static %}
 {% block content %}
-<style>
-    .featured-image-list{
-        object-fit: contain;
-        width:300px;
-        height:200px;
-    }
-</style>
-<div class="container mt-4">
-    <!-- Myanmar Data Tech Team -->
+<div class="container">
+    <div class="row mt-8"><section><h1>Our Projects</h1></section></div>
     <div class="row">
-        <div class="col-md-6">
-            <img src="{% static 'blog/images/data.png' %}" class="img-fluid img-box-shadow mt-4">
-        </div>
-        <div class="col-md-6">
-            <blockquote class="text-justify mt-4 ">
-                The <em><b>Myanmar Data Tech Team (MMDT)</b></em> was established in 2022, comprising a group of experts
-                from
-                the data industry in collaboration with the Founder of VigorZwe. The primary focus of MMDT is on
-                harnessing the power of data and technology to drive advancements within the education sector.
-                Through meticulous research and analysis, the team aims to generate valuable insights and develop
-                innovative solutions that contribute to the overall improvement of education in Myanmar.
-                Despite being relatively new, the MMDT has already demonstrated its capabilities by successfully
-                securing grants and undertaking various research projects.
-            </blockquote>
-        </div>
+    <div class="col-md-6">
+        <!--    project 1 -->
+    <div class='tableauPlaceholder' id='viz1695210497377'
+         style='position: relative'><noscript>
+        <a href='#'><img alt='Higher Education Gap in Digital Space '
+                         src='https:&#47;&#47;public.tableau.com&#47;static&#47;images&#47;2M&#47;2MX3HKJN4&#47;1_rss.png'
+                         style='border: none' /></a></noscript><object class='tableauViz'  style='display:none;'>
+        <param name='host_url' value='https%3A%2F%2Fpublic.tableau.com%2F' /> <param name='embed_code_version' value='3' />
+        <param name='path' value='shared&#47;2MX3HKJN4' /> <param name='toolbar' value='yes' />
+        <param name='static_image' value='https:&#47;&#47;public.tableau.com&#47;static&#47;images&#47;2M&#47;2MX3HKJN4&#47;1.png' />
+        <param name='animate_transition' value='yes' /><param name='display_static_image' value='yes' />
+        <param name='display_spinner' value='yes' /><param name='display_overlay' value='yes' />
+        <param name='display_count' value='yes' /><param name='language' value='en-US' />
+    </object>
     </div>
-    <hr class="mt-5">
-    <!-- Study of Myanmar -->
-    <div class="row">
-        <div class="col">
-            <blockquote class="text-justify mt-4 overlay-text">
-                One notable endeavor currently underway is the <em><b>”Study of Myanmar’s Ongoing Higher Education Gap
-                in
-                the Digital Space” (2023)</b></em>. This comprehensive nationwide survey is aimed at collecting
-                crucial
-                insights and data pertaining to the higher education gap in Myanmar. By leveraging the acquired
-                information, the team anticipates making significant contributions to the educational landscape of
-                the country.With a commitment to data-driven research and a wealth of expertise in the field, the MMDT
-                is
-                well-positioned to address the challenges and opportunities within Myanmar’s education sector. MMDT is
-                dedicated to
-                thoroughly analyzing the survey findings, identifying existing gaps, and formulating actionable
-                recommendations to bridge the educational divide and instigate positive change. As the Myanmar Data
-                Tech Team continues to evolve, MMDT’s unwavering dedication to improving education through
-                data-driven research and innovative solutions remains resolute. The Myanmar Data Tech Team (MMDT) was
-                established in 2022, comprising a group of experts from the data
-                industry in collaboration.
-            </blockquote>
-        </div>
-    </div>
-    <hr class="mt-5">
-
-    <div class="row mt-5 mb-5">
-        <div class="col-md-6">
-            <div class="card card-box-shadow">
-                <img src="{% static 'blog/images/drmyo.jpeg' %}" alt="" class="card-img-top">
-                <div class="card-body">
-                    <h6 class="card-title">Dr Myo thida </h6>
-                    <p class="card-text"><a href="" class="person-link">www.drmyothida.org</a></p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-6">
-            <div class="card card-box-shadow">
-                <img src="{% static 'blog/images/khinezar.jpeg' %}" alt="" class="card-img-top">
-                <div class="card-body">
-                    <h6 class="card-title">Khine Zar Thwe</h6>
-                    <p class="card-text"><a href="" class="person-link">www.thingaha.org</a></p>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- Page Navigation
-    <div class="row my-4">
-        {% if post_list.has_other_pages %}
-        <div aria-label="Page navigation container" class="col-lg-1 offset-lg-3 col-sm-1 offset-sm-3">
-            <ul class="pagination mt-5">
-                {% if post_list.has_previous %}
-                <li class="page-item mx-2">
-                    <a href="?page={{ post_list.previous_page_number }}" class="page-link" aria-label="Previous">
-                        <span aria-hidden="true">&laquo;</span>
-                        <span class="sr-only">Previous</span>
-                    </a>
-                </li>
-                {% endif %} {% if post_list.has_next %}
-                <li class="page-item mx-2">
-                    <a class="page-link" href="?page={{ post_list.next_page_number }}" aria-label="Next">
-                        <span aria-hidden="true">&raquo;</span>
-                        <span class="sr-only">Next</span>
-                    </a>
-                </li>
-                {% endif %}
-                {% endif %}
-            </ul>
-        </div>
-    </div> -->
-</div>
-
-
-<script>
-    $(document).ready(function () {
-        // Get the height of the navbar
-        var navBarHeight = $('.navbar').outerHeight();
-
-        // Get the height of the navbar
-        $('.container').css('padding-top', navBarHeight + 'px');
-
-        // Loop through each card
-        $('.card-row').each(function () {
-            var $this = $(this);
-            var $imgCol = $this.find('#img-column');
-
-            // Create an image and apply margins
-            var $image = $('<img>', {
-                src: "{% static 'blog/images/purple.jpg' %}",
-                alt: 'blog image',
-                class: 'w-50 h-50  blog-ls-img'
-            });
-            // Append image
-            $imgCol.append($image);
-        });
-
-    });
-
-
+    <script type='text/javascript'>
+    var divElement = document.getElementById('viz1695210497377');
+    var vizElement = divElement.getElementsByTagName('object')[0];
+    vizElement.style.width='100%';vizElement.style.height='600px';
+    var scriptElement = document.createElement('script');
+    scriptElement.src = 'https://public.tableau.com/javascripts/api/viz_v1.js';
+    vizElement.parentNode.insertBefore(scriptElement, vizElement);
 </script>
+    </div>
+    <div class="col-md-6">
+<!--    project 0-->
+    <div class='tableauPlaceholder' id='viz1695210949271'
+         style='position: relative'>
+        <noscript><a href='#'>
+        <img alt='Myanmar Women In Tech: Research &amp;
+        Data Analytic ' src='https:&#47;&#47;public.tableau.com&#47;static&#47;images&#47;Wo&#47;WomenInTech_16726391156830&#47;MyanmarWomenInTechResearchDataAnalytic&#47;1_rss.png' style='border: none' /></a>
+    </noscript>
+        <object class='tableauViz'  style='display:none;'><param name='host_url' value='https%3A%2F%2Fpublic.tableau.com%2F' />
+            <param name='embed_code_version' value='3' /> <param name='site_root' value='' />
+            <param name='name' value='WomenInTech_16726391156830&#47;MyanmarWomenInTechResearchDataAnalytic' />
+            <param name='tabs' value='no' /><param name='toolbar' value='yes' />
+            <param name='static_image' value='https:&#47;&#47;public.tableau.com&#47;static&#47;images&#47;Wo&#47;WomenInTech_16726391156830&#47;MyanmarWomenInTechResearchDataAnalytic&#47;1.png' />
+            <param name='animate_transition' value='yes' /><param name='display_static_image' value='yes' /><param name='display_spinner' value='yes' />
+            <param name='display_overlay' value='yes' /><param name='display_count' value='yes' /><param name='language' value='en-US' />
+        </object>
+    </div>
+    <script type='text/javascript'>
+    var divElement = document.getElementById('viz1695210949271');
+    var vizElement = divElement.getElementsByTagName('object')[0];
+    vizElement.style.width='100%';vizElement.style.height='600px';
+    var scriptElement = document.createElement('script');
+    scriptElement.src = 'https://public.tableau.com/javascripts/api/viz_v1.js';
+    vizElement.parentNode.insertBefore(scriptElement, vizElement);
+</script>
+        </div>
+    </div>
+    <div class="row mt-4">
+    <div class="col-md-6">
+        <iframe title="Report Section" width="600" height="373.5"
+                src="https://app.powerbi.com/view?r=eyJrIjoiYTUzMGU4NDEtZmQ1OS00Njg0LWFhNzMtZjgyNmQ4NDM4YmQ0IiwidCI6IjIwOWJkZGNiLWZhM2ItNDU3Mi1hZTU0LTljYTMzNGMwMDhiOSIsImMiOjEwfQ%3D%3D"
+                frameborder="0" allowFullScreen="true"></iframe>
+    </div>
+    <div class="col-md-6">
 
+     </div>
+    </div>
+</div>
 {%endblock%}

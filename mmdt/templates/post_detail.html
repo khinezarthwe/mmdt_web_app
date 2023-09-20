@@ -13,7 +13,7 @@
                     <img src="{{ post.image.url }}" class="blog-detail-img p-3">
                     {% endif %}
                 </div>
-                <p class="text-justify">{{ post.content | escape }}</p>
+                <p class="text-justify">{{ post.content | striptags }}</p>
                 <div class="clear-float"></div>
             </div>
         </div>

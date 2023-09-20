@@ -232,3 +232,7 @@ body {
     font-size: 20px;
   }
 }
+
+.mt-8 {
+  margin-top: 6rem !important;
+}

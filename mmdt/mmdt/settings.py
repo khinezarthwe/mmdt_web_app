@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
+from decouple import config
 import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -24,7 +25,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure--ld-c!55j+l1gr@alfh&w#+flyd@r*y^wy_r+sokxv&i6d0%tg'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = config('DEBUG', cast=bool)
 
 ALLOWED_HOSTS = ['mmdt.istarvz.com', 'mmdt-dev.thingaha.org', '127.0.0.1']
 
@@ -151,8 +152,8 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 
 X_FRAME_OPTIONS = 'SAMEORIGIN'
 
-AWS_ACCESS_KEY_ID = 'AKIAZJPCQIQCP6IVMYF4'
-AWS_SECRET_ACCESS_KEY = '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'
+AWS_ACCESS_KEY_ID = config('AWS_ACCESS_KEY_ID')
+AWS_SECRET_ACCESS_KEY = config('AWS_SECRET_ACCESS_KEY')
 AWS_STORAGE_BUCKET_NAME = 'backendsaveimages'
 AWS_S3_SIGNATURE_NAME = "s3v4"
 AWS_S3_REGION_NAME = "us-west-1"

@@ -10,27 +10,29 @@
         </div>
         {% else %}
         {% for post in post_list %}
-        <div class="col-md-4 mb-5 pb-5">
+        <div class="col-md-6 my-5 pb-5">
             <div class="card blog-card my-5">
                 {% if post.image %}
                 <img src="{{ post.image.url }}" class="card-img-top" alt="Blog Post Image">
                 {% endif %}
                 <div class="blog-card-text">
-                    <div>
+                    <div class="my-3">
                         <img src="{% static 'blog/images/logo.png' %}" alt="MMDT logo" class="blog-created-img">
                         <small>{{ post.created_on }}</small>
                     </div>
                     <div class="card-title mb-0">
-                        {{ post.title}}
+                        <h5>{{ post.title }}</h5>
                     </div>
                     <div class="card-text">
                         <small>{{ post.author }} | {{ post.view_count }}</small>
                     </div>
                     <div class="card-text">
-                        {{ post.content|slice:":120" }} <span>...</span>
-                        <a href="{% url 'post_detail' post.slug  %}" class="mt-0 mb-3">
-                            Read More
-                        </a>
+                        <p class="mt-2">
+                            {{ post.content|slice:":160" }} <span>...</span>
+                            <a href="{% url 'post_detail' post.slug  %}" class="mt-0 mb-3">
+                                Read More
+                            </a>
+                        </p>
                     </div>
                 </div>
             </div>
@@ -39,7 +41,7 @@
         {% endif %}
     </div>
     <!-- Page Navigation -->
-    <div class="row mb-5 mt-0">
+    <div class="row mb-y py-5">
         <div class="col-md-12">
             {% if post_list.has_other_pages %}
             <div aria-label="Page navigation container">

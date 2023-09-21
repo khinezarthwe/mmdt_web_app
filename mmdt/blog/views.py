@@ -25,7 +25,7 @@ class Home(generic.TemplateView):
 class PostList(generic.ListView):
     def post_list(request):
         object_list = Post.objects.filter(status=1).order_by('-created_on')
-        paginator = Paginator(object_list, 3)
+        paginator = Paginator(object_list, 4)
         if request.method == 'GET':
             page = request.GET.get('page')
         try:

@@ -28,7 +28,7 @@
                     </div>
                     <div class="card-text">
                         <p class="mt-2">
-                            {{ post.content|slice:":160" }} <span>...</span>
+                            {{ post.content|slice:":160"|striptags }} <span>...</span>
                             <a href="{% url 'post_detail' post.slug  %}" class="mt-0 mb-3">
                                 Read More
                             </a>

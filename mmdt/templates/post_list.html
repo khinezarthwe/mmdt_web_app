@@ -3,43 +3,41 @@
 {% load static %}
 {% block content %}
 <div class="container">
-    <div class="row py-5">
-        {% if post_list|length == 0%}
+    {% if post_list|length == 0%}
+    <div class="row">
         <div class="col-md-12">
             <h1 class="text-muted my-5 py-5 text-center">New Posts are coming...</h1>
         </div>
-        {% else %}
-        {% for post in post_list %}
-        <div class="col-md-6 my-5 pb-5">
-            <div class="card blog-card my-5">
-                {% if post.image %}
-                <img src="{{ post.image.url }}" class="card-img-top" alt="Blog Post Image">
-                {% endif %}
-                <div class="blog-card-text">
-                    <div class="my-3">
-                        <img src="{% static 'blog/images/logo.png' %}" alt="MMDT logo" class="blog-created-img">
-                        <small>{{ post.created_on }}</small>
-                    </div>
-                    <div class="card-title mb-0">
-                        <h5>{{ post.title }}</h5>
-                    </div>
-                    <div class="card-text">
-                        <small>{{ post.author }} | {{ post.view_count }}</small>
-                    </div>
-                    <div class="card-text">
-                        <p class="mt-2">
-                            {{ post.content|slice:":160"|striptags }} <span>...</span>
-                            <a href="{% url 'post_detail' post.slug  %}" class="mt-0 mb-3">
-                                Read More
-                            </a>
-                        </p>
-                    </div>
+    </div>
+    {% else %}
+    {% for post in post_list %}
+    <div class="row my-5">
+        <div class="card" style="flex-direction: row;">
+            {% if post.image %}
+                <img src="{{ post.image.url }}" class="img-fluid" alt="Blog Post Image" style="width: 30%;">
+            {% endif %}
+            <div class="card-body">
+                <div class="card-title">
+                    <h4>{{ post.title }}</h4>
+                </div>
+                <div class="my-3">
+                    <img src="{% static 'blog/images/logo.png' %}" alt="MMDT logo" class="blog-created-img">
+                    <small>{{ post.created_on }}</small>
+                </div>
+                <div class="card-text mb-2">
+                    <small class="text-muted">{{ post.author }} |  {{ post.view_count }}</small>
+                </div>
+                <div class="card-text  justify-content-evenly pb-0 mb-0">
+                    {{ post.content|slice:":160"|striptags }} <span>...</span>
+                    <a href="{% url 'post_detail' post.slug  %}" class="mt-0 mb-3">
+                        Read More
+                    </a>
                 </div>
             </div>
         </div>
-        {% endfor %}
-        {% endif %}
     </div>
+    {% endfor %}
+    {% endif %}
     <!-- Page Navigation -->
     <div class="row mb-y py-5">
         <div class="col-md-12">

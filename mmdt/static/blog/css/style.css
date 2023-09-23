@@ -21,7 +21,7 @@ h1 {
 
 /* Section Titles */
 h2 {
-  font-family: 'Exo', sans-serif;
+  font-family:  'Playfair Display', serif;
   font-size: 28px;
   font-weight: 600;
   color: #0066cc;
@@ -29,13 +29,22 @@ h2 {
 
 /* Subsection Headings */
 h3 {
-  font-family: 'Exo', sans-serif;
+  font-family:  'Playfair Display', serif;
   font-size: 24px;
   font-weight: 600;
   color: #0066cc;
 }
-
-
+h4{
+  font-family: 'Playfair Display', serif;
+  font-size: 22px;
+  line-height: 1.1;
+}
+a{
+  font-family: 'Playfair Display', serif;
+}
+.nav-link{
+  letter-spacing: 3px;
+}
 /* Body Text */
 p {
   font-size: 16px;
@@ -116,9 +125,8 @@ a:active {
 /* Blog List Image */
 .blog-ls-img {
   width: 100%;
-  max-width: 300px;
-  border-radius: 24px;
-  margin-bottom: -40px;
+  max-width: 200px;
+  border-radius: 4px;
 }
 
 .blog-created-img {
@@ -126,44 +134,22 @@ a:active {
   max-width: 32px;
 }
 .card {
-  border-radius: 24px;
+  border-radius: 8px;
+  background-color: #F0F5FF;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 .card-img-top {
-  border-radius: 24px;
+  border-radius: 4px;
   box-shadow: 10x 10px 5px #FFFFF0;
 }
 .blog-card {
-  max-width: 500px;
-  height: 400px;
-  background-color: #FFFFF0;
-  position: relative;
+  flex-direction: row;
 }
-.blog-card>img {
-  width: 100%;
+.blog-card img {
+  width: 30%;
   max-width: cover;
   height: 400px;
   box-shadow: 0 4px 8px rgb(225, 225, 240, 0.5);
-}
-.blog-card-text {
-  width: 450px;
-  height: 300px;
-  font-size: 14px;
-  position: absolute;
-  top: 70%;
-  left: 5%;
-  right: 5%;
-  background-color: #66a3ff;
-  box-shadow: 0 4px 8px rgb(102, 163, 255, 0.5);
-  border-radius: 12px;
-  color: #f0f5ff;
-  text-align: justify;
-  padding-inline: 20px;
-}
-.blog-card-text:hover {
-  box-shadow: 0 8px 16px rgb(102, 163, 255, 0.5);
-}
-.blog-card-text small {
-  color: #f0f5ff;
 }
 .card-title {
   font-weight: 900;

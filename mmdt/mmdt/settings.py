@@ -189,6 +189,6 @@ LOGGING = {
     },
     'root': {
         'handlers': ['rotate_file'],
-        'level': 'DEBUG',
+        'level': 'INFO',
     },
 }

@@ -6,26 +6,27 @@ from django.views.generic import TemplateView
 from .forms import CommentForm
 from .models import Post
 
+
 class Home(TemplateView):
     template_name = 'index.html'
+
 
 class AboutUs(TemplateView):
     template_name = 'about.html'
 
-class Policy(TemplateView):
-    template_name = 'policy.html'
 
 class ContactUs(TemplateView):
     template_name = 'contact.html'
 
-class Home(generic.TemplateView):
+
+class OurProject(TemplateView):
     template_name = 'index.html'
 
 
 class PostList(generic.ListView):
     def post_list(request):
         object_list = Post.objects.filter(status=1).order_by('-created_on')
-        paginator = Paginator(object_list, 3)
+        paginator = Paginator(object_list, 5)
         if request.method == 'GET':
             page = request.GET.get('page')
         try:

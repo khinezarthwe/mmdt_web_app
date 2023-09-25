@@ -14,29 +14,27 @@
     <div class="row my-5">
         <div class="card" style="flex-direction: row;">
             {% if post.image %}
-                <img src="{{ post.image.url }}" class="img-fluid" alt="Blog Post Image" style="width: 30%;">
+                <img src="{{ post.image.url }}" class="card-img" alt="Blog Post Image" style="width: 40%;">
+            {% else %}
+                <img src="{% static 'blog/images/logo.png' %}" alt="Blog Post Image" class="card-imgs" style="width: 40%;">
             {% endif %}
             <div class="card-body">
-                <div class="card-title">
-                    <h4>{{ post.title }}</h4>
-                </div>
-                <div class="my-3">
-                    <img src="{% static 'blog/images/logo.png' %}" alt="MMDT logo" class="blog-created-img">
-                    <small>{{ post.created_on }}</small>
-                </div>
-                <div class="card-text mb-2">
-                    <small class="text-muted">{{ post.author }} |  {{ post.view_count }}</small>
-                </div>
-                <div class="card-text  justify-content-evenly pb-0 mb-0">
-                    {{ post.content|slice:":160"|striptags }} <span>...</span>
-                    <a href="{% url 'post_detail' post.slug  %}" class="mt-0 mb-3">
+                <h4 class="card-title">{{ post.title }}</h4>
+                <p class="card-text">
+                    {{ post.content|slice:":1500"|striptags }} <span>...</span>
+                    <a href="{% url 'post_detail' post.slug  %}">
                         Read More
                     </a>
-                </div>
+                </p>
+                <p><img src="{% static 'blog/images/logo.png' %}" alt="MMDT logo" class="blog-created-img">
+                <small class="text-muted">{{ post.created_on }} |  view count : {{ post.view_count }}</small>
+            </p>
             </div>
+
         </div>
     </div>
     {% endfor %}
+
     {% endif %}
     <!-- Page Navigation -->
     <div class="row mb-y py-5">

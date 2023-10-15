@@ -42,9 +42,8 @@ h4{
 a{
   font-family: 'Playfair Display', serif;
 }
-.nav-link{
-  letter-spacing: 3px;
-}
+
+
 /* Body Text */
 p {
   font-size: 16px;
@@ -193,6 +192,7 @@ a:active {
 
 .navbar-brand>img {
   width: 100%;
+  height: 100%;
 }
 
 body {
@@ -219,4 +219,8 @@ body {
 
 .mt-8 {
   margin-top: 6rem !important;
+}
+
+.navbar {
+    background-color: #003399;
 }

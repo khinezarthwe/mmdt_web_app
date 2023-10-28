@@ -23,10 +23,6 @@ class OurProject(TemplateView):
     template_name = 'index.html'
 
 
-class StProject(TemplateView):
-    template_name = 'st_project.html'
-
-
 class PostList(generic.ListView):
     def post_list(request):
         object_list = Post.objects.filter(status=1).order_by('-created_on')

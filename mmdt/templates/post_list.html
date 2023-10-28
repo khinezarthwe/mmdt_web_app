@@ -17,16 +17,14 @@
         {% for post in post_list %}
         <article>
             {% if post.image %}
-            <a href="{% url 'post_detail' post.slug  %}" class="image"><img src="{{ post.image.url }}" alt=""/></a>
+            <a href="c" class="image"><img src="{{ post.image.url }}" alt=""/></a>
             {% else %}
-            <a href="{% url 'post_detail' post.slug  %}" class="image"><img src="{% static 'blog/images/logo.png' %}"
-                                                                            alt=""/></a>
+            <a href="{% url 'post_detail' post.slug  %}" class="image"><img src="{% static 'blog/images/logo.png' %}"alt=""/></a>
             {% endif %}
             <h3>{{ post.title }}</h3>
-            <p>{{ post.content|slice:":500"| safe }} <span>...</span></p>
-            <ul class="actions">
-                <li><a href="{% url 'post_detail' post.slug  %}" class="button">More</a></li>
-            </ul>
+            <p>{{ post.content|slice:":700"| safe }}...</p>
+            <br>
+            <ul class="actions"><li><a href="{% url 'post_detail' post.slug  %}" class="button big">Learn More</a></li></ul>
         </article>
         {% endfor %}
         {% endif %}

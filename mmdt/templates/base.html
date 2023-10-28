@@ -1,85 +1,69 @@
-
-<!DOCTYPE html>
+<!DOCTYPE HTML>
 <html>
+{% load static %}
 <head>
-    {% load static %}
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-
-    <title>WiTProject</title>
-    <meta name="google" content="notranslate"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1"/>
-    <link rel="stylesheet" href="{% static 'blog/css/bootstrap.min.css' %}"/>
-    <link rel="stylesheet" href="{% static 'blog/css/style.css' %}"/>
-    <!-- Include Javascript Library -->
-    <script src="{% static 'blog/js/jquery-3.6.0.min.js' %}"></script>
-    <script src="{% static 'blog/js/popper.min.js' %}"></script>
-    <script src="{% static 'blog/js/bootstrap.min.js' %}"></script>
+    <title>Myanmar Data Tech Team</title>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no"/>
+	<link rel="stylesheet" href="{% static 'assets/css/bootstrap.css' %}"/>
+    <link rel="stylesheet" href="{% static 'assets/css/main.css' %}"/>
 </head>
-<body>
-<!-- Navigation  -->
-<div class="mb-5 pb-5">
-    <nav class="navbar navbar-expand-lg fixed-top navbar-light py-0  shadow" style="background-color: #003399;"
-     id="mainNav">
-    <!-- <div class="container-fluid"> -->
-    <a class="navbar-brand text-light" href="{% url 'home' %}">
-        <img src="{% static 'blog/images/logo.png' %}" alt="Myanmar Data Tech Team Logo"
-             class="border border-warning rounded  m-2">
-        <a href="{% url 'home' %}" class="navbar-nav nav-item nav-link text-light">
-            <span><h4>Myanmar Data Tech Team</h4></span>
-        </a>
-        <br/>
-    </a>
-    <button class="navbar-toggler navbar-toggler-warning" type="button" data-toggle="collapse"
-            data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false"
-            aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse font-weight-bold" id="navbarResponsive">
-        <ul class="navbar-nav ml-auto">
-            <li class="nav-item">
-                <a class="nav-link text-light" href="{% url 'our_projects' %}">Our Projects</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link text-light" href="{% url 'about' %}">About</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link text-light" href="{% url 'contact' %}">Contact</a>
-            </li>
-        </ul>
-    </div>
-    <!-- </div> -->
-</nav>
-</div>
-{% block content %}
-<!-- Content Goes here -->
-{% endblock content %}
-<!-- Footer -->
-{% load bootstrap_icons %}
-<footer class="py-3 bg-grey">
-    <div class="container d-flex justify-content-center mb-4">
-        <div class="row">
-            <div class="col">
-                <a href="#">
-                    {% bs_icon 'facebook' size='2em' color='#0055FF' %}
-                </a>
-            </div>
-            <div class="col">
-                <a href="#">
-                    {% bs_icon 'linkedin' size='2em' color='#0055FF' %}
-                </a>
-            </div>
-            <div class="col">
-                <a href="#">
-                    {% bs_icon 'telegram' size='2em' color='#0055FF' %}
-                </a>
-            </div>
+<!-- Include Javascript Library -->
+<body class="is-preload">
+
+<!-- Wrapper -->
+<div id="wrapper">
+
+    <!-- Main -->
+    <div id="main">
+        <div class="inner">
+            <header id="header">
+                <a href="{% url 'home' %}" class="logo"><strong>Myanmar</strong> Data Tech Team</a>
+            </header>
+			{% block content %}
+			<!-- Content Goes here -->
+			{% endblock content %}
         </div>
     </div>
-    <p class="text-dark text-center mb-0"><small>Copyright &copy; WiT Myanmar Team</small></p>
-    <p class="text-center mt-0"><small> By WiT-Phase3 Group 3</small></p>
-</footer>
 
+    <!-- Sidebar -->
+    <div id="sidebar">
+        <div class="inner">
+            <!-- Menu -->
+            <nav id="menu">
+                <header class="major">
+                    <h2><a href="{% url 'home' %}"><img class="logo" src="{% static 'blog/images/logo.png' %}" style="width: 5em;height: 5em;"></a>
+                    </h2>
+                </header>
+                <ul>
+                    <li><a href="{% url 'home' %}">Homepage</a></li>
+                    <li><a href="{% url 'about' %}">Our Team</a></li>
+                    <li>
+                        <span class="opener">Projects</span>
+                        <ul>
+                            <li><a href="{% url 'our_projects' %}">Our Projects</a></li>
+                            <li><a href="{% url 'st_projects' %}">Student Projects</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </nav>
+            <!-- Section -->
+            <section>
+                <header class="major">
+                    <h2>Get in touch</h2>
+                </header>
+                <ul class="contact">
+                    <li class="icon solid fa-envelope"><a href="mailto:myanmardatatechteam@gmail.com">myanmardatatechteam@gmail.com</a>
+                    </li>
+                </ul>
+            </section>
+        </div>
+    </div>
+<script src="{% static 'assets/js/jquery.min.js' %}"></script>
+<script src="{% static 'assets/js/browser.min.js' %}"></script>
+<script src="{% static 'assets/js/breakpoints.min.js'%}"></script>
+<script src="{% static 'assets/js/util.js' %}"></script>
+<script src="{% static 'assets/js/main.js' %}"></script>
+</div>
 </body>
-
 </html>

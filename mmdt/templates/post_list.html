@@ -17,7 +17,7 @@
         {% for post in post_list %}
         <article>
             {% if post.image %}
-            <a href="c" class="image"><img src="{{ post.image.url }}" alt=""/></a>
+            <a href="{% url 'post_detail' post.slug  %}" class="image"><img src="{{ post.image.url }}" alt=""/></a>
             {% else %}
             <a href="{% url 'post_detail' post.slug  %}" class="image"><img src="{% static 'blog/images/logo.png' %}"alt=""/></a>
             {% endif %}

@@ -1,55 +1,14 @@
 {% extends 'base.html' %}
 {% load crispy_forms_tags %}
 {% block content %}
-<div class="container">
-    <div class="row  mt-5">
-        <div class="col-md-12 my-5">
-            <div class=" blog-detail-card">
-                <h1>{% block title %} {{ post.title }} {% endblock title %}</h1>
-                <span class="view-count px-2">{{ post.view_count }} views</span>
-                <p class="text-muted">{{ post.author }} | {{ post.created_on }}</p>
-                <div>
-                    {% if post.image %}
-                    <img src="{{ post.image.url }}" class="blog-detail-img p-3">
-                    {% endif %}
-                </div>
-                <p class="text-justify">{{ post.content | striptags }}</p>
-                <div class="clear-float"></div>
-            </div>
-        </div>
-        <div class="col-md-8 card mb-4  mt-3 ">
-            <div class="card-body">
-                <!-- comments -->
-                <h2>{{ comments.count }} comments</h2>
-                {% for comment in comments %}
-                <div class="comments" style="padding: 10px;">
-                    <p class="font-weight-bold">
-                        {{ comment.name }}
-                        <span class=" text-muted font-weight-normal">
-                            {{ comment.created_on }}
-                        </span>
-                    </p>
-                    {{ comment.body | linebreaks }}
-                </div>
-                {% endfor %}
-            </div>
-        </div>
-        <div class="col-md-8 card mb-4  mt-3 ">
-            <div class="card-body">
-                {% if new_comment %}
-                <div class="alert alert-success" role="alert">
-                    Your comment is awaiting moderation
-                </div>
-                {% else %}
-                <h3>Leave a comment</h3>
-                <form method="post" style="margin-top: 1.3em;">
-                    {{ comment_form | crispy }}
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-primary  btn-lg">Submit</button>
-                </form>
-                {% endif %}
-            </div>
-        </div>
-    </div>
+<section>
+<div class="card mb-3">
+  <img class="card-img" src="{{ post.image.url }}" alt="Card image">
+  <div class="card-body">
+    <h5 class="card-title">{% block title %} {{ post.title }} {% endblock title %}</h5>
+    <p class="card-text">{{ post.content | safe }}</p>
+    <p class="card-text"><small class="text-muted">{{ post.view_count }} views | Author {{ post.author }} | {{ post.created_on }}</small></p>
+  </div>
 </div>
+</section>
 {% endblock content %}

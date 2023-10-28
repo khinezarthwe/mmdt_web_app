@@ -2,6 +2,10 @@
 {% load crispy_forms_tags %}
 {% load static %}
 {% block content %}
+<section>
+    <header class="major">
+        <h2>Our latest News</h2>
+    </header>
     {% if post_list|length == 0%}
     <div class="row mt-4">
         <div class="col-md-12">
@@ -9,56 +13,42 @@
         </div>
     </div>
     {% else %}
-    {% for post in post_list %}
-    <div class="row mt-4 my-5">
-        <div class="card" style="flex-direction: row;">
+    <div class="posts">
+        {% for post in post_list %}
+        <article>
             {% if post.image %}
-                <img src="{{ post.image.url }}" class="card-img" alt="Blog Post Image" style="width: 40%;">
+            <a href="{% url 'post_detail' post.slug  %}" class="image"><img src="{{ post.image.url }}" alt=""/></a>
             {% else %}
-                <img src="{% static 'blog/images/logo.png' %}" alt="Blog Post Image" class="card-imgs" style="width: 40%;">
+            <a href="{% url 'post_detail' post.slug  %}" class="image"><img src="{% static 'blog/images/logo.png' %}"
+                                                                            alt=""/></a>
             {% endif %}
-            <div class="card-body">
-                <h4 class="card-title">{{ post.title }}</h4>
-                <p class="card-text">
-                    {{ post.content|slice:":1500"|striptags }} <span>...</span>
-                    <a href="{% url 'post_detail' post.slug  %}">
-                        Read More
-                    </a>
-                </p>
-                <p><img src="{% static 'blog/images/logo.png' %}" alt="MMDT logo" class="blog-created-img">
-                <small class="text-muted">{{ post.created_on }} |  view count : {{ post.view_count }}</small>
-            </p>
-            </div>
-
-        </div>
+            <h3>{{ post.title }}</h3>
+            <p>{{ post.content|slice:":500"| safe }} <span>...</span></p>
+            <ul class="actions">
+                <li><a href="{% url 'post_detail' post.slug  %}" class="button">More</a></li>
+            </ul>
+        </article>
+        {% endfor %}
+        {% endif %}
     </div>
-    {% endfor %}
-
-    {% endif %}
-    <!-- Page Navigation -->
-    <div class="row mb-y py-5">
-        <div class="col-md-12">
-            {% if post_list.has_other_pages %}
-            <div aria-label="Page navigation container">
-                <ul class="pagination justify-content-center">
-                    {% if post_list.has_previous %}
-                    <li class="page-item mx-2">
-                        <a href="?page={{ post_list.previous_page_number }}" class="page-link" aria-label="Previous">
-                            <span aria-hidden="true">&laquo;Previous</span>
-                            <span class="sr-only">Previous</span>
-                        </a>
-                    </li>
-                    {% endif %} {% if post_list.has_next %}
-                    <li class="page-item mx-2">
-                        <a class="page-link" href="?page={{ post_list.next_page_number }}" aria-label="Next">
-                            <span aria-hidden="true">&raquo;Next</span>
-                            <span class="sr-only">Next</span>
-                        </a>
-                    </li>
-                    {% endif %}
-                    {% endif %}
-                </ul>
-            </div>
-        </div>
-    </div>
+</section>
+<!-- Page Navigation -->
+<div class="row">
+        {% if post_list.has_other_pages %}
+        <header class="major">
+        {% if post_list.has_previous %}
+            <a href="?page={{ post_list.previous_page_number }}" aria-label="Previous">
+                <span aria-hidden="true">&laquo;Previous</span>
+                <span class="sr-only">Previous</span>
+            </a>
+        {% endif %}
+        {% if post_list.has_next %}
+            <a href="?page={{ post_list.next_page_number }}" aria-label="Next">
+                <span aria-hidden="true">&raquo;Next</span>
+                <span class="sr-only">Next</span>
+            </a>
+        {% endif %}
+        {% endif %}
+        </header>
+</div>
 {% endblock content %}

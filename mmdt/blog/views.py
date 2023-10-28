@@ -15,18 +15,18 @@ class AboutUs(TemplateView):
     template_name = 'about.html'
 
 
-class ContactUs(TemplateView):
-    template_name = 'contact.html'
-
-
 class OurProject(TemplateView):
     template_name = 'index.html'
+
+
+class StProject(TemplateView):
+    template_name = 'st_project.html'
 
 
 class PostList(generic.ListView):
     def post_list(request):
         object_list = Post.objects.filter(status=1).order_by('-created_on')
-        paginator = Paginator(object_list, 5)
+        paginator = Paginator(object_list, 6)
         if request.method == 'GET':
             page = request.GET.get('page')
         try:

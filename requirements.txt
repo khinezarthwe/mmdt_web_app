@@ -14,3 +14,5 @@ Pillow==10.0.0
 boto3==1.28.44
 django-storages==1.14
 python-decouple==3.8
+numpy==1.26.1
+scikit-learn==1.2.2

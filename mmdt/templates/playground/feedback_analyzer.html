@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+<link rel="stylesheet" href="{% static 'assets/css/playground.css' %}"/>
+<section>
+    <header class="major">
+        <h3>Automatically sort "Open-ended survey response" into Positive, Negative or Neutral.</h3>
+    </header>
+    <form method="post">
+        <div class="form-group">
+        {% csrf_token %}
+        <h5>Enter Your Feedback Here!</h5>
+        {{ form.feedback }}
+            <br>
+        <button type="submit" class="button big">Classify Response</button>
+        </div>
+    </form>
+    <h5>Results: {{result}}</h5>
+    <h5>Confidence: {{confidence}}</h5>
+</section>
+{%endblock%}

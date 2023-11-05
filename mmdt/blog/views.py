@@ -1,14 +1,8 @@
 import pickle
-
 import numpy as np
-from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
-from django.shortcuts import get_object_or_404
-from django.shortcuts import render
 from django.views import generic
 from django.views.generic import TemplateView
-
-from .forms import CommentForm
-from .forms import FeedbackAnalyzerForm
+from .forms import CommentForm, FeedbackAnalyzerForm
 from .models import Post
 
 
@@ -28,49 +22,42 @@ class StProject(TemplateView):
     template_name = 'st_project.html'
 
 
+class PostListView(generic.ListView):
+    model = Post
+    template_name = 'post_list.html'
+    context_object_name = 'post_list'
+    paginate_by = 6
 
-class PostList(generic.ListView):
-    def post_list(request):
-        object_list = Post.objects.filter(status=1).order_by('-created_on')
-        paginator = Paginator(object_list, 6)
-        if request.method == 'GET':
-            page = request.GET.get('page')
-        try:
-            post_list = paginator.page(page)
-        except PageNotAnInteger:
-            post_list = paginator.page(1)
-        except EmptyPage:
-            # If page is out of range deliver last page of results
-            post_list = paginator.page(paginator.num_pages)
-        return render(request,
-                      'post_list.html',
-                      {'page': page,
-                       'post_list': post_list})
+    def get_queryset(self):
+        return Post.objects.filter(status=1).order_by('-created_on')
 
 
-class PostDetail(generic.DetailView):
-    def post_detail(request, slug):
-        post = get_object_or_404(Post, slug=slug)
-        if post:
-            post.view_count += 1
-            post.save()
-        comments = post.comments.filter(active=True)
-        new_comment = None    # Comment posted
-        if request.method == 'POST':
-            comment_form = CommentForm(data=request.POST)
-            if comment_form.is_valid():
-                # Create Comment object but don't save to database yet
-                new_comment = comment_form.save(commit=False)
-                # Assign the current post to the comment
-                new_comment.post = post
-                # Save the comment to the database
+class PostDetailView(generic.DetailView):
+    model = Post
+    template_name = 'post_detail.html'
+    context_object_name = 'post'
+
+    def get_object(self):
+        post = super().get_object()
+        post.view_count += 1
+        post.save()
+        return post
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['comments'] = self.object.comments.filter(active=True)
+
+        if self.request.method == 'POST':
+            context['comment_form'] = CommentForm(data=self.request.POST)
+            if context['comment_form'].is_valid():
+                new_comment = context['comment_form'].save(commit=False)
+                new_comment.post = self.object
                 new_comment.save()
+                context['new_comment'] = new_comment
         else:
-            comment_form = CommentForm()
-        return render(request, 'post_detail.html', {'post': post,
-                                               'comments': comments,
-                                               'new_comment': new_comment,
-                                               'comment_form': comment_form})
+            context['comment_form'] = CommentForm()
+
+        return context
 
 
 class PlayGround(generic.FormView):
@@ -80,7 +67,7 @@ class PlayGround(generic.FormView):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.cls = self.load_classifier()
-    
+
     @staticmethod
     def load_classifier():
         try:
@@ -105,4 +92,3 @@ class PlayGround(generic.FormView):
         result = y_class[0].title() if y_class else 0.0
         confidence = np.round(confidence[0][0], 3) if confidence is not None else "We can't estimate it"
         return self.render_to_response(self.get_context_data(form=form, result=result, confidence=confidence))
-

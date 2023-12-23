@@ -22,7 +22,7 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('blog.urls')),
-    path('polls/', include('polls.urls')),
+    path('polls/', include('polls.urls', namespace='polls')),
     path('summernote/', include('django_summernote.urls')),
 ]
 

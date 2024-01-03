@@ -4,6 +4,8 @@ from django.views import generic
 from django.views.generic import TemplateView
 from .forms import CommentForm, FeedbackAnalyzerForm
 from .models import Post
+from django.shortcuts import redirect,render
+from django.urls import reverse
 
 
 class Home(TemplateView):
@@ -47,6 +49,10 @@ class PostDetailView(generic.DetailView):
         context = super().get_context_data(**kwargs)
         context['comments'] = self.object.comments.filter(active=True)
 
+        if self.request.session.get('new_comment'):
+            context['new_comment'] = True
+            self.request.session.pop('new_comment')
+
         if self.request.method == 'POST':
             context['comment_form'] = CommentForm(data=self.request.POST)
             if context['comment_form'].is_valid():
@@ -58,6 +64,23 @@ class PostDetailView(generic.DetailView):
             context['comment_form'] = CommentForm()
 
         return context
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        context = self.get_context_data(**kwargs)
+        context["comments"] = self.object.comments.filter(active=True)
+        comment_form = CommentForm(request.POST)
+
+        if comment_form.is_valid():
+            new_comment = comment_form.save(commit=False)
+            new_comment.post = self.object
+            new_comment.save()
+            request.session["new_comment"] = True
+            return redirect(reverse("post_detail", kwargs={"slug": self.object.slug}))
+
+        context["comment_form"] = comment_form
+
+        return render(request, self.template_name, context)
 
 
 class PlayGround(generic.FormView):

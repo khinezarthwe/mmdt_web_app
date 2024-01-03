@@ -11,30 +11,32 @@
 {% endif %}
 <form action="{% url 'polls:vote' %}" method="post">
     {% csrf_token %}
-    {% for question in latest_question_list %}
-        <div>
-            <h4>{{ question.question_text }}</h4>
-            <!-- Display either voting options or results based on user_has_voted -->
-            {% if user_has_voted %}
-                <!-- Show results -->
-                {% for choice in question.choice_set.all %}
-                    <label>{{ choice.choice_text }}: {{ choice.votes }} vote{{ choice.votes|pluralize }}</label><br>
-                {% endfor %}
-            {% else %}
-                <!-- Show voting options -->
-                {% for choice in question.choice_set.all %}
-                    <input type="radio" name="question_{{ question.id }}" id="choice{{ choice.id }}" value="{{ choice.id }}">
-                    <label for="choice{{ choice.id }}">{{ choice.choice_text }}</label><br>
-                {% endfor %}
-            {% endif %}
-        </div>
-    {% empty %}
+    {% if latest_question_list %}
+        {% for question in latest_question_list %}
+            <div>
+                <h4>{{ question.question_text }}</h4>
+                <!-- Display either voting options or results based on user_has_voted -->
+                {% if user_has_voted %}
+                    <!-- Show results -->
+                    {% for choice in question.choice_set.all %}
+                        <label>{{ choice.choice_text }}: {{ choice.votes }} vote{{ choice.votes|pluralize }}</label><br>
+                    {% endfor %}
+                {% else %}
+                    <!-- Show voting options -->
+                    {% for choice in question.choice_set.all %}
+                        <input type="radio" name="question_{{ question.id }}" id="choice{{ choice.id }}" value="{{ choice.id }}">
+                        <label for="choice{{ choice.id }}">{{ choice.choice_text }}</label><br>
+                    {% endfor %}
+                {% endif %}
+            </div>
+        {% endfor %}
+        {% if user_has_voted %}
+            <a href="{% url 'polls:index' %}">Vote Again</a>
+        {% else %}
+            <input type="submit" value="Vote">
+        {% endif %}
+        {% else %}
         <p>No polls are available.</p>
-    {% endfor %}
-    {% if user_has_voted %}
-        <a href="{% url 'polls:index' %}">Vote Again</a>
-    {% else %}
-        <input type="submit" value="Vote">
     {% endif %}
 </form>
 {% endblock %}

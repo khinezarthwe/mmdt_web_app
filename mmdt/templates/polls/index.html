@@ -28,13 +28,13 @@
                 {% endfor %}
             {% endif %}
         </div>
+        {% if user_has_voted %}
+            <a href="{% url 'polls:index' %}">Vote Again</a>
+        {% else %}
+            <input type="submit" value="Vote">
+        {% endif %}
     {% empty %}
         <p>No polls are available.</p>
     {% endfor %}
-    {% if user_has_voted %}
-        <a href="{% url 'polls:index' %}">Vote Again</a>
-    {% else %}
-        <input type="submit" value="Vote">
-    {% endif %}
 </form>
 {% endblock %}

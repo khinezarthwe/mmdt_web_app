@@ -1,6 +1,8 @@
 import pickle
 import numpy as np
 from django.views import generic
+from django.urls import reverse_lazy
+from django.views.generic.edit import FormMixin
 from django.views.generic import TemplateView
 from .forms import CommentForm, FeedbackAnalyzerForm
 from .models import Post
@@ -32,10 +34,14 @@ class PostListView(generic.ListView):
         return Post.objects.filter(status=1).order_by('-created_on')
 
 
-class PostDetailView(generic.DetailView):
+class PostDetailView(generic.DetailView, FormMixin):
     model = Post
     template_name = 'post_detail.html'
     context_object_name = 'post'
+    form_class = CommentForm
+    
+    def get_success_url(self):
+        return reverse_lazy("post_detail", kwargs={'slug': self.object.slug})
 
     def get_object(self):
         post = super().get_object()
@@ -46,18 +52,22 @@ class PostDetailView(generic.DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['comments'] = self.object.comments.filter(active=True)
-
-        if self.request.method == 'POST':
-            context['comment_form'] = CommentForm(data=self.request.POST)
-            if context['comment_form'].is_valid():
-                new_comment = context['comment_form'].save(commit=False)
-                new_comment.post = self.object
-                new_comment.save()
-                context['new_comment'] = new_comment
-        else:
-            context['comment_form'] = CommentForm()
-
+        context['comment_form'] = self.get_form()
         return context
+    
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        form = self.get_form()
+        if form.is_valid():
+            return self.form_valid(form)
+        else:
+            return self.form_invalid(form)
+        
+    def form_valid(self, form):
+        form.instance.post = self.object
+        form.instance.active = True
+        form.save()
+        return super().form_valid(form)
 
 
 class PlayGround(generic.FormView):

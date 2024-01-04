@@ -25,14 +25,34 @@
         {% else %}
         <!-- Show voting options -->
         {% for choice in question.choice_set.all %}
-        <input type="radio" name="question_{{ question.id }}" id="choice{{ choice.id }}" value="{{ choice.id }}">
-        <label for="choice{{ choice.id }}">{{ choice.choice_text }}</label><br>
+        <!-- Bootstrap styling for radio buttons -->
+        <div class="form-check">
+            <input class="form-check-input" type="radio" name="question_{{ question.id }}" id="choice{{ choice.id }}"
+                value="{{ choice.id }}">
+            <label class="form-check-label" for="choice{{ choice.id }}">{{ choice.choice_text }}</label><br>
+        </div>
         {% endfor %}
         {% endif %}
     </div>
     {% empty %}
     <p>No polls are available.</p>
     {% endfor %}
+
+    <!-- Bootstrap Pagination -->
+    {% if latest_question_list.paginator.num_pages > 1 %}
+    <nav aria-label="Page navigation">
+        <ul class="pagination justify-content-center">
+            {% for page_num in latest_question_list.paginator.page_range %}
+            <li class="page-item {% if page_num == latest_question_list.number %}active{% endif %}">
+                <a class="page-link" href="?page={{ page_num }}">{{ page_num }}</a>
+            </li>
+            {% endfor %}
+        </ul>
+    </nav>
+    {% endif %}
+
+
+
     {% if not latest_question_list %}
     <!-- Hide the "Vote" input if no polls are available -->
     <style>
@@ -42,9 +62,11 @@
     </style>
     {% else %}
     {% if user_has_voted %}
-    <a href="{% url 'polls:index' %}">Vote Again</a>
+    <!-- "Vote Again" link -->
+    <a href="{% url 'polls:index' %}" class="btn btn-primary">Vote Again</a>
     {% else %}
-    <input type="submit" value="Vote">
+    <!-- Submit button for voting -->
+    <button type="submit" class="btn btn-primary">Vote</button>
     {% endif %}
     {% endif %}
 </form>

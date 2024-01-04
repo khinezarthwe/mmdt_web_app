@@ -3,38 +3,52 @@
 {% block content %}
 <h3>Latest Poll Questions</h3>
 {% if messages %}
-    <ul class="messages">
-        {% for message in messages %}
-            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+<ul class="messages">
+    {% for message in messages %}
+    <li{% if message.tags %} class="{{ message.tags }}" {% endif %}>{{ message }}</li>
         {% endfor %}
-    </ul>
+</ul>
 {% endif %}
+
+{% if latest_question_list %}
 <form action="{% url 'polls:vote' %}" method="post">
     {% csrf_token %}
     {% for question in latest_question_list %}
-        <div>
-            <h4>{{ question.question_text }}</h4>
-            <!-- Display either voting options or results based on user_has_voted -->
-            {% if user_has_voted %}
-                <!-- Show results -->
-                {% for choice in question.choice_set.all %}
-                    <label>{{ choice.choice_text }}: {{ choice.votes }} vote{{ choice.votes|pluralize }}</label><br>
-                {% endfor %}
-            {% else %}
-                <!-- Show voting options -->
-                {% for choice in question.choice_set.all %}
-                    <input type="radio" name="question_{{ question.id }}" id="choice{{ choice.id }}" value="{{ choice.id }}">
-                    <label for="choice{{ choice.id }}">{{ choice.choice_text }}</label><br>
-                {% endfor %}
-            {% endif %}
-        </div>
+    <div>
+        <h4>{{ question.question_text }}</h4>
+        <!-- Display either voting options or results based on user_has_voted -->
+        {% if user_has_voted %}
+        <!-- Show results -->
+        {% for choice in question.choice_set.all %}
+        <label>{{ choice.choice_text }}: {{ choice.votes }} vote{{ choice.votes|pluralize }}</label><br>
+        {% endfor %}
+        {% else %}
+        <!-- Show voting options -->
+        {% for choice in question.choice_set.all %}
+        <input type="radio" name="question_{{ question.id }}" id="choice{{ choice.id }}" value="{{ choice.id }}">
+        <label for="choice{{ choice.id }}">{{ choice.choice_text }}</label><br>
+        {% endfor %}
+        {% endif %}
+    </div>
     {% empty %}
-        <p>No polls are available.</p>
+    <p>No polls are available.</p>
     {% endfor %}
-    {% if user_has_voted %}
-        <a href="{% url 'polls:index' %}">Vote Again</a>
+    {% if not latest_question_list %}
+    <!-- Hide the "Vote" input if no polls are available -->
+    <style>
+        input[type="submit"] {
+            display: none;
+        }
+    </style>
     {% else %}
-        <input type="submit" value="Vote">
+    {% if user_has_voted %}
+    <a href="{% url 'polls:index' %}">Vote Again</a>
+    {% else %}
+    <input type="submit" value="Vote">
+    {% endif %}
     {% endif %}
 </form>
+{% else %}
+<p>No polls are available.</p>
+{% endif %}
 {% endblock %}

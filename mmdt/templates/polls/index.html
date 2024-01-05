@@ -32,9 +32,30 @@
         <p>No polls are available.</p>
     {% endfor %}
     {% if user_has_voted %}
-        <a href="{% url 'polls:index' %}">Vote Again</a>
+        <!-- <a href="{% url 'polls:vote' %}">Vote Again</a> -->
+        <input type="submit" name="vote_again" value="vote_again"><br><br>
     {% else %}
-        <input type="submit" value="Vote">
+        <input type="submit" value="Vote"><br><br>
+    {% endif %}
+    
+    {% if is_paginated %}
+        {% if latest_question_list.has_previous %}
+            <a href="?page=1" class="pagination_anchor">First</a>
+            <a href="?page={{ latest_question_list.previous_page_number }}" class="pagination_anchor">Previous</a>
+        {% endif %}
+
+        {% for num in latest_question_list.paginator.page_range %}
+            {% if latest_question_list.number == num %}
+                <a href="?page={{ num }}" class="pagination_anchor">{{ num }}</a>
+            {% elif num > latest_question_list.number|add:'-3' and num < latest_question_list.number|add:'3' %}
+                <a href="?page={{ num }}" class="pagination_anchor">{{ num }}</a>
+            {% endif %}
+        {% endfor %}
+
+        {% if latest_question_list.has_next %}
+            <a href="?page={{ latest_question_list.next_page_number }}" class="pagination_anchor">Next</a>
+            <a href="?page={{ latest_question_list.paginator.num_pages }}" class="pagination_anchor">Last</a>
+        {% endif %}
     {% endif %}
 </form>
 {% endblock %}

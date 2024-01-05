@@ -3,7 +3,7 @@
 {% block content %}
 <section>
 <div class="card mb-3">
-  <img class="card-img" src="{{ post.image.url }}" alt="Card image">
+  <img class="card-img" src="https://cdn.i-scmp.com/sites/default/files/styles/768x768/public/d8/images/canvas/2021/02/10/a558a6c8-f358-4e7a-a836-3a5f7d2fa2b5_bf3b50b7.jpg?itok=fuSKjNBE&v=1612941159" alt="Card image">
   <div class="card-body">
     <h5 class="card-title">{% block title %} {{ post.title }} {% endblock title %}</h5>
     <p class="card-text">{{ post.content | safe }}</p>
@@ -36,7 +36,7 @@
                 </div>
                 {% else %}
                 <h3>Leave a comment</h3>
-                <form method="post" style="margin-top: 1.3em;">
+                <form method="POST" style="margin-top: 1.3em;">
                     {{ comment_form | crispy }}
                     {% csrf_token %}
                     <button type="submit" class="button">Submit</button>

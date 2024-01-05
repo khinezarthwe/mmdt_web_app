@@ -1,4 +1,5 @@
 from django.http import HttpResponseRedirect
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.shortcuts import render
 from django.urls import reverse
 from django.contrib import messages
@@ -7,12 +8,25 @@ from .models import Question, Choice
 
 class PollHomePage:
     def index(request):
-        latest_question_list = Question.objects.order_by('-pub_date')[:5]
-        for question in latest_question_list:
+        questions = Question.objects.order_by('-pub_date').all()
+        paginator = Paginator(questions, 2)
+        page_number = request.GET.get("page")
+        try:
+            page_obj = paginator.get_page(page_number)
+        except PageNotAnInteger:
+            page_obj = paginator.get_page(1)
+        except EmptyPage:
+            page_obj = paginator.get_page(paginator.num_pages)
+        # latest_question_list = Question.objects.order_by('-pub_date')[:5]
+        for question in questions:
             question.choices = question.choice_set.all()
             question.voted = request.GET.get('voted') == 'true'
         user_has_voted = request.GET.get('voted') == 'true'
-        context = {'latest_question_list': latest_question_list, 'user_has_voted': user_has_voted}
+        context = {
+            'questions': page_obj, 
+            'user_has_voted': user_has_voted,
+            'paginator': paginator,
+        }
         return render(request, 'polls/index.html', context)
 
     def vote(request):

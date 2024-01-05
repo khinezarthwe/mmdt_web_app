@@ -9,6 +9,8 @@
         {% endfor %}
     </ul>
 {% endif %}
+
+{% if latest_question_list %}
 <form action="{% url 'polls:vote' %}" method="post">
     {% csrf_token %}
     {% for question in latest_question_list %}
@@ -28,8 +30,6 @@
                 {% endfor %}
             {% endif %}
         </div>
-    {% empty %}
-        <p>No polls are available.</p>
     {% endfor %}
     {% if user_has_voted %}
         <a href="{% url 'polls:index' %}">Vote Again</a>
@@ -37,4 +37,8 @@
         <input type="submit" value="Vote">
     {% endif %}
 </form>
+{% else %}
+<p>No polls are available.</p>
+{% endif %}
+
 {% endblock %}

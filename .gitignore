@@ -163,3 +163,7 @@ cython_debug/
 
 media/
 
+# custom
+.env
+.gitignore
+db.sqlite3

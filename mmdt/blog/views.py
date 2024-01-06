@@ -4,7 +4,7 @@ from django.views import generic
 from django.views.generic import TemplateView
 from .forms import CommentForm, FeedbackAnalyzerForm
 from .models import Post
-
+from django.urls import reverse
 
 class Home(TemplateView):
     template_name = 'index.html'
@@ -32,10 +32,11 @@ class PostListView(generic.ListView):
         return Post.objects.filter(status=1).order_by('-created_on')
 
 
-class PostDetailView(generic.DetailView):
+class PostDetailView(generic.DetailView, generic.edit.FormMixin):
     model = Post
     template_name = 'post_detail.html'
     context_object_name = 'post'
+    form_class = CommentForm
 
     def get_object(self):
         post = super().get_object()
@@ -43,21 +44,39 @@ class PostDetailView(generic.DetailView):
         post.save()
         return post
 
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['comments'] = self.object.comments.filter(active=True)
 
         if self.request.method == 'POST':
             context['comment_form'] = CommentForm(data=self.request.POST)
-            if context['comment_form'].is_valid():
-                new_comment = context['comment_form'].save(commit=False)
-                new_comment.post = self.object
-                new_comment.save()
-                context['new_comment'] = new_comment
         else:
             context['comment_form'] = CommentForm()
+            context['new_comment'] = self.object.comments.filter(active=False).order_by("-created_on")[:1]
 
         return context
+  
+    
+    def get_success_url(self) -> str:
+        return reverse("post_detail", kwargs={"slug": self.object.slug})
+
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        form = self.get_form()
+
+        if form.is_valid():
+            return self.form_valid(form)
+        else:
+            return self.form_invalid(form)
+    
+
+    def form_valid(self, form):
+        new_comment = form.save(commit=False)
+        new_comment.post = self.object
+        new_comment.save()
+        return super().form_valid(form)
 
 
 class PlayGround(generic.FormView):

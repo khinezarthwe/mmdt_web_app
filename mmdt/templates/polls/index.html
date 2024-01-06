@@ -34,13 +34,9 @@
     {% if user_has_voted %}
         <a href="{% url 'polls:index' %}">Vote Again</a>
     {% else %}
-    {% for question in latest_question_list %}
-        {% if question.choise_set %}
-        <input type="submit" value="Vote">
-        {% else %}
-        <input type="submit" value="Vote">
+        {% if latest_question_list %}
+            <input type="submit" value="Vote">
         {% endif %}
-    {% endfor %}
     {% endif %}
 </form>
 

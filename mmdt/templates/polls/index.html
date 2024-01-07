@@ -33,8 +33,7 @@
     {% endfor %}
     {% if user_has_voted %}
         <a href="{% url 'polls:index' %}">Vote Again</a>
-    {% else %}
-        <input type="submit" value="Vote">
+        <!-- Vote button removed -->
     {% endif %}
 </form>
 {% endblock %}

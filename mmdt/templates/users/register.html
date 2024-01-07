@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+  <h2>Register</h2>
+
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <input type="submit" value="Register" />
+  </form>
+
+  <p>
+    Already have an account? <a href="{% url 'login' %}{% if request.GET.next %}{{ '?next=' }}{% endif %}{{ request.GET.next }}">Login</a>
+  </p>
+{% endblock %}

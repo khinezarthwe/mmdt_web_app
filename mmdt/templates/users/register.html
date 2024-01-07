@@ -9,5 +9,7 @@
     <input type="submit" value="Register" />
   </form>
 
-  <a href="{% url 'login' %}">Back to login</a>
+  <p>
+    Already have an account? <a href="{% url 'login' %}{% if request.GET.next %}{{ '?next=' }}{% endif %}{{ request.GET.next }}">Login</a>
+  </p>
 {% endblock %}

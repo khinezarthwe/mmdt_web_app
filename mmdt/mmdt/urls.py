@@ -18,9 +18,11 @@ from django.conf import settings
 from django.contrib import admin
 from django.urls import path, include
 from django.conf.urls.static import static
+from users.views import register
 
 urlpatterns = [
     path("accounts/", include("django.contrib.auth.urls")),
+    path("register/", register, name="register"),
     path("admin/", admin.site.urls),
     path("", include("blog.urls")),
     path("polls/", include("polls.urls", namespace="polls")),

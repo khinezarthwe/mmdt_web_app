@@ -1,15 +1,18 @@
+from django.shortcuts import render, redirect
 from django.contrib.auth import login
-from django.shortcuts import redirect, render
-from django.urls import reverse
 from users.forms import CustomUserCreationForm
 
 
 def register(request):
-    if request.method == "GET":
-        return render(request, "users/register.html", {"form": CustomUserCreationForm})
+    form = CustomUserCreationForm()
+
     if request.method == "POST":
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
             user = form.save()
             login(request, user)
+            next_param = request.GET.get("next")
+            if next_param:
+                return redirect(next_param)
             return redirect("/")
+    return render(request, "users/register.html", {"form": form})

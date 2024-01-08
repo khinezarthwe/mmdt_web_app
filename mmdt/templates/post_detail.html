@@ -3,12 +3,17 @@
 {% block content %}
 <section>
 <div class="card mb-3">
-  <img class="card-img" src="{{ post.image.url }}" alt="Card image">
+    {% if post.image %}
+    <img class="card-img" src="{{ post.image.url }}" alt="Card image">
+    {% else %}
+    <img class="card-img" src="" alt="Card image">
+    {% endif %}
   <div class="card-body">
     <h5 class="card-title">{% block title %} {{ post.title }} {% endblock title %}</h5>
     <p class="card-text">{{ post.content | safe }}</p>
     <p class="card-text"><small class="text-muted">{{ post.view_count }} views | Author {{ post.author }} | {{ post.created_on }}</small></p>
-  </div>
+    <p class="card-text">{{comments.count}} comments</p>
+</div>
 </div>
 </section>
 <div class="col-md-8 card mb-4  mt-3 ">
@@ -36,7 +41,7 @@
                 </div>
                 {% else %}
                 <h3>Leave a comment</h3>
-                <form method="post" style="margin-top: 1.3em;">
+                <form method="POST" action="{% url 'post_detail' slug=post.slug %}" style="margin-top: 1.3em;">
                     {{ comment_form | crispy }}
                     {% csrf_token %}
                     <button type="submit" class="button">Submit</button>

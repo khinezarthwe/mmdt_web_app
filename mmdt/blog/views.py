@@ -4,7 +4,8 @@ from django.views import generic
 from django.views.generic import TemplateView
 from .forms import CommentForm, FeedbackAnalyzerForm
 from .models import Post
-
+from .forms import CommentForm
+from django.shortcuts import render
 
 class Home(TemplateView):
     template_name = 'index.html'
@@ -32,33 +33,26 @@ class PostListView(generic.ListView):
         return Post.objects.filter(status=1).order_by('-created_on')
 
 
-class PostDetailView(generic.DetailView):
-    model = Post
+class PostDetailView(generic.View):
     template_name = 'post_detail.html'
-    context_object_name = 'post'
 
-    def get_object(self):
-        post = super().get_object()
-        post.view_count += 1
-        post.save()
-        return post
+    def get(self, request, slug):
+        post = Post.objects.get(slug=slug)
+        comments = post.comments.filter(active=True)
+        comment_form = CommentForm()
+        return render(request, self.template_name, {'post': post, 'comments': comments, 'comment_form': comment_form})
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['comments'] = self.object.comments.filter(active=True)
+    def post(self, request, slug):
+        post = Post.objects.get(slug=slug)
+        comment_form = CommentForm(data=request.POST)
 
-        if self.request.method == 'POST':
-            context['comment_form'] = CommentForm(data=self.request.POST)
-            if context['comment_form'].is_valid():
-                new_comment = context['comment_form'].save(commit=False)
-                new_comment.post = self.object
-                new_comment.save()
-                context['new_comment'] = new_comment
-        else:
-            context['comment_form'] = CommentForm()
+        if comment_form.is_valid():
+            new_comment = comment_form.save(commit=False)
+            new_comment.post = post
+            new_comment.save()
 
-        return context
-
+        comments = post.comments.filter(active=True)
+        return render(request, self.template_name, {'post': post, 'comments': comments, 'comment_form': comment_form})
 
 class PlayGround(generic.FormView):
     template_name = 'playground/feedback_analyzer.html'

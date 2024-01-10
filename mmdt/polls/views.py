@@ -1,9 +1,12 @@
+import csv
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
 from django.contrib import messages
 from .models import Question, Choice
-
+from django.http import HttpResponse
+from django.contrib.auth.decorators import login_required
+from django.contrib.admin.views.decorators import staff_member_required
 
 class PollHomePage:
     def index(request):
@@ -37,5 +40,19 @@ class PollHomePage:
             messages.error(request, str(e))
             return HttpResponseRedirect(reverse('polls:index'))
 
+@login_required
+@staff_member_required
+def export_polls_result(request):
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="data_export.csv"'
 
+    writer = csv.writer(response)
+    writer.writerow(['Question', 'Choice', 'Votes'])
 
+    questions = Question.objects.all()
+    for question in questions:
+        choices = Choice.objects.filter(question=question)
+        for choice in choices:
+            writer.writerow([question.question_text, choice.choice_text, choice.votes])
+
+    return response

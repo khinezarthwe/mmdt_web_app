@@ -18,12 +18,14 @@ from django.conf import settings
 from django.contrib import admin
 from django.urls import path, include
 from django.conf.urls.static import static
+from polls.views import export_polls_result
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('blog.urls')),
     path('polls/', include('polls.urls', namespace='polls')),
     path('summernote/', include('django_summernote.urls')),
+    path('export-csv/', export_polls_result, name='export-csv'),
 ]
 
 if settings.DEBUG:

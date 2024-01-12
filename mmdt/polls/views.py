@@ -16,7 +16,8 @@ class PollHomePage:
         return render(request, 'polls/index.html', context)
 
     def vote(request):
-        questions = Question.objects.order_by('-pub_date')[:5]
+        # questions = Question.objects.order_by('-pub_date')[:5]
+        questions = Question.objects.filter(is_enabled=True).order_by('-pub_date')[:5]  # Only enabled polls
         try:
             for question in questions:
                 selected_choice_id = request.POST.get(f'question_{question.id}')

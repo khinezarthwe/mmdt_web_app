@@ -14,7 +14,7 @@
     {% for question in latest_question_list %}
         <div>
             <h4>{{ question.question_text }}</h4>
-            <!-- Display either voting options or results based on user_has_voted -->
+            <!-- Display voting options or results based on user_has_voted -->
             {% if user_has_voted %}
                 <!-- Show results -->
                 {% for choice in question.choice_set.all %}
@@ -23,20 +23,30 @@
             {% else %}
                 <!-- Show voting options -->
                 {% for choice in question.choice_set.all %}
-                    <input type="radio" name="question_{{ question.id }}" id="choice{{ choice.id }}" value="{{ choice.id }}">
-                    <label for="choice{{ choice.id }}">{{ choice.choice_text }}</label><br>
+                    {% if question.is_enabled %}
+                        <input type="radio" name="question_{{ question.id }}" id="choice{{ choice.id }}" value="{{ choice.id }}">
+                        <label for="choice{{ choice.id }}">{{ choice.choice_text }}</label><br>
+                    {% else %}
+                        <!-- Disable voting options for disabled polls -->
+                        <input type="radio" name="question_{{ question.id }}" id="choice{{ choice.id }}" value="{{ choice.id }}" disabled>
+                        <label for="choice{{ choice.id }}" style="color: #999;">{{ choice.choice_text }}</label><br>
+                    {% endif %}
                 {% endfor %}
+            {% endif %}
+            <!-- Display message for disabled polls -->
+            {% if not question.is_enabled %}
+                <p style="color: rgb(255, 94, 0);">This poll is currently disabled.</p>
             {% endif %}
         </div>
     {% empty %}
         <p>No polls are available.</p>
     {% endfor %}
-        {% if latest_question_list %}
-            {% if user_has_voted %}
-                <a href="{% url 'polls:index' %}">Vote Again</a>
-            {% else %}
-                <input type="submit" value="Vote">
-            {% endif %}
+    {% if latest_question_list %}
+        {% if user_has_voted %}
+            <a href="{% url 'polls:index' %}">Vote Again</a>
+        {% else %}
+            <input type="submit" value="Vote">
         {% endif %}
+    {% endif %}
 </form>
 {% endblock %}

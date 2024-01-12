@@ -31,10 +31,12 @@
     {% empty %}
         <p>No polls are available.</p>
     {% endfor %}
-    {% if user_has_voted %}
-        <a href="{% url 'polls:index' %}">Vote Again</a>
-    {% else %}
-        <input type="submit" value="Vote">
-    {% endif %}
+        {% if latest_question_list %}
+            {% if user_has_voted %}
+                <a href="{% url 'polls:index' %}">Vote Again</a>
+            {% else %}
+                <input type="submit" value="Vote">
+            {% endif %}
+        {% endif %}
 </form>
 {% endblock %}

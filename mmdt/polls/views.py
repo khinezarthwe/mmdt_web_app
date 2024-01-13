@@ -1,8 +1,9 @@
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render
 from django.urls import reverse
 from django.contrib import messages
 from .models import Question, Choice
+import csv
 
 
 class PollHomePage:
@@ -36,6 +37,19 @@ class PollHomePage:
             # Display an error message and redirect back to the index page
             messages.error(request, str(e))
             return HttpResponseRedirect(reverse('polls:index'))
+
+
+
+    def export_poll_as_csv(request):
+        response = HttpResponse(content_type = 'text/csv')
+
+        writer = csv.writer(response)
+        writer.writerow(["Question_Text", "Choice Text", "Votes"])
+        for poll in Choice.objects.all().value_list('question', 'choice_text', 'votes'):
+            writer.writerow(poll)
+
+        response['Content-Disposition'] = 'attachment; filename = "poll.csv"'
+        return response
 
 
 

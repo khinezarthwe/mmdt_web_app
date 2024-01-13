@@ -37,35 +37,31 @@
     {% empty %}
         <p>No polls are available.</p>
     {% endfor %}
-    <!-- Display pagination controls -->
-    <div class="pagination">
-        <span class="step-links">
-            {% if latest_question_list.has_previous %}
-                <a href="?page={{ latest_question_list.previous_page_number }}" class="btn btn-secondary">&laquo; Previous</a>
-            {% else %}
-                <a class="btn btn-secondary disabled" aria-disabled="true">Previous</a>
-            {% endif %}
-    
-            <span class="current">
-                Page {{ latest_question_list.number }} of {{ latest_question_list.paginator.num_pages }}
-            </span>
-    
-            {% if latest_question_list.has_next %}
-                <a href="?page={{ latest_question_list.next_page_number }}" class="btn btn-secondary">Next &raquo;</a>
-            {% else %}
-                <a class="btn btn-secondary disabled" aria-disabled="true">Next</a>
-            {% endif %}
-        </span>
-    </div>
-    
-    
-        
+    <!-- Display pagination controls only if there are polls -->
     {% if latest_question_list %}
-        {% if user_has_voted %}
-            <a href="{% url 'polls:index' %}">Vote Again</a>
-        {% else %}
-            <input type="submit" value="Vote">
-        {% endif %}
+        <div class="pagination">
+            <span class="step-links">
+                {% if latest_question_list.has_previous %}
+                    <a href="?page={{ latest_question_list.previous_page_number }}" class="btn btn-secondary">&laquo; Previous</a>
+                {% else %}
+                    <a class="btn btn-secondary disabled" aria-disabled="true">Previous</a>
+                {% endif %}
+    
+                <span class="current">
+                    Page {{ latest_question_list.number }} of {{ latest_question_list.paginator.num_pages }}
+                </span>
+    
+                {% if latest_question_list.has_next %}
+                    <a href="?page={{ latest_question_list.next_page_number }}" class="btn btn-secondary">Next &raquo;</a>
+                {% else %}
+                    <a class="btn btn-secondary disabled" aria-disabled="true">Next</a>
+                {% endif %}
+            </span>
+        </div>
+    {% endif %}
+    
+    {% if latest_question_list and not user_has_voted %}
+        <input type="submit" value="Vote">
     {% endif %}
 </form>
 {% endblock %}

@@ -34,7 +34,49 @@
     {% if user_has_voted %}
         <a href="{% url 'polls:index' %}">Vote Again</a>
     {% else %}
-        <input type="submit" value="Vote">
+    <!-- update here -->
+        {% if latest_question_list|length != 0 %}              
+            <input type="submit" value="Vote">
+        {% endif %}
     {% endif %}
 </form>
+
+{% for question in latest_question_list %}
+    {% if user_has_voted %}  
+        <div>
+            <canvas id="myChart_{{ question.id }}"></canvas>      
+        </div>
+
+        <script>
+            choiceArray = '';
+            voteArray = '';
+            choicesArray = [];
+            votesArray = [];
+            choiceArray = "{% for choice in question.choice_set.all %}{{ choice.choice_text }},{% endfor %}";
+            choicesArray = choiceArray.split(",");
+            voteArray = "{% for choice in question.choice_set.all %}{{ choice.votes }},{% endfor %}";
+            votesArray = voteArray.split(",");
+            new Chart(document.getElementById('myChart_{{ question.id }}'), {
+                type: 'bar',
+                data: {
+                    
+                    labels:  choicesArray,
+                    datasets: [{
+                        label: '{{ question.question_text }} of Votes',
+                        data: votesArray,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        </script> 
+    {% endif %}
+{% endfor %}
+
 {% endblock %}

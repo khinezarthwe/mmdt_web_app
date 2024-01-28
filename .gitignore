@@ -163,5 +163,5 @@ cython_debug/
 
 media/
 
-.mmdt/Scripts/
+mmdt/Scripts/
 

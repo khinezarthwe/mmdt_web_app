@@ -14,10 +14,20 @@ class QuestionAdmin(admin.ModelAdmin):
         ("Date information", {"fields": ["pub_date"]}),
     ]
     inlines = [ChoiceInline]
-    list_display = ["question_text", "pub_date", "was_published_recently"]
-    list_filter = ["pub_date"]
+    list_display = ["question_text", "pub_date", "was_published_recently", "is_enabled"]
+    list_filter = ["pub_date", "is_enabled"]
     search_fields = ["question_text"]
 
+    actions = ['enable_questions', 'disable_questions']
+
+    def enable_questions(self, request, queryset):
+        queryset.update(is_enabled=True)
+
+    def disable_questions(self, request, queryset):
+        queryset.update(is_enabled=False)
+
+    enable_questions.short_description = "Enable selected questions"
+    disable_questions.short_description = "Disable selected questions"
 
 admin.site.register(Question, QuestionAdmin)
 admin.site.register(Choice)

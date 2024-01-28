@@ -19,6 +19,10 @@ class PollHomePage:
         questions = Question.objects.order_by('-pub_date')[:5]
         try:
             for question in questions:
+                if not question.is_enabled:
+                    #if question is disabled, raise an error to prevent voting on that question
+                    raise ValueError(f'Voting is disabled for question "{question.question_text}".')
+                
                 selected_choice_id = request.POST.get(f'question_{question.id}')
                 if not selected_choice_id:
                     # If no choice was selected for a question, raise an error
@@ -27,8 +31,10 @@ class PollHomePage:
                 selected_choice = question.choice_set.get(pk=selected_choice_id)
                 selected_choice.votes += 1
                 selected_choice.save()
+
             if 'vote_again' in request.POST:
                 return HttpResponseRedirect(reverse('polls:index'))
+            
             # Redirect with 'voted' flag after successful voting
             return HttpResponseRedirect(reverse('polls:index') + "?voted=true")
 

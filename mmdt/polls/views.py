@@ -24,7 +24,7 @@ class PollHomePage:
             # If page is not an integer, deliver the first page.
             latest_question_list = paginator.page(1)
         except EmptyPage:
-            # If page is out of range (e.g. 9999), deliver the last page of results.
+            # If page is out of range, deliver the last page of results.
             latest_question_list = paginator.page(paginator.num_pages)
 
         for question in latest_question_list:

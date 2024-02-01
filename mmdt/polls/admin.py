@@ -10,7 +10,14 @@ class ChoiceInline(admin.TabularInline):
     extra = 3
 
 def export_to_csv(modeladmin, request, queryset):
-    response = HttpResponse(content_type = 'text/csv')
+    """
+    export_to_csv
+    :param modeladmin: The ModelAdmin instance.
+    :param request: The current request.
+    :param queryset: The queryset containing selected poll results.
+    :return: A CSV file response containing the poll results.
+    """
+    response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="poll_results.csv"'
     writer = csv.writer(response)
 
@@ -23,7 +30,8 @@ def export_to_csv(modeladmin, request, queryset):
             writer.writerow([question.question_text, choice.choice_text, choice.votes])
     return response
 
-export_to_csv.short_description = "Export Selected Questions to CSV"
+
+export_to_csv.short_description = 'Export Selected Questions to CSV'
 
 
 class QuestionAdmin(admin.ModelAdmin):

@@ -30,9 +30,6 @@
                     {% endif %}
                 {% endfor %}
             {% endif %}
-            {% if not question.is_enabled %}
-                <p style="color: rgb(255, 94, 0);">This poll is currently disabled.</p>
-            {% endif %}
         </div>
     {% empty %}
         <p>No polls are available.</p>

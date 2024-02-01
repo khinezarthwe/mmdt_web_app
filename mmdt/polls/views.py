@@ -8,7 +8,6 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 class PollHomePage:
     def index(request):
-        # Get all polls, not just the latest 5
         all_questions = Question.objects.order_by('-pub_date')
         
         # Set the number of polls to display per page

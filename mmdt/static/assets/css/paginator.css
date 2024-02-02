@@ -13,15 +13,7 @@
     gap: 10px;
 }
 
-.current {
-    display: inline-block;
-    font-size: 1rem;
-    color: rgb(250, 152, 5);
-    margin: 0 10px; 
-}
-
 .disabled {
     pointer-events: none;
     opacity: 0.5;
 }
-

@@ -8,8 +8,8 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 class PollHomePage:
     def index(request):
-        all_questions = Question.objects.order_by('-pub_date')
-        
+        # Only retrieve questions with is_enabled=True
+        all_questions = Question.objects.filter(is_enabled=True).order_by('-pub_date')        
         # Set the number of polls to display per page
         polls_per_page = 5
         paginator = Paginator(all_questions, polls_per_page)

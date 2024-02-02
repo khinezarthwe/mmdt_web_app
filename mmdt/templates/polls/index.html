@@ -1,7 +1,6 @@
 {% extends "base.html" %}
 {% load static %}
 {% block content %}
-<link rel="stylesheet" type="text/css" href="{% static 'assets/css/paginator.css' %}"/>
 <h3>Latest Poll Questions</h3>
 {% if messages %}
     <ul class="messages">
@@ -39,27 +38,27 @@
     <div class="pagination">
         <span class="step-links">
             {% if latest_question_list.has_previous %}
-                <a href="?page={{ latest_question_list.previous_page_number }}" class="btn btn-secondary">&laquo; Previous</a>
+                <button type="button" class="button" onclick="window.location='?page={{ latest_question_list.previous_page_number }}'">&laquo; Previous</button>
             {% else %}
-                <a class="btn btn-secondary disabled" aria-disabled="true">Previous</a>
+                <button type="button" class="button disabled" aria-disabled="true">Previous</button>
             {% endif %}
     
             {% for i in latest_question_list.paginator.page_range %}
                 {% if i == latest_question_list.number %}
-                    <span class="btn btn-primary border border-dark">{{ i }}</span>
+                    <button type="button" class="button" style="background-color: #003399 !important; color: white !important;">{{ i }}</button>
                 {% else %}
-                    <a href="?page={{ i }}" class="btn btn-secondary border border-dark">{{ i }}</a>
+                    <button type="button" class="button" onclick="window.location='?page={{ i }}'">{{ i }}</button>
                 {% endif %}
             {% endfor %}
     
             {% if latest_question_list.has_next %}
-                <a href="?page={{ latest_question_list.next_page_number }}" class="btn btn-secondary">Next &raquo;</a>
+                <button type="button" class="button" onclick="window.location='?page={{ latest_question_list.next_page_number }}'">Next &raquo;</button>
             {% else %}
-                <a class="btn btn-secondary disabled" aria-disabled="true">Next</a>
+                <button type="button" class="button disabled" aria-disabled="true">Next</button>
             {% endif %}
         </span>
     </div>
-    {% endif %}
+        {% endif %}
     
     {% if latest_question_list and not user_has_voted %}
         <input type="submit" value="Vote">

@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 import os
 from pathlib import Path
 
+from django.conf import settings
 from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -153,15 +154,24 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 
 X_FRAME_OPTIONS = 'SAMEORIGIN'
 
-AWS_ACCESS_KEY_ID = config('AWS_ACCESS_KEY_ID')
-AWS_SECRET_ACCESS_KEY = config('AWS_SECRET_ACCESS_KEY')
-AWS_STORAGE_BUCKET_NAME = config('AWS_STORAGE_BUCKET_NAME')
-AWS_S3_SIGNATURE_NAME = "s3v4"
-AWS_S3_REGION_NAME = "us-west-1"
-AWS_S3_FILE_OVERWRITE = False
-AWS_DEFAULT_ACL = None
-AWS_S3_VERITY = True
-DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+#Load AWS settings from .env file
+AWS_ACCESS_KEY_ID = config('AWS_ACCESS_KEY_ID', default = '')
+AWS_SECRET_ACCESS_KEY = config('AWS_SECRET_ACCESS_KEY', default = '')
+AWS_STORAGE_BUCKET_NAME = config('AWS_STORAGE_BUCKET_NAME', default = '')
+
+#Conditional S3 configuration
+if AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY and  AWS_STORAGE_BUCKET_NAME:
+    #AWS S3 settings
+    AWS_S3_SIGNATURE_NAME = "s3v4"
+    AWS_S3_REGION_NAME = "us-west-1"
+    AWS_S3_FILE_OVERWRITE = False
+    AWS_DEFAULT_ACL = None
+    AWS_S3_VERITY = True
+    DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+else:
+    #Local storage settings
+    MEDIA_URL = '/media/'
+    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 log_dir = os.path.join(BASE_DIR, 'logs')
 if not os.path.exists(log_dir):

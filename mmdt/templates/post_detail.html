@@ -3,12 +3,18 @@
   <div class="card mb-3">
     <!-- fallback mechanism to use default photo is there is no AWS S3 keys or no photos are uploaded from admin -->
     {% if post.image %}
-    <img class="card-img" src="{{ post.image.url }}" alt="Post image" />
+    <img
+      class="card-img"
+      src="{{ post.image.url }}"
+      alt="Post image"
+      style="width: 100%; height: 350px; object-fit: contain"
+    />
     {% else %}
     <img
       class="card-img"
       src="/static/blog/images/logo.png"
       alt="Default image"
+      style="width: 100%; height: 350px; object-fit: contain"
     />
     {% endif %}
     <div class="card-body">

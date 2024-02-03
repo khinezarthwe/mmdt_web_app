@@ -50,6 +50,7 @@ Let's set up the project step by step:
     AWS_SECRET_ACCESS_KEY = 'your AWS S3 secret key '
     AWS_STORAGE_BUCKET_NAME = 'your S3 bucketname '
     DEBUG = True or False
+    SECRET_KEY = 'xxxxx'
     ```
    
 

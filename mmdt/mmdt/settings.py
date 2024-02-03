@@ -23,13 +23,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure--ld-c!55j+l1gr@alfh&w#+flyd@r*y^wy_r+sokxv&i6d0%tg'
-
+SECRET_KEY = config("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', cast=bool)
 
 ALLOWED_HOSTS = ['mmdt.istarvz.com', 'mmdt-dev.thingaha.org', '127.0.0.1']
-
 
 # Application definition
 
@@ -67,7 +65,7 @@ ROOT_URLCONF = 'mmdt.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        #  Add  'TEMPLATE_DIRS' here
+        # Add 'TEMPLATE_DIRS' here
         'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
@@ -147,7 +145,7 @@ CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap4"
 
 CRISPY_TEMPLATE_PACK = "bootstrap4"
 
-#media info
+# Media info
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 

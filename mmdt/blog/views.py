@@ -4,7 +4,8 @@ from django.views import generic
 from django.views.generic import TemplateView
 from .forms import CommentForm, FeedbackAnalyzerForm
 from .models import Post
-
+from django.shortcuts import redirect
+from django.urls import reverse
 
 class Home(TemplateView):
     template_name = 'index.html'
@@ -37,7 +38,7 @@ class PostDetailView(generic.DetailView):
     template_name = 'post_detail.html'
     context_object_name = 'post'
 
-    def get_object(self):
+    def get_object(self, queryset=None):
         post = super().get_object()
         post.view_count += 1
         post.save()
@@ -46,19 +47,28 @@ class PostDetailView(generic.DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['comments'] = self.object.comments.filter(active=True)
-
-        if self.request.method == 'POST':
-            context['comment_form'] = CommentForm(data=self.request.POST)
-            if context['comment_form'].is_valid():
-                new_comment = context['comment_form'].save(commit=False)
-                new_comment.post = self.object
-                new_comment.save()
-                context['new_comment'] = new_comment
-        else:
+        # Ensure form is always in the context
+        if 'comment_form' not in context:
             context['comment_form'] = CommentForm()
-
         return context
-
+    
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        form = CommentForm(request.POST)
+        if form.is_valid():
+            new_comment = form.save(commit=False)
+            new_comment.post = self.object
+            new_comment.save()
+            # Redirect to prevent form resubmission
+            return redirect(reverse('post_detail', kwargs={'slug': self.object.slug}))
+        else:
+            # Add form with errors to the context and re-render the page
+            context = self.get_context_data(comment_form=form)
+            return self.render_to_response(context)
+        
+    # override post method to handle form submission
+    # if form is valid, save the comment and redirect to the post detail page
+    # if form is invalid, add the form with errors to the context and re-render the page
 
 class PlayGround(generic.FormView):
     template_name = 'playground/feedback_analyzer.html'

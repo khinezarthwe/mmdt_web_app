@@ -3,7 +3,7 @@ from django.shortcuts import render
 from django.urls import reverse
 from django.contrib import messages
 from .models import Question, Choice
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger,InvalidPage
 
 
 class PollHomePage:
@@ -35,9 +35,21 @@ class PollHomePage:
         return render(request, 'polls/index.html', context)
 
     def vote(request):
-        questions = Question.objects.filter(is_enabled=True).order_by('-pub_date')[:5]
+        # Get the current page number from the request's GET parameters
+        page = request.GET.get('page', 1)
+
+        # Retrieve questions for the current page
+        questions = Question.objects.filter(is_enabled=True).order_by('-pub_date')
+        paginator = Paginator(questions, 5)
+        
         try:
-            for question in questions:
+            current_page_questions = paginator.page(page)
+        except (EmptyPage, InvalidPage):
+            # If the page is out of range, deliver the last page of results.
+            current_page_questions = paginator.page(paginator.num_pages)
+
+        try:
+            for question in current_page_questions:
                 selected_choice_id = request.POST.get(f'question_{question.id}')
                 if not selected_choice_id:
                     # If no choice was selected for a question, raise an error
@@ -46,15 +58,13 @@ class PollHomePage:
                 selected_choice = question.choice_set.get(pk=selected_choice_id)
                 selected_choice.votes += 1
                 selected_choice.save()
+
             if 'vote_again' in request.POST:
-                return HttpResponseRedirect(reverse('polls:index'))
+                return HttpResponseRedirect(reverse('polls:index') + f"?page={page}")
             # Redirect with 'voted' flag after successful voting
-            return HttpResponseRedirect(reverse('polls:index') + "?voted=true")
+            return HttpResponseRedirect(reverse('polls:index') + f"?voted=true&page={page}")
 
         except (KeyError, Choice.DoesNotExist, ValueError) as e:
             # Display an error message and redirect back to the index page
             messages.error(request, str(e))
-            return HttpResponseRedirect(reverse('polls:index'))
-
-
-
+            return HttpResponseRedirect(reverse('polls:index') + f"?page={page}")

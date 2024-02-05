@@ -9,14 +9,14 @@
         {% endfor %}
     </ul>
 {% endif %}
-<form action="{% url 'polls:vote' %}" method="post">
+<form action="{% url 'polls:vote' %}?page={{ latest_question_list.number }}" method="post">
     {% csrf_token %}
     {% for question in latest_question_list %}
         <div>
             <h4>{{ question.question_text }}</h4>
             {% if user_has_voted %}
                 {% for choice in question.choice_set.all %}
-                    <label>{{ choice.choice_text }}: {{ choice.votes }} vote{{ choice.votes|pluralize }}</label><br>
+                    <label>{{ choice.choice_text }}: {{ choice.votes }} votes{{ choice.votes|pluralize }}</label><br>
                 {% endfor %}
             {% else %}
                 {% for choice in question.choice_set.all %}
@@ -47,7 +47,7 @@
                 {% if i == latest_question_list.number %}
                     <button type="button" class="button" style="background-color: #003399 !important; color: white !important;">{{ i }}</button>
                 {% else %}
-                    <button type="button" class="button" onclick="window.location='?page={{ i }}'">{{ i }}</button>
+                <button type="button" class="button" onclick="window.location='?page={{ i }}{% if user_has_voted %}&voted=true{% endif %}'">{{ i }}</button>
                 {% endif %}
             {% endfor %}
     
@@ -58,8 +58,13 @@
             {% endif %}
         </span>
     </div>
-        {% endif %}
+    {% endif %}
     
+    {% if user_has_voted %}
+    <a href="{% url 'polls:index' %}?page={{ latest_question_list.number }}" class="button underline">Vote Again</a>
+    {% endif %}
+
+
     {% if latest_question_list and not user_has_voted %}
         <input type="submit" value="Vote">
     {% endif %}

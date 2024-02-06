@@ -5,7 +5,6 @@ from django.contrib import messages
 from .models import Question, Choice
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger,InvalidPage
 
-
 class PollHomePage:
     def index(request):
         # Only retrieve questions with is_enabled=True

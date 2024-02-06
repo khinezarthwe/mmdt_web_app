@@ -64,7 +64,7 @@
     <a href="{% url 'polls:index' %}?page={{ latest_question_list.number }}" class="button underline">Vote Again</a>
     {% endif %}
 
-
+    
     {% if latest_question_list and not user_has_voted %}
         <input type="submit" value="Vote">
     {% endif %}

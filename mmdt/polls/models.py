@@ -8,7 +8,8 @@ from django.utils import timezone
 class Question(models.Model):
     question_text = models.CharField(max_length=200)
     pub_date = models.DateTimeField("date published")
-    is_enabled = models.BooleanField(default=True) 
+    is_enabled = models.BooleanField(default=True)
+    poll_group = models.CharField(max_length=50, default='Default')  
 
     def __str__(self):
         return self.question_text
@@ -30,3 +31,9 @@ class Choice(models.Model):
 
     def __str__(self):
         return self.choice_text
+
+class ActiveGroup(models.Model):
+    group_name = models.CharField(max_length=50, unique=True)
+
+    def __str__(self):
+        return self.group_name

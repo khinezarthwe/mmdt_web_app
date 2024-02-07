@@ -2,7 +2,7 @@ import csv
 from django.http import HttpResponse
 from django.contrib import admin
 
-from .models import Question, Choice
+from .models import Question, Choice, ActiveGroup
 
 
 class ChoiceInline(admin.TabularInline):
@@ -37,15 +37,17 @@ export_to_csv.short_description = 'Export Selected Questions to CSV'
 class QuestionAdmin(admin.ModelAdmin):
     fieldsets = [
         (None, {"fields": ["question_text"]}),
-        ("Date information", {"fields": ["pub_date", "is_enabled"]}),
+        ("Date information", {"fields": ["pub_date", "is_enabled", "poll_group"]}),
     ]
     inlines = [ChoiceInline]
-    list_display = ["question_text", "pub_date", "was_published_recently", "is_enabled"]
-    list_filter = ["pub_date", "is_enabled"]
+    list_display = ["question_text", "pub_date", "was_published_recently", "is_enabled", "poll_group"]
+    list_filter = ["pub_date", "is_enabled", "poll_group"]
     search_fields = ["question_text"]
     actions = [export_to_csv]
 
+class ActiveGroupAdmin(admin.ModelAdmin):
+    list_display = ['group_name']
+
 admin.site.register(Question, QuestionAdmin)
 admin.site.register(Choice)
-
-
+admin.site.register(ActiveGroup, ActiveGroupAdmin)

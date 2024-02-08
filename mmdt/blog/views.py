@@ -58,6 +58,7 @@ class PostDetailView(generic.DetailView):
         if form.is_valid():
             new_comment = form.save(commit=False)
             new_comment.post = self.object
+            new_comment.active = True # Explicitly set the comment as active
             new_comment.save()
             # Redirect to prevent form resubmission
             return redirect(reverse('post_detail', kwargs={'slug': self.object.slug}))

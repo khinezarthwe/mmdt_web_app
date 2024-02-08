@@ -32,8 +32,7 @@ class Comment(models.Model):
     email = models.EmailField()
     body = models.TextField()
     created_on = models.DateTimeField(auto_now_add=True)
-    # Change from default False to True
-    active = models.BooleanField(default=True)
+    active = models.BooleanField(default=False)
 
     class Meta:
         ordering = ['created_on']

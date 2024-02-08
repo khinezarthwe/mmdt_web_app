@@ -16,10 +16,14 @@ class CommentAdmin(admin.ModelAdmin):
     list_display = ('name', 'body', 'post', 'created_on', 'active')
     list_filter = ('active', 'created_on')
     search_fields = ('name', 'email', 'body')
-    actions = ['approve_comments']
-
-    def approve_comments(self, request, queryset):
-        queryset.update(active=True)
+    actions = ['toggle_comments_active']
+    
+    # Custom action to toggle active status of comments if there is any inappropriate comments
+    def toggle_comments_active(self, request, queryset):
+        for comment in queryset:
+            comment.active = not comment.active
+            comment.save()
+    toggle_comments_active.short_description = 'Toggle active status of selected comments'
 
 
 admin.site.register(Post, PostAdmin)

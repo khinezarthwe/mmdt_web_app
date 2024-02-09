@@ -4,11 +4,18 @@ from django.contrib import admin
 from django.db import models
 from django.utils import timezone
 
+class ActiveGroup(models.Model):
+    group_id = models.IntegerField(primary_key=True, default=1)
+    is_active = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"Group {self.group_id}"
 
 class Question(models.Model):
     question_text = models.CharField(max_length=200)
     pub_date = models.DateTimeField("date published")
     is_enabled = models.BooleanField(default=True) 
+    poll_group = models.ForeignKey(ActiveGroup, on_delete=models.CASCADE, related_name='questions', default=1)
 
     def __str__(self):
         return self.question_text
@@ -30,4 +37,3 @@ class Choice(models.Model):
 
     def __str__(self):
         return self.choice_text
-

@@ -185,16 +185,31 @@ LOGGING = {
     },
     'handlers': {
         'rotate_file': {
-            'level': 'DEBUG',
             'class': 'logging.handlers.RotatingFileHandler',
-            'filename': os.path.join(log_dir, 'django.log'),
-            'maxBytes': 10 * 1024 * 1024,
+            'filename': os.path.join(log_dir, 'django_rotated.log'),
+            'mode': 'a',
+            'maxBytes': 5 * 1024 * 1024, # if exceeds 5MB, a new log file will be created
+            'backupCount': 5,
+            'formatter': 'verbose',
+        },
+        'timed_rotate_file': {
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            'filename': os.path.join(log_dir, 'django_timed.log'),
+            'when': 'midnight', # rotate log file at midnight
+            'interval': 1, # rotate log file every day
             'backupCount': 5,
             'formatter': 'verbose',
         },
     },
+    'loggers': {
+        'django': {
+            'handlers': ['rotate_file', 'timed_rotate_file'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+    },
     'root': {
-        'handlers': ['rotate_file'],
+        'handlers': ['rotate_file', 'timed_rotate_file'],
         'level': 'INFO',
     },
 }

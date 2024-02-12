@@ -177,39 +177,27 @@ if not os.path.exists(log_dir):
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
-    'formatters': {
-        'verbose': {
-            'format': '{levelname} {asctime} {module} {message}',
-            'style': '{',
-        },
-    },
     'handlers': {
-        'rotate_file': {
-            'class': 'logging.handlers.RotatingFileHandler',
-            'filename': os.path.join(log_dir, 'django_rotated.log'),
-            'mode': 'a',
-            'maxBytes': 5 * 1024 * 1024, # if exceeds 5MB, a new log file will be created
-            'backupCount': 5,
-            'formatter': 'verbose',
-        },
         'timed_rotate_file': {
             'class': 'logging.handlers.TimedRotatingFileHandler',
             'filename': os.path.join(log_dir, 'django_timed.log'),
-            'when': 'midnight', # rotate log file at midnight
-            'interval': 1, # rotate log file every day
-            'backupCount': 5,
+            'when': 'midnight',  # Rotate log file at midnight, effectively once a day
+            'interval': 1,  # Interval set to 1, combined with 'midnight' means once a day
+            'backupCount': 30,  # Keep last 5 files
             'formatter': 'verbose',
+        },
+    },
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+            'style': '{',
         },
     },
     'loggers': {
         'django': {
-            'handlers': ['rotate_file', 'timed_rotate_file'],
+            'handlers': ['timed_rotate_file'],
             'level': 'INFO',
             'propagate': True,
         },
-    },
-    'root': {
-        'handlers': ['rotate_file', 'timed_rotate_file'],
-        'level': 'INFO',
     },
 }

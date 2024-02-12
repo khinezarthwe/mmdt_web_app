@@ -1,11 +1,14 @@
 import pickle
+
 import numpy as np
-from django.views import generic
-from django.views.generic import TemplateView
-from .forms import CommentForm, FeedbackAnalyzerForm
-from .models import Post
 from django.shortcuts import redirect
 from django.urls import reverse
+from django.views import generic
+from django.views.generic import TemplateView
+
+from .forms import CommentForm, FeedbackAnalyzerForm
+from .models import Post
+
 
 class Home(TemplateView):
     template_name = 'index.html'
@@ -70,6 +73,7 @@ class PostDetailView(generic.DetailView):
     # override post method to handle form submission
     # if form is valid, save the comment and redirect to the post detail page
     # if form is invalid, add the form with errors to the context and re-render the page
+
 
 class PlayGround(generic.FormView):
     template_name = 'playground/feedback_analyzer.html'

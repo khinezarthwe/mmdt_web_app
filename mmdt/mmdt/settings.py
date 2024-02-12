@@ -177,24 +177,27 @@ if not os.path.exists(log_dir):
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
-    'formatters': {
-        'verbose': {
-            'format': '{levelname} {asctime} {module} {message}',
-            'style': '{',
-        },
-    },
     'handlers': {
-        'rotate_file': {
-            'level': 'DEBUG',
-            'class': 'logging.handlers.RotatingFileHandler',
-            'filename': os.path.join(log_dir, 'django.log'),
-            'maxBytes': 10 * 1024 * 1024,
-            'backupCount': 5,
+        'timed_rotate_file': {
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            'filename': os.path.join(log_dir, 'django_timed.log'),
+            'when': 'midnight',  # Rotate log file at midnight, effectively once a day
+            'interval': 1,  # Interval set to 1, combined with 'midnight' means once a day
+            'backupCount': 30,  # Keep last 5 files
             'formatter': 'verbose',
         },
     },
-    'root': {
-        'handlers': ['rotate_file'],
-        'level': 'INFO',
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+            'style': '{',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['timed_rotate_file'],
+            'level': 'INFO',
+            'propagate': True,
+        },
     },
 }

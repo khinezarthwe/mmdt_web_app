@@ -35,7 +35,7 @@ export_to_csv.short_description = 'Export Selected Questions to CSV'
 
 class QuestionAdmin(admin.ModelAdmin):
     fieldsets = [
-        (None, {"fields": ["question_text"]}),
+        (None, {"fields": ["question_text", "image"]}), # Added image field
         ("Date information", {"fields": ["pub_date", "is_enabled"]}),
     ]
     inlines = [ChoiceInline]

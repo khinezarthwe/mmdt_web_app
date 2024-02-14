@@ -15,7 +15,7 @@ class Question(models.Model):
     question_text = models.CharField(max_length=200)
     pub_date = models.DateTimeField("date published")
     is_enabled = models.BooleanField(default=True) 
-    poll_group = models.ForeignKey(ActiveGroup, on_delete=models.CASCADE, related_name='questions', default=1)
+    poll_group = models.ForeignKey(ActiveGroup, on_delete=models.CASCADE, related_name='questions', null=True)
 
     def __str__(self):
         return self.question_text

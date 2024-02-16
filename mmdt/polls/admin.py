@@ -53,7 +53,16 @@ class QuestionAdmin(admin.ModelAdmin):
     disable_questions.short_description = 'Disable selected questions'
 
 class ActiveGroupAdmin(admin.ModelAdmin):
-    list_display = ['group_id', 'is_active']
+    list_display = ['group_name', 'group_id', 'is_active']
+    actions = ['activate_groups', 'deactivate_groups']
+
+    def activate_groups(self, request, queryset):
+        queryset.update(is_active=True)
+    activate_groups.short_description = 'Activate selected groups'
+
+    def deactivate_groups(self, request, queryset):
+        queryset.update(is_active=False)
+    deactivate_groups.short_description = 'Deactivate selected groups'
 
 admin.site.register(Question, QuestionAdmin)
 admin.site.register(Choice)

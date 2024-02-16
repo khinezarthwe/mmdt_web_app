@@ -18,6 +18,7 @@ class Question(models.Model):
     image = models.ImageField(upload_to="images/poll_images", blank=True, null=True) # New field for image upload 
     poll_group = models.ForeignKey(ActiveGroup, on_delete=models.CASCADE, related_name='questions', null=True)
 
+
     def __str__(self):
         return self.question_text
 

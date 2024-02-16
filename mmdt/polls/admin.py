@@ -4,7 +4,6 @@ from django.contrib import admin
 
 from .models import Question, Choice, ActiveGroup
 
-
 class ChoiceInline(admin.TabularInline):
     model = Choice
     extra = 3
@@ -43,7 +42,7 @@ class QuestionAdmin(admin.ModelAdmin):
     list_display = ["question_text", "pub_date", "was_published_recently", "is_enabled", "poll_group"]
     list_filter = ["pub_date", "is_enabled", "poll_group"]
     search_fields = ["question_text"]
-    actions = [export_to_csv]
+    actions = [export_to_csv, 'enable_questions', 'disable_questions']
 
 class ActiveGroupAdmin(admin.ModelAdmin):
     list_display = ['group_id', 'is_active']
@@ -51,5 +50,3 @@ class ActiveGroupAdmin(admin.ModelAdmin):
 admin.site.register(Question, QuestionAdmin)
 admin.site.register(Choice)
 admin.site.register(ActiveGroup, ActiveGroupAdmin)
-
-

@@ -2,13 +2,15 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
 from django.contrib import messages
-from .models import Question, Choice
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger,InvalidPage
+from .models import Question, Choice, ActiveGroup
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger, InvalidPage
 
 class PollHomePage:
     def index(request):
-        # Only retrieve questions with is_enabled=True
-        all_questions = Question.objects.filter(is_enabled=True).order_by('-pub_date')        
+         # Retrieve questions for all active groups with is_enabled=True
+        active_groups = ActiveGroup.objects.filter(is_active=True)
+        all_questions = Question.objects.filter(is_enabled=True, poll_group__in=active_groups.values_list('group_id', flat=True)).order_by('poll_group', '-pub_date')       
+       
         # Set the number of polls to display per page
         polls_per_page = 5
         paginator = Paginator(all_questions, polls_per_page)
@@ -36,9 +38,9 @@ class PollHomePage:
     def vote(request):
         # Get the current page number from the request's GET parameters
         page = request.GET.get('page', 1)
-
+        active_groups = ActiveGroup.objects.filter(is_active=True)
         # Retrieve questions for the current page
-        questions = Question.objects.filter(is_enabled=True).order_by('-pub_date')
+        questions = Question.objects.filter(is_enabled=True, poll_group__in=active_groups.values_list('group_id', flat=True)).order_by('poll_group', '-pub_date')  
         paginator = Paginator(questions, 5)
         
         try:

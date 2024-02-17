@@ -4,12 +4,20 @@ from django.contrib import admin
 from django.db import models
 from django.utils import timezone
 
+class ActiveGroup(models.Model):
+    group_name = models.CharField(max_length=200, default='DefaultGroupName')
+    group_id = models.AutoField(primary_key=True)
+    is_active = models.BooleanField(default=False)
 
+    def __str__(self):
+        return self.group_name
+    
 class Question(models.Model):
     question_text = models.CharField(max_length=200)
     pub_date = models.DateTimeField("date published")
     is_enabled = models.BooleanField(default=True) 
     image = models.ImageField(upload_to="images/poll_images", blank=True, null=True) # New field for image upload
+    poll_group = models.ForeignKey(ActiveGroup, on_delete=models.CASCADE, related_name='questions', null=True)
 
     def __str__(self):
         return self.question_text

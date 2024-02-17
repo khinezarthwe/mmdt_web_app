@@ -2,7 +2,7 @@ import csv
 from django.http import HttpResponse
 from django.contrib import admin
 
-from .models import Question, Choice
+from .models import Question, Choice, ActiveGroup
 
 class ChoiceInline(admin.TabularInline):
     model = Choice
@@ -36,11 +36,11 @@ export_to_csv.short_description = 'Export Selected Questions to CSV'
 class QuestionAdmin(admin.ModelAdmin):
     fieldsets = [
         (None, {"fields": ["question_text", "image"]}), # Added image field
-        ("Date information", {"fields": ["pub_date", "is_enabled"]}),
+        ("Date information", {"fields": ["pub_date", "is_enabled", "poll_group"]}),
     ]
     inlines = [ChoiceInline]
-    list_display = ["question_text", "pub_date", "was_published_recently", "is_enabled"]
-    list_filter = ["pub_date", "is_enabled"]
+    list_display = ["question_text", "pub_date", "was_published_recently", "is_enabled", "poll_group"]
+    list_filter = ["pub_date", "is_enabled", "poll_group"]
     search_fields = ["question_text"]
     actions = [export_to_csv, 'enable_questions', 'disable_questions']
 
@@ -52,5 +52,18 @@ class QuestionAdmin(admin.ModelAdmin):
         queryset.update(is_enabled=False)
     disable_questions.short_description = 'Disable selected questions'
 
+class ActiveGroupAdmin(admin.ModelAdmin):
+    list_display = ['group_name', 'group_id', 'is_active']
+    actions = ['activate_groups', 'deactivate_groups']
+
+    def activate_groups(self, request, queryset):
+        queryset.update(is_active=True)
+    activate_groups.short_description = 'Activate selected groups'
+
+    def deactivate_groups(self, request, queryset):
+        queryset.update(is_active=False)
+    deactivate_groups.short_description = 'Deactivate selected groups'
+
 admin.site.register(Question, QuestionAdmin)
 admin.site.register(Choice)
+admin.site.register(ActiveGroup, ActiveGroupAdmin)

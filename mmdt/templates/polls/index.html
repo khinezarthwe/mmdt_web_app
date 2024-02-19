@@ -52,7 +52,7 @@
 
                     {% for i in latest_question_list.paginator.page_range %}
                         {% if i == latest_question_list.number %}
-                            <button type="button" class="button" style="background-color: #003399 !important; color: white !important;">{{ i }}</button>
+                            <button type="button" class="button btn-custom">{{ i }}</button>
                         {% else %}
                             <button type="button" class="button" onclick="window.location='?page={{ i }}{% if user_has_voted %}&voted=true{% endif %}'">{{ i }}</button>
                         {% endif %}

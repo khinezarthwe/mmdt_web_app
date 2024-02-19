@@ -12,7 +12,7 @@
 <form action="{% url 'polls:vote' %}?page={{ latest_question_list.number }}" method="post">
     {% csrf_token %}
     {% if user_has_voted %}
-        <p class="vote-success-message" style="font-size: 32px; color: black;">🎉🎉 Thank you for voting! 😊😊</p>
+        <p class="vote-success-message">🎉🎉 Thank you for voting! 😊😊</p>
         <a href="{% url 'polls:index' %}?page={{ latest_question_list.number }}" class="button underline">Go Back</a>
         <a href="{% url 'polls:index' %}?page={{ latest_question_list.number }}" class="button underline">Vote Again</a>
     {% else %}
@@ -20,11 +20,11 @@
             <div>
                 <h4>{{ question.question_text }}</h4>
                 <!-- Display question image if exists and fallback mechanism of the default image if no image -->
-                <div style="margin-bottom: 20px;">
+                <div class="image-container">
                     {% if question.image %}
-                        <img src="{{ question.image.url }}" alt="Question Image" style="width: 100%; height: 350px; object-fit: contain; object-position: left;" />
+                        <img src="{{ question.image.url }}" alt="Question Image" class="question-image" />
                     {% else %}
-                        <img src="/static/blog/images/logo.png" alt="Default Image" style="max-width: 100%; height: auto;" />
+                        <img src="/static/blog/images/logo.png" alt="Default Image" class="default-image" />
                     {% endif %}
                 </div>
                 {% for choice in question.choice_set.all %}
@@ -33,7 +33,7 @@
                         <label for="choice{{ choice.id }}">{{ choice.choice_text }}</label><br>
                     {% else %}
                         <input type="radio" name="question_{{ question.id }}" id="choice{{ choice.id }}" value="{{ choice.id }}" disabled>
-                        <label for="choice{{ choice.id }}" style="color: #999;">{{ choice.choice_text }}</label><br>
+                        <label for="choice{{ choice.id }}" class="choice">{{ choice.choice_text }}</label><br>
                     {% endif %}
                 {% endfor %}
             </div>

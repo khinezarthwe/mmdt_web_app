@@ -23,7 +23,8 @@
             <div class="tab-pane fade {% if forloop.first %}show active{% endif %}" id="question-{{ question.id }}" role="tabpanel" aria-labelledby="question-tab-{{ question.id }}">
                 {% if is_admin %}
                     <canvas id="resultChart_{{ question.id }}" width="500" height="500"></canvas>
-                    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+                    <script src="{% static 'assets/js/chart.min.js' %}"></script>
+                    <script src="{% static 'assets/js/chart.js' %}"></script>
 
                     <script>
                         document.addEventListener('DOMContentLoaded', function () {
@@ -37,14 +38,14 @@
                                     datasets: [{
                                         data: resultsData.data,
                                         backgroundColor: [
-                                            'rgba(255, 255, 0, 0.7)',
-                                            'rgba(64, 0, 255, 0.7)',
-                                            'rgba(0, 128, 255, 0.7)'
+                                            '#f2c11d',
+                                            '#003399',
+                                            '#467df2'
                                         ],
                                         borderColor: [
-                                            'rgba(255, 255, 0, 0.7)',
-                                            'rgba(64, 0, 255, 0.7)',
-                                            'rgba(0, 128, 255, 0.7)'
+                                            '#f2c11d',
+                                            '#003399',
+                                            '#467df2'
                                         ],
                                         borderWidth: 1
                                     }]
@@ -61,25 +62,4 @@
         {% endfor %}
     </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            // Add event listener for tab change
-            $('#questionTabs a').on('click', function (e) {
-                e.preventDefault();
-                $(this).tab('show');
-            });
-
-            // Update URL hash on tab change
-            $('#questionTabs a').on('shown.bs.tab', function (e) {
-                var tabId = e.target.getAttribute('id');
-                window.location.hash = tabId;
-            });
-
-            // Activate tab based on URL hash
-            var hash = window.location.hash;
-            if (hash) {
-                $('#questionTabs a[href="' + hash + '"]').tab('show');
-            }
-        });
-    </script>
 {% endblock %}

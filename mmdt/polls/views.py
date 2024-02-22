@@ -1,9 +1,18 @@
-from django.http import HttpResponseRedirect
-from django.shortcuts import render
+from django.http import HttpResponseRedirect, HttpResponseForbidden
+from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
 from django.contrib import messages
 from .models import Question, Choice, ActiveGroup
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger, InvalidPage
+from django.contrib.auth.decorators import user_passes_test
+from django.contrib.admin.views.decorators import staff_member_required
+
+@staff_member_required
+def release_results(request, group_id):
+    group = get_object_or_404(ActiveGroup, pk=group_id)
+    group.is_results_released = True
+    group.save()
+    return HttpResponseRedirect(reverse('polls:all_results'))
 
 class PollHomePage:
     def index(request):
@@ -69,3 +78,32 @@ class PollHomePage:
             # Display an error message and redirect back to the index page
             messages.error(request, str(e))
             return HttpResponseRedirect(reverse('polls:index') + f"?page={page}")
+
+    @user_passes_test(lambda u: u.is_staff, login_url=None)  # Allow only staff members (admins)
+    def all_results(request):
+        # Fetch all questions with is_enabled=True for admins
+        all_questions = Question.objects.filter(is_enabled=True).order_by('poll_group', '-pub_date')
+
+        # If the user is not an admin, filter based on additional conditions
+        if not request.user.is_staff:
+            # Check if results are released
+            active_group = ActiveGroup.objects.filter(is_results_released=True).first()
+            if not active_group:
+                return HttpResponseForbidden("Results are not released yet.")
+
+            # Fetch questions related to the active group with additional conditions
+            all_questions = all_questions.filter(
+                poll_group=active_group,
+                poll_group__is_active=True
+            )
+
+        # If there are no questions meeting the conditions, return an appropriate response
+        if not all_questions:
+            return HttpResponseForbidden("No results available for the specified conditions.")
+
+        # Check if the user is an admin
+        is_admin = request.user.is_staff
+
+        return render(request, 'polls/all_results.html', {'all_questions': all_questions, 'is_admin': is_admin})
+
+        

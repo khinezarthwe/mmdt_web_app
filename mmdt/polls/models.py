@@ -8,6 +8,7 @@ class ActiveGroup(models.Model):
     group_name = models.CharField(max_length=200, default='DefaultGroupName')
     group_id = models.AutoField(primary_key=True)
     is_active = models.BooleanField(default=False)
+    is_results_released = models.BooleanField(default=False)
 
     def __str__(self):
         return self.group_name
@@ -30,6 +31,14 @@ class Question(models.Model):
     def was_published_recently(self):
         now = timezone.now()
         return now - datetime.timedelta(days=1) <= self.pub_date <= now
+    
+    def get_results_data(self):
+        choices = self.choice_set.all()
+        data = {
+            "labels": [f"{self.question_text}: {choice.choice_text}" for choice in choices],
+            "data": [choice.votes for choice in choices],
+        }
+        return data
 
 
 class Choice(models.Model):

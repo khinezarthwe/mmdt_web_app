@@ -7,14 +7,12 @@
       class="card-img"
       src="{{ post.image.url }}"
       alt="Post image"
-      style="width: 100%; height: 350px; object-fit: contain"
     />
     {% else %}
     <img
       class="card-img"
       src="/static/blog/images/logo.png"
       alt="Default image"
-      style="width: 100%; height: 350px; object-fit: contain"
     />
     {% endif %}
     <div class="card-body">
@@ -37,7 +35,7 @@
     <!-- comments -->
     <h2>{{ comments.count }} comments</h2>
     {% for comment in comments %}
-    <div class="comments" style="padding: 10px">
+    <div class="comments">
       <p class="font-weight-bold">
         {{ comment.name }}
         <span class="text-muted font-weight-normal">
@@ -57,7 +55,7 @@
     </div>
     {% else %}
     <h3>Leave a comment</h3>
-    <form method="post" style="margin-top: 1.3em">
+    <form method="post" class="cmt-submit">
       {{ comment_form | crispy }} {% csrf_token %}
       <button type="submit" class="button">Submit</button>
     </form>

@@ -1,0 +1,85 @@
+.btn-custom {
+    background-color: #003399; 
+    color: white !important;
+}
+
+.btn-custom:hover {
+    color:#003399 !important;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+.step-links {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.disabled {
+    pointer-events: none;
+    opacity: 0.5;
+}
+
+.underline:hover {
+    text-decoration: none;
+}
+
+p.vote-success-message {
+    font-size: 32px; 
+    color: black;
+}
+
+.choice {
+    color: #999;
+}
+
+.image-container {
+    margin-bottom: 20px;
+}
+
+.question-image {
+    width: 100%; 
+    height: 350px; 
+    object-fit: contain; 
+    object-position: left;
+}
+
+.default-image {
+    max-width: 100%; 
+    height: auto;
+}
+
+.logo {
+    width: 5em;
+    height: 5em;
+}
+
+.card-img {
+    width: 100%; 
+    height: 350px; 
+    object-fit: contain;
+}
+
+.comments {
+    padding: 10px;
+}
+
+.cmt-submit {
+    margin-top: 1.3em;
+}
+
+.view-btn {
+    margin-bottom: 1rem;
+    margin-left: 0.5rem;
+}
+
+.view-btn:hover {
+    text-decoration: none;
+}

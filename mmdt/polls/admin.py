@@ -53,8 +53,8 @@ class QuestionAdmin(admin.ModelAdmin):
     disable_questions.short_description = 'Disable selected questions'
 
 class ActiveGroupAdmin(admin.ModelAdmin):
-    list_display = ['group_name', 'group_id', 'is_active']
-    actions = ['activate_groups', 'deactivate_groups']
+    list_display = ['group_name', 'group_id', 'is_active', 'is_results_released']
+    actions = ['activate_groups', 'deactivate_groups', 'results_released', 'results_not_released']
 
     def activate_groups(self, request, queryset):
         queryset.update(is_active=True)
@@ -63,6 +63,14 @@ class ActiveGroupAdmin(admin.ModelAdmin):
     def deactivate_groups(self, request, queryset):
         queryset.update(is_active=False)
     deactivate_groups.short_description = 'Deactivate selected groups'
+
+    def results_released(self, request, queryset):
+        queryset.update(is_results_released=True)
+    results_released.short_description = "Released the results selected groups"
+    
+    def results_not_released(self, request, queryset):
+        queryset.update(is_results_released=False)
+    results_not_released.short_description = "Not released the results selected groups"
 
 admin.site.register(Question, QuestionAdmin)
 admin.site.register(Choice)

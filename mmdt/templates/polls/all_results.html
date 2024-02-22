@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+    {% if is_admin %}
+        <h2>Admin View - All Questions - Voting Results</h2>
+    {% else %}
+        <h2>All Questions - Voting Results</h2>
+    {% endif %}
+    
+    <ul class="nav nav-tabs" id="questionTabs" role="tablist">
+        {% for question in all_questions %}
+            <li class="nav-item">
+                <a class="nav-link {% if forloop.first %}active{% endif %}" id="question-tab-{{ question.id }}" 
+                data-toggle="tab" href="#question-{{ question.id }}" role="tab" aria-controls="question-{{ question.id }}" 
+                aria-selected="{% if forloop.first %}true{% else %}false{% endif %}">{{ question.question_text }}</a>
+            </li>
+        {% endfor %}
+    </ul>
+
+    <div class="tab-content">
+        {% for question in all_questions %}
+            <div class="tab-pane fade {% if forloop.first %}show active{% endif %}" id="question-{{ question.id }}" role="tabpanel" aria-labelledby="question-tab-{{ question.id }}">
+                {% if is_admin %}
+                    <canvas id="resultChart_{{ question.id }}" width="500" height="500"></canvas>
+                    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function () {
+                            var ctx = document.getElementById('resultChart_{{ question.id }}').getContext('2d');
+                            var resultsData = {{ question.get_results_data|safe }};
+                    
+                            new Chart(ctx, {
+                                type: 'pie',
+                                data: {
+                                    labels: resultsData.labels,
+                                    datasets: [{
+                                        data: resultsData.data,
+                                        backgroundColor: [
+                                            'rgba(255, 255, 0, 0.7)',
+                                            'rgba(64, 0, 255, 0.7)',
+                                            'rgba(0, 128, 255, 0.7)'
+                                        ],
+                                        borderColor: [
+                                            'rgba(255, 255, 0, 0.7)',
+                                            'rgba(64, 0, 255, 0.7)',
+                                            'rgba(0, 128, 255, 0.7)'
+                                        ],
+                                        borderWidth: 1
+                                    }]
+                                },
+                                options: {
+                                    responsive: false,
+                                    aspectRatio: 1, 
+                                }
+                            });
+                        });
+                    </script>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Add event listener for tab change
+            $('#questionTabs a').on('click', function (e) {
+                e.preventDefault();
+                $(this).tab('show');
+            });
+
+            // Update URL hash on tab change
+            $('#questionTabs a').on('shown.bs.tab', function (e) {
+                var tabId = e.target.getAttribute('id');
+                window.location.hash = tabId;
+            });
+
+            // Activate tab based on URL hash
+            var hash = window.location.hash;
+            if (hash) {
+                $('#questionTabs a[href="' + hash + '"]').tab('show');
+            }
+        });
+    </script>
+{% endblock %}

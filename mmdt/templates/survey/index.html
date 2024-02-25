@@ -1,0 +1,17 @@
+{% extends "base.html" %} {% load static %}
+<!-- survey/survey_form.html -->
+{% block content %}
+<h1>Survey Forms</h1>
+<ul>
+  {% for survey_form in survey_forms %}
+  <li>
+    <h2>{{ survey_form.title }}</h2>
+    <ul>
+      {% for question in survey_form.questions.all %}
+      <li>{{ question.text }}</li>
+      {% endfor %}
+    </ul>
+  </li>
+  {% endfor %}
+</ul>
+{% endblock %}

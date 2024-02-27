@@ -1,9 +1,25 @@
 from django.http import HttpResponseRedirect
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.contrib import messages
 from .models import Question, Choice, ActiveGroup
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger, InvalidPage
+
+from django.contrib.auth import login
+from .forms import CustomUserCreationForm
+
+def register(request):
+    if request.method == 'POST':
+        form = CustomUserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            return redirect('polls:index')
+    else:
+        form = CustomUserCreationForm()
+    
+    return render(request, 'polls/register.html', {'form': form})
+
 
 class PollHomePage:
     def index(request):
@@ -51,9 +67,14 @@ class PollHomePage:
 
         try:
             for question in current_page_questions:
+                # Check if the question requires registration
+                if question.poll_group and question.poll_group.registration_required and not request.user.is_authenticated:
+                    messages.warning(request, f'You need to log in to vote for the questions!!')
+                    return HttpResponseRedirect(reverse('polls:index') + f"?page={page}")
+                
+                # Proceed with normal logic
                 selected_choice_id = request.POST.get(f'question_{question.id}')
                 if not selected_choice_id:
-                    # If no choice was selected for a question, raise an error
                     raise ValueError(f'No choice selected for question "{question.question_text}".')
 
                 selected_choice = question.choice_set.get(pk=selected_choice_id)
@@ -69,3 +90,4 @@ class PollHomePage:
             # Display an error message and redirect back to the index page
             messages.error(request, str(e))
             return HttpResponseRedirect(reverse('polls:index') + f"?page={page}")
+            

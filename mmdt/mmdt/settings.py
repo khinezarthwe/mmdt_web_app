@@ -12,24 +12,20 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 import os
 from pathlib import Path
+
 from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure--ld-c!55j+l1gr@alfh&w#+flyd@r*y^wy_r+sokxv&i6d0%tg'
-
+SECRET_KEY = config("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
-ENVIRONMENT = os.getenv('ENVIRONMENT', 'development')
-
-if ENVIRONMENT == 'production':
-    DEBUG = config('DEBUG', default=False, cast=bool)
-else:
-    DEBUG = config('DEBUG', default=True, cast=bool)
+DEBUG = config('DEBUG', cast=bool)
 
 ALLOWED_HOSTS = ['mmdt.istarvz.com', 'mmdt-dev.thingaha.org', '127.0.0.1']
 
@@ -155,20 +151,24 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 
 X_FRAME_OPTIONS = 'SAMEORIGIN'
 
-# Use local file system storage for development
-if DEBUG:
-    DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
-else:
-    # Use S3 storage for production
-    AWS_ACCESS_KEY_ID = config('AWS_ACCESS_KEY_ID')
-    AWS_SECRET_ACCESS_KEY = config('AWS_SECRET_ACCESS_KEY')
-    AWS_STORAGE_BUCKET_NAME = config('AWS_STORAGE_BUCKET_NAME')
+#Load AWS settings from .env file
+AWS_ACCESS_KEY_ID = config('AWS_ACCESS_KEY_ID', default = '')
+AWS_SECRET_ACCESS_KEY = config('AWS_SECRET_ACCESS_KEY', default = '')
+AWS_STORAGE_BUCKET_NAME = config('AWS_STORAGE_BUCKET_NAME', default = '')
+
+#Conditional S3 configuration
+if AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY and  AWS_STORAGE_BUCKET_NAME:
+    #AWS S3 settings
     AWS_S3_SIGNATURE_NAME = "s3v4"
     AWS_S3_REGION_NAME = "us-west-1"
     AWS_S3_FILE_OVERWRITE = False
     AWS_DEFAULT_ACL = None
     AWS_S3_VERITY = True
     DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+else:
+    #Local storage settings
+    MEDIA_URL = '/media/'
+    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 log_dir = os.path.join(BASE_DIR, 'logs')
 if not os.path.exists(log_dir):
@@ -177,24 +177,29 @@ if not os.path.exists(log_dir):
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
-    'formatters': {
-        'verbose': {
-            'format': '{levelname} {asctime} {module} {message}',
-            'style': '{',
-        },
-    },
     'handlers': {
-        'rotate_file': {
-            'level': 'DEBUG',
-            'class': 'logging.handlers.RotatingFileHandler',
-            'filename': os.path.join(log_dir, 'django.log'),
-            'maxBytes': 10 * 1024 * 1024,
-            'backupCount': 5,
+        'timed_rotate_file': {
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            'filename': os.path.join(log_dir, 'django_timed.log'),
+            'when': 'midnight',  # Rotate log file at midnight, effectively once a day
+            'interval': 1,  # Interval set to 1, combined with 'midnight' means once a day
+            'backupCount': 30,  # Keep last 5 files
             'formatter': 'verbose',
         },
     },
-    'root': {
-        'handlers': ['rotate_file'],
-        'level': 'INFO',
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+            'style': '{',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['timed_rotate_file'],
+            'level': 'INFO',
+            'propagate': True,
+        },
     },
 }
+
+LOGIN_REDIRECT_URL = 'polls:index'

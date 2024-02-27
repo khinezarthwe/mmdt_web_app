@@ -53,8 +53,12 @@ class QuestionAdmin(admin.ModelAdmin):
     disable_questions.short_description = 'Disable selected questions'
 
 class ActiveGroupAdmin(admin.ModelAdmin):
-    list_display = ['group_name', 'group_id', 'is_active']
-    actions = ['activate_groups', 'deactivate_groups']
+    fieldsets = [
+        ("Poll Options", {"fields": ["registration_required"]}), 
+    ]
+    list_display = ['group_name', 'group_id', 'is_active', 'registration_required']
+    list_filter = ["registration_required"]
+    actions = ['activate_groups', 'deactivate_groups', 'registration_questions', 'guests_questions']
 
     def activate_groups(self, request, queryset):
         queryset.update(is_active=True)
@@ -63,6 +67,14 @@ class ActiveGroupAdmin(admin.ModelAdmin):
     def deactivate_groups(self, request, queryset):
         queryset.update(is_active=False)
     deactivate_groups.short_description = 'Deactivate selected groups'
+
+    def registration_questions(self, request, queryset):
+        queryset.update(registration_required=True)
+    registration_questions.short_description = 'Registrations required selected questions'
+
+    def guests_questions(self, request, queryset):
+        queryset.update(registration_required=False)
+    guests_questions.short_description = 'Registrations are not required selected questions'
 
 admin.site.register(Question, QuestionAdmin)
 admin.site.register(Choice)

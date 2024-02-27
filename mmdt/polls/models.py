@@ -8,6 +8,7 @@ class ActiveGroup(models.Model):
     group_name = models.CharField(max_length=200, default='DefaultGroupName')
     group_id = models.AutoField(primary_key=True)
     is_active = models.BooleanField(default=False)
+    registration_required = models.BooleanField(default=False)
 
     def __str__(self):
         return self.group_name

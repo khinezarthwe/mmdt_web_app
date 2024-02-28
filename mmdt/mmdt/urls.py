@@ -19,13 +19,15 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf.urls.static import static
 from django.contrib.auth import views as auth_views
+from django.contrib.auth.views import LoginView, LogoutView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('blog.urls')),
     path('polls/', include('polls.urls', namespace='polls')),
     path('summernote/', include('django_summernote.urls')),
-    path('accounts/', include('django.contrib.auth.urls')),
+    path('accounts/login/', LoginView.as_view(template_name='registration/login.html'), name='login'),
+    path('accounts/logout/', LogoutView.as_view(next_page='/'), name='logout'),
 ]
 
 if settings.DEBUG:

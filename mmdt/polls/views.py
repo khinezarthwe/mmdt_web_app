@@ -90,4 +90,3 @@ class PollHomePage:
             # Display an error message and redirect back to the index page
             messages.error(request, str(e))
             return HttpResponseRedirect(reverse('polls:index') + f"?page={page}")
-            

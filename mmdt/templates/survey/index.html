@@ -1,20 +1,10 @@
 {% extends "base.html" %} {% block content %}
-<form method="post">
-  {% csrf_token %}
-  <h2>User Surveys</h2>
-  {% for form in page_obj %}
-  <h3>{{ form.form_name }}</h3>
-  {% for question in form.questions.all %}
-  <div style="margin-bottom: 10px">
-    <label for="response_{{ question.id }}">{{ question.question_name }}</label>
-    <input
-      type="text"
-      id="response_{{ question.id }}"
-      name="response_{{ question.id }}"
-      style="width: 65%"
-    />
-  </div>
-  {% endfor %} {% endfor %}
-  <button type="submit" style="margin-top: 10px">Submit</button>
-</form>
+<h1>Active Surveys</h1>
+<ul>
+  {% for survey in surveys %}
+  <li>
+    <a href="{% url 'survey:survey_detail' survey.id %}">{{ survey.title }}</a>
+  </li>
+  {% endfor %}
+</ul>
 {% endblock %}

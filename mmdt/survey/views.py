@@ -1,30 +1,24 @@
-from django.shortcuts import render, redirect
-from .models import SurveyForm, Response
-from django.core.paginator import Paginator
+from django.shortcuts import render, redirect, get_object_or_404
+from .models import Survey, Response, Question
+from .forms import create_survey_form
 
 class SurveyPage:
     def index(request):
-        # Check if the request method is POST (indicating form submission)
+        surveys = Survey.objects.filter(is_active=True)
+        return render(request, 'survey/index.html', {'surveys': surveys})
+
+    def survey_detail(request, survey_id):
+        survey = get_object_or_404(Survey, pk=survey_id)
+        SurveyForm = create_survey_form(survey)
+        
         if request.method == "POST":
-            # Iterate through the POST data and create a Response object for each response
-            for key, value in request.POST.items():
-                # Check if the key starts with 'response_' to identify survey responses
-                if key.startswith('response_'):
-                    # Extract the question ID from the key
-                    question_id = key.split('_')[1]
-                    text = value # The actual response text
-                    # If the response text is not empty, create a new Response object
-                    if text:
-                        Response.objects.create(question_id=question_id, text=text)
-            # Redirect to the survey page
-            return redirect('/survey')
-        # Fetch active survey forms and prefetch related questions
-        active_forms = SurveyForm.objects.filter(is_active=True).prefetch_related('questions')
-        # Pagination or future use
-        paginator = Paginator(active_forms, 5)
-
-        page_number = request.GET.get('page')
-        page_obj = paginator.get_page(page_number)
-
-        context = {'page_obj': page_obj}
-        return render(request, 'survey/index.html', context)
+            form = SurveyForm(request.POST)
+            if form.is_valid():
+                for question in survey.questions.all():
+                    response_text = form.cleaned_data.get(f'question_{question.id}')
+                    if response_text:
+                        Response.objects.create(question=question, response_text=response_text)
+                return redirect('survey:index')
+        else:
+            form = SurveyForm()
+        return render(request, 'survey/survey_detail.html', {'survey': survey, 'form': form})

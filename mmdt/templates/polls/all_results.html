@@ -3,9 +3,9 @@
 
 {% block content %}
     {% if is_admin %}
-        <h2>Admin View - All Questions - Voting Results</h2>
+        <h2>Admin View - All Questions Voting Results</h2>
     {% else %}
-        <h2>All Questions - Voting Results</h2>
+        <h2>All Questions Voting Results</h2>
     {% endif %}
     
     <ul class="nav nav-tabs" id="questionTabs" role="tablist">
@@ -21,43 +21,23 @@
     <div class="tab-content">
         {% for question in all_questions %}
             <div class="tab-pane fade {% if forloop.first %}show active{% endif %}" id="question-{{ question.id }}" role="tabpanel" aria-labelledby="question-tab-{{ question.id }}">
-                    <canvas id="resultChart_{{ question.id }}" width="500" height="500"></canvas>
-                    <script src="{% static 'assets/js/chart.min.js' %}"></script>
-                    <script src="{% static 'assets/js/chart.js' %}"></script>
-
-                    <script>
-                        document.addEventListener('DOMContentLoaded', function () {
-                            var ctx = document.getElementById('resultChart_{{ question.id }}').getContext('2d');
-                            var resultsData = {{ question.get_results_data|safe }};
-                    
-                            new Chart(ctx, {
-                                type: 'pie',
-                                data: {
-                                    labels: resultsData.labels,
-                                    datasets: [{
-                                        data: resultsData.data,
-                                        backgroundColor: [
-                                            '#f2c11d',
-                                            '#003399',
-                                            '#467df2'
-                                        ],
-                                        borderColor: [
-                                            '#f2c11d',
-                                            '#003399',
-                                            '#467df2'
-                                        ],
-                                        borderWidth: 1
-                                    }]
-                                },
-                                options: {
-                                    responsive: false,
-                                    aspectRatio: 1, 
-                                }
-                            });
-                        });
-                    </script>
+                <canvas id="resultChart_{{ question.id }}" width="500" height="500"></canvas>
             </div>
         {% endfor %}
     </div>
+
+    <script src="{% static 'assets/js/chart.min.js' %}"></script>
+    <script src="{% static 'assets/js/chart.js' %}"></script>
+    <script>
+        var allQuestionsData = [
+            {% for question in all_questions %}
+                {
+                    id: {{ question.id }},
+                    resultsData: {{ question.get_results_data|safe }}
+                },
+            {% endfor %}
+        ];
+    </script>
+    <script src="{% static 'assets/js/chartScript.js' %}"></script>
 
 {% endblock %}

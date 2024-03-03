@@ -137,4 +137,8 @@ p.vote-success-message {
   a:hover {
     text-decoration: underline;
   }
+
+  .view-btn:hover {
+    text-decoration: none;
+  }
   

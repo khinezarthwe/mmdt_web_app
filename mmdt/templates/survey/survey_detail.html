@@ -1,28 +1,61 @@
 {% extends "base.html" %}
 {% block content %}
-<h1>{{ survey.title }}</h1>
-<form method="post">
-  {% csrf_token %}
-  {% for question in survey.questions.all %}
-    <div class="questions">
-      <h4>{{ question.question_text }}</h4>
-      {% if question.question_type == question.MULTIPLE_CHOICE %}
-        {% for choice in question.choices.all %}
-          <input type="radio" name="question_{{ question.id }}" id="choice{{ choice.id }}" value="{{ choice.id }}">
-          <label for="choice{{ choice.id }}">{{ choice.choice_text }}</label><br>
-        {% endfor %}
-      {% elif question.question_type == question.CHECKBOX %}
-        {% for choice in question.choices.all %}
-          <input type="checkbox" name="question_{{ question.id }}[]" id="choice{{ choice.id }}" value="{{ choice.id }}">
-          <label for="choice{{ choice.id }}">{{ choice.choice_text }}</label><br>
-        {% endfor %}
-      {% elif question.question_type == question.TEXT %}
-        <input type="text" name="question_{{ question.id }}" id="text_question{{ question.id }}">
-      {% elif question.question_type == question.LONG_TEXT %}
-        <textarea name="question_{{ question.id }}" id="long_text_question{{ question.id }}"></textarea>
-      {% endif %}
-    </div>
-  {% endfor %}
-  <button type="submit">Submit</button>
-</form>
+  <h1>{{ survey.title }}</h1>
+  {% if messages %}
+    <ul class="messages">
+      {% for message in messages %}
+        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+  <form method="post">
+    {% csrf_token %}
+    {% for question in current_page_questions %}
+      <div class="questions">
+        <h4>{{ question.question_text }}</h4>
+        {% if question.question_type == question.MULTIPLE_CHOICE %}
+          {% for choice in question.choices.all %}
+            <input type="radio" name="question_{{ question.id }}" id="choice{{ choice.id }}" value="{{ choice.id }}">
+            <label for="choice{{ choice.id }}">{{ choice.choice_text }}</label><br>
+          {% endfor %}
+        {% elif question.question_type == question.CHECKBOX %}
+          {% for choice in question.choices.all %}
+            <input type="checkbox" name="question_{{ question.id }}" id="choice{{ choice.id }}" value="{{ choice.id }}">
+            <label for="choice{{ choice.id }}">{{ choice.choice_text }}</label><br>
+          {% endfor %}
+        {% elif question.question_type == question.TEXT %}
+          <input type="text" name="question_{{ question.id }}" id="text_question{{ question.id }}">
+        {% elif question.question_type == question.LONG_TEXT %}
+          <textarea name="question_{{ question.id }}" id="long_text_question{{ question.id }}"></textarea>
+        {% endif %}
+      </div>
+    {% endfor %}
+    <!-- Display pagination links for questions -->
+    {% if current_page_questions %}
+        <div class="pagination">
+            <span class="step-links">
+                {% if current_page_questions.has_previous %}
+                    <button type="button" class="button" onclick="window.location='?page={{ current_page_questions.previous_page_number }}'">&laquo; Previous</button>
+                {% else %}
+                    <button type="button" class="button disabled" aria-disabled="true">Previous</button>
+                {% endif %}
+
+                {% for i in current_page_questions.paginator.page_range %}
+                    {% if i == current_page_questions.number %}
+                        <button type="button" class="button btn-custom">{{ i }}</button>
+                    {% else %}
+                        <button type="button" class="button" onclick="window.location='?page={{ i }}'">{{ i }}</button>
+                    {% endif %}
+                {% endfor %}
+
+                {% if current_page_questions.has_next %}
+                    <button type="button" class="button" onclick="window.location='?page={{ current_page_questions.next_page_number }}'">Next &raquo;</button>
+                {% else %}
+                    <button type="button" class="button disabled" aria-disabled="true">Next</button>
+                {% endif %}
+            </span>
+        </div>
+    {% endif %}
+    <button type="submit">Submit</button>
+  </form>
 {% endblock %}

@@ -54,6 +54,24 @@
                         </ul>
                     </li>
                     <li><a href="{% url 'polls:index' %}">Current Opening Survey</a></li>
+
+                    <li>
+                        {% if user.is_authenticated %}
+                            <!-- If the user is authenticated, show their username and a dropdown with Logout -->
+                            <span class="opener">{{ user.username }}</span>
+                            <ul>
+                                <li><a href="{% url 'logout' %}">Logout</a></li>
+                            </ul>
+                        {% else %}
+                            <!-- If the user is not authenticated, show a dropdown with Login and Register -->
+                            <span class="opener">User Profile</span>
+                            <ul>
+                                <li><a href="{% url 'polls:login' %}">Login</a></li>
+                                <li><a href="{% url 'polls:register' %}">Register</a></li>
+                            </ul>
+                        {% endif %}
+                    </li>
+
                 </ul>
             </nav>
             <!-- Section -->
@@ -73,6 +91,7 @@
 <script src="{% static 'assets/js/breakpoints.min.js'%}"></script>
 <script src="{% static 'assets/js/util.js' %}"></script>
 <script src="{% static 'assets/js/main.js' %}"></script>
+<script src="{% static 'assets/js/bootstrap.min.js' %}"></script>
 </div>
 </body>
 </html>

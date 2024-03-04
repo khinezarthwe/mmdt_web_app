@@ -69,6 +69,13 @@
         {% if latest_question_list %}
             <input type="submit" value="Vote">
         {% endif %}
+        {% if is_admin %}
+        <!-- Display "View Results" button for admins -->
+            <a href="{% url 'polls:all_results' %}" class="button view-btn">View Results</a>
+        {% elif results_released %}
+        <!-- Display "View Results" button for normal users if results are released -->
+            <a href="{% url 'polls:all_results' %}" class="button view-btn">View Results</a>
+        {% endif %}
     {% endif %}
 </form>
 {% endblock %}

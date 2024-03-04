@@ -78,3 +78,71 @@ p.vote-success-message {
 .questions {
     margin-bottom: 1.3rem;
 }
+
+.messages .warning {
+    color: red;
+    text-shadow: 0 5px 12px #ffe602;
+    font-family: "Roboto Slab", serif;
+    font-weight: 700;
+}
+
+.card {
+    max-width: 500px;
+    margin: auto;
+    margin-top: 2rem;
+    padding: 20px;
+    border: 2px solid #003399;
+    border-radius: 5px;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+  }
+  
+  h2.title {
+    text-align: center;
+    color: #003399;
+  }
+  
+  label {
+    margin-bottom: 3px;
+    font-size: 1rem;
+  }
+  
+  input {
+    padding: 10px;
+    margin-bottom: 1.3rem;
+    border: 1px solid #cccbcb;
+    border-radius: 4px;
+  }
+
+.auth-form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .form-button {
+    margin-top: 10px;
+  }
+  
+  button:hover {
+    background-color: #003399;
+    color: white !important;
+  }
+  
+  p {
+    text-align: center;
+    margin-top: 16px;
+  }
+  
+  a {
+    color: #3498db;
+    text-decoration: none;
+  }
+  
+  a:hover {
+    text-decoration: underline;
+  }
+
+  .view-btn:hover {
+    text-decoration: none;
+  }
+  

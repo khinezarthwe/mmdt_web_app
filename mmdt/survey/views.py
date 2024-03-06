@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import Survey, Response, Question, Choice  # Import Choice model
+from .models import Survey, Response, Question, Choice
 from .forms import create_survey_form
 from django.contrib import messages
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
@@ -42,10 +42,22 @@ class SurveyPage:
                             # For checkbox questions, response_text is a list
                             choices = Choice.objects.filter(id__in=response_text)
                             response_text = ", ".join(choice.choice_text for choice in choices)
-                        elif question.question_type in [Question.MULTIPLE_CHOICE]:
-                            # For other multiple-choice questions, response_text is a single choice
+
+                        elif question.question_type == Question.MULTIPLE_CHOICE:
+                            # For Multiple Choice questions, response_text is the selected choice ID
                             choice_id = int(response_text)
-                            choice = get_object_or_404(Choice, id=choice_id)
+                            selected_choice = get_object_or_404(Choice, id=choice_id)
+                            response_text = selected_choice.choice_text
+
+                        elif question.question_type == Question.SLIDING_SCALE:
+                            # For Slide Scale questions, response_text is the selected choice index
+                            selected_index = int(response_text)
+                            selected_choice = question.choices.all()[selected_index]
+                            response_text = selected_choice.choice_text
+
+                        elif question.question_type == Question.DROPDOWN:
+                            # For drop-down questions, response_text is the selected choice text
+                            choice = get_object_or_404(Choice, id=response_text)
                             response_text = choice.choice_text
 
                         # Create Response object

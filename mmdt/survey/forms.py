@@ -17,4 +17,9 @@ def create_survey_form(survey):
                     self.fields[field_name] = forms.MultipleChoiceField(choices=choices, label=question.question_text, widget=forms.CheckboxSelectMultiple, required=False)
                 elif question.question_type == Question.LONG_TEXT:
                     self.fields[field_name] = forms.CharField(widget=forms.Textarea, label=question.question_text, required=False)
+                elif question.question_type == Question.DROPDOWN:
+                    choices = [(choice.id, choice.choice_text) for choice in question.choices.all()]
+                    self.fields[field_name] = forms.ChoiceField(choices=choices, label=question.question_text, required=False)
+                elif question.question_type == Question.SLIDING_SCALE:
+                    self.fields[field_name] = forms.IntegerField(label=question.question_text, widget=forms.NumberInput(attrs={'type': 'range'}), required=False)
     return SurveyForm

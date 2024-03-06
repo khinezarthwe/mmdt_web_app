@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 {% block content %}
   <h1>{{ survey.title }}</h1>
   {% if messages %}
@@ -27,7 +28,23 @@
           <input type="text" name="question_{{ question.id }}" id="text_question{{ question.id }}">
         {% elif question.question_type == question.LONG_TEXT %}
           <textarea name="question_{{ question.id }}" id="long_text_question{{ question.id }}"></textarea>
-        {% endif %}
+        {% elif question.question_type == question.DROPDOWN %}
+            <select name="question_{{ question.id }}">
+                {% for choice in question.choices.all %}
+                    <option value="{{ choice.id }}">{{ choice.choice_text }}</option>
+                {% endfor %}
+            </select>
+            {% elif question.question_type == question.SLIDING_SCALE %}
+              <input type="range" name="question_{{ question.id }}" id="slider{{ question.id }}" min="0" max="{{ question.choices.count|add:"-1" }}" value="0" step="1">
+              <output for="slider{{ question.id }}" id="output{{ question.id }}">Slide your choice</output>
+              <div id="colorChoices{{ question.id }}">
+                {% for choice in question.choices.all %}
+                    <span data-choice-text="{{ choice.choice_text }}">{{ choice.choice_text }}</span>
+                {% endfor %}
+            </div>
+            <script src="{% static 'assets/js/slide.js' %}"></script>
+          {% endif %}
+
       </div>
     {% endfor %}
     <!-- Display pagination links for questions -->
@@ -56,6 +73,8 @@
             </span>
         </div>
     {% endif %}
-    <button type="submit">Submit</button>
+    {% if current_page_questions and not current_page_questions.has_next %}
+    <button type="submit" class="button btn-submit">Submit</button>
+  {% endif %}
   </form>
 {% endblock %}

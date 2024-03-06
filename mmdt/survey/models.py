@@ -23,11 +23,15 @@ class Question(models.Model):
     MULTIPLE_CHOICE = 'MC'
     CHECKBOX = 'CB'
     LONG_TEXT = 'LT'
+    DROPDOWN = 'DD'
+    SLIDING_SCALE = 'SS'
     QUESTION_TYPES = [
         (MULTIPLE_CHOICE, 'Multiple Choice'),
         (CHECKBOX, 'Check Box'),
         (TEXT, 'Text'),
-        (LONG_TEXT, 'Long Text')
+        (LONG_TEXT, 'Long Text'),
+        (DROPDOWN, 'Drop-down'),
+        (SLIDING_SCALE, 'Sliding Scale')
     ]
     survey = models.ForeignKey(Survey, on_delete=models.CASCADE, related_name='questions')
     question_text = models.CharField(max_length=200)

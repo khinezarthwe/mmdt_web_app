@@ -21,5 +21,6 @@ def create_survey_form(survey):
                     choices = [(choice.id, choice.choice_text) for choice in question.choices.all()]
                     self.fields[field_name] = forms.ChoiceField(choices=choices, label=question.question_text, required=False)
                 elif question.question_type == Question.SLIDING_SCALE:
+                    choices = [(choice.id, choice.choice_text) for choice in question.choices.all()]
                     self.fields[field_name] = forms.IntegerField(label=question.question_text, widget=forms.NumberInput(attrs={'type': 'range'}), required=False)
     return SurveyForm

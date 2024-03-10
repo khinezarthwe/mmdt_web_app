@@ -35,15 +35,21 @@
                 {% endfor %}
             </select>
             {% elif question.question_type == question.SLIDING_SCALE %}
-              <input type="range" name="question_{{ question.id }}" id="slider{{ question.id }}" min="0" max="{{ question.choices.count|add:"-1" }}" value="0" step="1">
-              <output for="slider{{ question.id }}" id="output{{ question.id }}">Slide your choice</output>
-              <div id="colorChoices{{ question.id }}">
+            <div class="slide-scale-container">
                 {% for choice in question.choices.all %}
-                    <span data-choice-text="{{ choice.choice_text }}">{{ choice.choice_text }}</span>
+                    <div class="choice-container">
+                        <div class="label-container">
+                            <label>{{ choice.choice_text }}</label>
+                        </div>
+                        <div class="slider-container">
+                            <input type="range" name="question_{{ question.id }}" class="slider" min="0" max="10" value="0" step="1">
+                            <output class="output">0%</output>
+                        </div>
+                    </div>
                 {% endfor %}
             </div>
             <script src="{% static 'assets/js/slide.js' %}"></script>
-          {% endif %}
+        {% endif %}
 
       </div>
     {% endfor %}
@@ -73,8 +79,6 @@
             </span>
         </div>
     {% endif %}
-    {% if current_page_questions and not current_page_questions.has_next %}
     <button type="submit" class="button btn-submit">Submit</button>
-  {% endif %}
   </form>
 {% endblock %}

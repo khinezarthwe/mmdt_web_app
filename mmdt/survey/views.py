@@ -50,12 +50,12 @@ class SurveyPage:
                             response_text = selected_choice.choice_text
 
                         elif question.question_type == Question.SLIDING_SCALE:
-                            # For Slide Scale questions, response_text is the selected choice index
                             selected_index = int(response_text)
                             selected_choice = question.choices.all()[selected_index]
                             response_text = selected_choice.choice_text
+                            print(selected_index)
 
-                        elif question.question_type == Question.DROPDOWN:
+                        elif question.question_type == Question.DROPDOWN: 
                             # For drop-down questions, response_text is the selected choice text
                             choice = get_object_or_404(Choice, id=response_text)
                             response_text = choice.choice_text

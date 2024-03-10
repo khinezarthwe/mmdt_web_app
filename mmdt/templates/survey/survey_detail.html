@@ -53,32 +53,34 @@
 
       </div>
     {% endfor %}
+    <input type="hidden" name="action" value="submit">
+    <script>
+      function setFormAction(action) {
+        document.getElementsByName('action')[0].value = action;
+        document.forms[0].submit();
+      }
+    </script>
     <!-- Display pagination links for questions -->
-    {% if current_page_questions %}
-        <div class="pagination">
-            <span class="step-links">
-                {% if current_page_questions.has_previous %}
-                    <button type="button" class="button" onclick="window.location='?page={{ current_page_questions.previous_page_number }}'">&laquo; Previous</button>
-                {% else %}
-                    <button type="button" class="button disabled" aria-disabled="true">Previous</button>
-                {% endif %}
+    <div class="pagination">
+      <span class="step-links">
+        {% if current_page_questions.has_previous %}
+            <button type="button" onclick="setFormAction('previous')" class="button">&laquo; Previous</button>
+        {% endif %}
 
-                {% for i in current_page_questions.paginator.page_range %}
-                    {% if i == current_page_questions.number %}
-                        <button type="button" class="button btn-custom">{{ i }}</button>
-                    {% else %}
-                        <button type="button" class="button" onclick="window.location='?page={{ i }}'">{{ i }}</button>
-                    {% endif %}
-                {% endfor %}
+        {% for i in current_page_questions.paginator.page_range %}
+          {% if i == current_page_questions.number %}
+            <span class="current">{{ i }}</span>
+          {% else %}
+            <button type="submit" name="page" value="{{ i }}" class="button">{{ i }}</button>
+          {% endif %}
+        {% endfor %}
 
-                {% if current_page_questions.has_next %}
-                    <button type="button" class="button" onclick="window.location='?page={{ current_page_questions.next_page_number }}'">Next &raquo;</button>
-                {% else %}
-                    <button type="button" class="button disabled" aria-disabled="true">Next</button>
-                {% endif %}
-            </span>
-        </div>
-    {% endif %}
-    <button type="submit" class="button btn-submit">Submit</button>
+        {% if current_page_questions.has_next %}
+        <button type="button" onclick="setFormAction('next')" class="button">Next &raquo;</button>
+        {% else %}
+        <button type="button" onclick="setFormAction('submit')" class="button">Submit</button>
+        {% endif %}
+      </span>
+    </div>
   </form>
 {% endblock %}

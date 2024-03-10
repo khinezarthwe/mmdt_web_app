@@ -5,7 +5,7 @@ from .models import Survey, Question, Choice, Response
 
 class ChoiceInLine(admin.TabularInline):
     model = Choice
-    extra = 3
+    extra = 1
 
 class QuestionInLine(admin.TabularInline):
     model = Question
@@ -14,6 +14,13 @@ class QuestionInLine(admin.TabularInline):
 class QuestionAdmin(admin.ModelAdmin):
     inlines = [ChoiceInLine]
     fieldsets = [(None, {'fields': ['survey', 'question_text', 'question_type', 'pub_date', 'is_enabled']}),]
+
+    def get_formsets_with_inlines(self, request, obj=None):
+        for inline in self.get_inline_instances(request, obj):
+            # Exclude choices for question types 'T' (Text) and 'LT' (Long Text)
+            if obj and obj.question_type in ['T', 'LT'] and isinstance(inline, ChoiceInLine):
+                continue
+            yield inline.get_formset(request, obj), inline
 
 class SurveyAdmin(admin.ModelAdmin):
     inlines = [QuestionInLine]
@@ -27,7 +34,7 @@ def export_to_csv(modeladmin, request, queryset):
     writer = csv.writer(response)
     writer.writerow(['Question', 'Response Text'])
     for obj in queryset:
-            writer.writerow([obj.question.question_text, obj.response_text])
+        writer.writerow([obj.question.question_text, obj.response_text])
     return response
 
 export_to_csv.short_description = 'Export Selected Responses to CSV'
@@ -37,7 +44,17 @@ class ResponseAdmin(admin.ModelAdmin):
     search_fields = ['question__question_text', 'response_text']
     actions = [export_to_csv]
 
+class ChoiceAdmin(admin.ModelAdmin):
+    list_display = ['choice_text', 'question_type', 'question',]
+    search_fields = ['question__question_text', 'choice_text']
+    list_filter = ['question__question_type']
+
+    def question_type(self, instance):
+        return instance.question.question_type
+
+    question_type.short_description = 'Question Type'
+
 admin.site.register(Survey, SurveyAdmin)
 admin.site.register(Question, QuestionAdmin)
-admin.site.register(Choice)
+admin.site.register(Choice, ChoiceAdmin)
 admin.site.register(Response, ResponseAdmin)

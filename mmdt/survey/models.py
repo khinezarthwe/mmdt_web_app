@@ -35,7 +35,7 @@ class Question(models.Model):
     ]
     survey = models.ForeignKey(Survey, on_delete=models.CASCADE, related_name='questions')
     question_text = models.CharField(max_length=200)
-    pub_date = models.DateTimeField('date published')
+    pub_date = models.DateTimeField('date published', null=True, default=timezone.now)
     is_enabled = models.BooleanField(default=True)
     question_type = models.CharField(max_length=255, choices=QUESTION_TYPES, default=TEXT)
 

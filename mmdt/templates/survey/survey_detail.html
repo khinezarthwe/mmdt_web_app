@@ -58,29 +58,29 @@
         <div class="pagination">
             <span class="step-links">
                 {% if current_page_questions.has_previous %}
-                    <button type="button" class="button" onclick="window.location='?page={{ current_page_questions.previous_page_number }}'">&laquo; Previous</button>
+                    <input type="button" class="button" onclick="window.location='?page={{ current_page_questions.previous_page_number }}'"value ="&laquo; Previous">
                 {% else %}
-                    <button type="button" class="button disabled" aria-disabled="true">Previous</button>
+                    <input type="button" class="button disabled" aria-disabled="true" value="Previous" disabled>
                 {% endif %}
 
                 {% for i in current_page_questions.paginator.page_range %}
                     {% if i == current_page_questions.number %}
-                        <button type="button" class="button btn-custom">{{ i }}</button>
+                        <input type="button" class="button btn-custom" value="{{ i }}">
                     {% else %}
-                        <button type="button" class="button" onclick="window.location='?page={{ i }}'">{{ i }}</button>
+                        <input type="button" class="button" onclick="window.location='?page={{ i }}'" value="{{ i }}">
                     {% endif %}
                 {% endfor %}
 
                 {% if current_page_questions.has_next %}
-                    <button type="button" class="button" onclick="window.location='?page={{ current_page_questions.next_page_number }}'">Next &raquo;</button>
+                    <input type="button" class="button" onclick="window.location='?page={{ current_page_questions.next_page_number }}'" value="Next &raquo;">
                 {% else %}
-                    <button type="button" class="button disabled" aria-disabled="true">Next</button>
+                    <input type="button" class="button disabled" aria-disabled="true" value="Next" disabled>
                 {% endif %}
             </span>
         </div>
     {% endif %}
     {% if current_page_questions.number == current_page_questions.paginator.num_pages %}
-    <button type="submit" class="button btn-submit">Submit</button>
+    <input type="submit" class="button btn-submit" value="Submit">
   {% endif %}  
 </form>
 {% endblock %}

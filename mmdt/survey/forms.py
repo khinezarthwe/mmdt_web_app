@@ -1,9 +1,11 @@
 from django import forms
 from .models import Question
 
-def create_survey_form(survey):
+def create_survey_form(survey, initial=None):
     class SurveyForm(forms.Form):
         def __init__(self, *args, **kwargs):
+            if initial:
+                kwargs['initial'] = initial
             super(SurveyForm, self).__init__(*args, **kwargs)
             for question in survey.questions.all():
                 field_name = f'question_{question.id}'
@@ -23,4 +25,10 @@ def create_survey_form(survey):
                 elif question.question_type == Question.SLIDING_SCALE:
                     choices = [(choice.id, choice.choice_text) for choice in question.choices.all()]
                     self.fields[field_name] = forms.IntegerField(label=question.question_text, widget=forms.NumberInput(attrs={'type': 'range'}), required=False)
+
+            if initial:
+                for key, value in initial.items():
+                    if key in self.fields:
+                        self.fields[key].initial = value
+                        
     return SurveyForm

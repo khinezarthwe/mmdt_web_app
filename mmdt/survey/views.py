@@ -1,3 +1,4 @@
+from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Survey, Response, Question, Choice
 from .forms import create_survey_form
@@ -23,14 +24,34 @@ class SurveyPage:
         except EmptyPage:
             # If page is out of range, deliver the last page of results.
             current_page_questions = paginator.page(paginator.num_pages)
+
+        session_key = f'survey_{survey_id}_responses'
+        responses = request.session.get(session_key, {})
+
+        initial_data = {}
+        for question in current_page_questions:
+            if f'question_{question.id}' in responses:
+                initial_data[f'question_{question.id}'] = responses[f'question_{question.id}']
             
-        SurveyForm = create_survey_form(survey)
+        # SurveyForm = create_survey_form(survey)
         if request.method == "POST":
-            form = SurveyForm(request.POST)
+            form = create_survey_form(survey)(request.POST)
             if form.is_valid():
+                
                 for question in current_page_questions:
                     response_text = form.cleaned_data.get(f'question_{question.id}')
-                    if response_text is not None:
+                    if response_text:
+                        responses[f'question_{question.id}'] = response_text
+
+                request.session[session_key] = responses
+
+                if current_page_questions.has_next():
+                    next_page = current_page_questions.next_page_number()
+                    return HttpResponseRedirect(f'?page={next_page}')
+                else:
+                    for question_id, response_text in responses.items():
+                        question_id = int(question_id.split('_')[1])
+                        question = Question.objects.get(id=question_id)
                         if question.question_type == Question.CHECKBOX:
                             # For checkbox questions, response_text is a list
                             choices = Choice.objects.filter(id__in=response_text)
@@ -55,11 +76,13 @@ class SurveyPage:
                             response_text = choice.choice_text
                         # Create Response object
                         Response.objects.create(question=question, response_text=response_text)
+                del request.session[session_key]
                 # Display success message
                 messages.success(request, 'Survey submitted successfully!')
                 return redirect('survey:index')
         else:
-            form = SurveyForm()
+            form = create_survey_form(survey)(initial=initial_data)
+
         context = {
             'survey': survey,
             'form': form,

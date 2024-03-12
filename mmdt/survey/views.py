@@ -26,8 +26,11 @@ class SurveyPage:
             
         SurveyForm = create_survey_form(survey)
         if request.method == "POST":
+            form_data = request.POST
+            print(form_data.get('stored_values')) # you can get form data in here
             form = SurveyForm(request.POST)
             if form.is_valid():
+
                 for question in current_page_questions:
                     response_text = form.cleaned_data.get(f'question_{question.id}')
                     if response_text is not None:

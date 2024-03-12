@@ -80,6 +80,7 @@
         </div>
     {% endif %}
     {% if current_page_questions.number == current_page_questions.paginator.num_pages %}
+      <input type="hidden" name="stored_values" id="storedValuesInput">
     <button type="submit" class="button btn-submit">Submit</button>
   {% endif %}  
 </form>
@@ -114,13 +115,17 @@
     });
 
     // Add click event for the Submit button
-    submitButton.addEventListener("click", function () {
+    submitButton.addEventListener("click", function (event) {
+      // Prevent the default form submission behavior
+      event.preventDefault();
+
       // Set input values before submitting the form
       inputs.forEach(function (input) {
-        input.value = storedValues[input.name];
+        storedValues[input.name] = input.value;
       });
-
+      document.getElementById("storedValuesInput").value = JSON.stringify(storedValues);
       // Submit the form
+      sessionStorage.setItem("surveyFormValues", JSON.stringify(storedValues));
       form.submit();
     });
   });

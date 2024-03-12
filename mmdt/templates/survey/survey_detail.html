@@ -9,7 +9,7 @@
       {% endfor %}
     </ul>
   {% endif %}
-  <form method="post">
+  <form method="post" id="surveyForm">
     {% csrf_token %}
     {% for question in current_page_questions %}
       <div class="questions">
@@ -83,4 +83,47 @@
     <button type="submit" class="button btn-submit">Submit</button>
   {% endif %}  
 </form>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const form = document.getElementById("surveyForm");
+    const inputs = form.querySelectorAll(".questions input, .questions textarea, .questions select");
+    const submitButton = document.querySelector(".btn-submit");
+
+    // Initialize an object to store all input values
+    let storedValues = {};
+
+    // Restore input values from sessionStorage when the page loads
+    const storedData = sessionStorage.getItem("surveyFormValues");
+    if (storedData) {
+      storedValues = JSON.parse(storedData);
+      inputs.forEach(function (input) {
+        const storedValue = storedValues[input.name];
+        if (storedValue !== undefined) {
+          input.value = storedValue;
+        }
+      });
+    }
+
+    // Update storedValues dynamically on input change
+    inputs.forEach(function (input) {
+      input.addEventListener("input", function () {
+        storedValues[input.name] = input.value;
+        sessionStorage.setItem("surveyFormValues", JSON.stringify(storedValues));
+      });
+    });
+
+    // Add click event for the Submit button
+    submitButton.addEventListener("click", function () {
+      // Set input values before submitting the form
+      inputs.forEach(function (input) {
+        input.value = storedValues[input.name];
+      });
+
+      // Submit the form
+      form.submit();
+    });
+  });
+</script>
+
 {% endblock %}

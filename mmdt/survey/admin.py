@@ -3,9 +3,16 @@ from django.contrib import admin
 from django.http import HttpResponse
 from .models import Survey, Question, Choice, Response
 
+
 class ChoiceInLine(admin.TabularInline):
     model = Choice
     extra = 1
+
+    def get_max_num(self, request, obj=None, **kwargs):
+        # Limit the number of choices to 1 for Slide Scale questions
+        if obj and obj.question_type == 'SS':
+            return 1
+        return super().get_max_num(request, obj, **kwargs)
 
 class QuestionInLine(admin.TabularInline):
     model = Question

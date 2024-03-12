@@ -47,7 +47,7 @@ class SurveyPage:
                             choices = question.choices.all()
                             if 0 <= selected_index < len(choices):
                                 selected_choice = choices[selected_index]
-                                response_text = {selected_choice.value}
+                                response_text = selected_choice.choice_text
 
                         elif question.question_type == Question.DROPDOWN: 
                             # For drop-down questions, response_text is the selected choice text

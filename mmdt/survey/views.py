@@ -34,7 +34,7 @@ class SurveyPage:
         if request.method == 'POST':
             for key, data in request.POST.items():
                 if key.startswith("question"):
-                    request.session[session_key].update({key: data})
+                    request.session[session_key].update({key: request.POST.getlist(key)})
             print(request.session[session_key])
             if current_page_questions.has_next():
                 next_page = current_page_questions.next_page_number()

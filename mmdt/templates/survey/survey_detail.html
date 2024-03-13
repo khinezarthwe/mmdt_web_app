@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+  <h1>{{ survey.title }}</h1>
+  {% if messages %}
+    <ul class="messages">
+      {% for message in messages %}
+        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+  <form action="{% url 'survey:survey_detail' survey.id %}" method="post">
+    {% csrf_token %}
+    {% for question in current_page_questions %}
+      <div class="questions">
+        <h4>{{ question.question_text }}</h4>
+        {% if question.question_type == question.MULTIPLE_CHOICE %}
+          {% for choice in question.choices.all %}
+            <input type="radio" name="question_{{ question.id }}" id="choice{{ choice.id }}" value="{{ choice.id }}">
+            <label for="choice{{ choice.id }}">{{ choice.choice_text }}</label><br>
+          {% endfor %}
+        {% elif question.question_type == question.CHECKBOX %}
+          {% for choice in question.choices.all %}
+            <input type="checkbox" name="question_{{ question.id }}" id="choice{{ choice.id }}" value="{{ choice.id }}">
+            <label for="choice{{ choice.id }}">{{ choice.choice_text }}</label><br>
+          {% endfor %}
+        {% elif question.question_type == question.TEXT %}
+          <input type="text" name="question_{{ question.id }}" id="text_question{{ question.id }}">
+        {% elif question.question_type == question.LONG_TEXT %}
+          <textarea name="question_{{ question.id }}" id="long_text_question{{ question.id }}"></textarea>
+        {% elif question.question_type == question.DROPDOWN %}
+            <select name="question_{{ question.id }}">
+                {% for choice in question.choices.all %}
+                    <option value="{{ choice.id }}">{{ choice.choice_text }}</option>
+                {% endfor %}
+            </select>
+            {% elif question.question_type == question.SLIDING_SCALE %}
+            <div class="slide-scale-container">
+                {% for choice in question.choices.all %}
+                    <div class="choice-container">
+                        <div class="label-container">
+                            <label>{{ choice.choice_text }}</label>
+                        </div>
+                        <div class="slider-container">
+                            <input type="range" name="question_{{ question.id }}" class="slider" min="0" max="10" value="0" step="1">
+                            <output class="output">0%</output>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+            <script src="{% static 'assets/js/slide.js' %}"></script>
+        {% endif %}
+
+      </div>
+    {% endfor %}
+    <!-- Display pagination links for questions -->
+    {% if current_page_questions %}
+        <div class="pagination">
+            <span class="step-links">
+                {% if current_page_questions.has_previous %}
+                    <input type="submit" class="button" value ="&laquo; Previous">
+                {% else %}
+                    <input type="submit" class="button disabled" aria-disabled="true" value="Previous" disabled>
+                {% endif %}
+
+                {% for i in current_page_questions.paginator.page_range %}
+                    {% if i == current_page_questions.number %}
+                        <input type="submit" class="button btn-custom" value="{{ i }}">
+                    {% else %}
+                        <input type="submit" class="button" value="{{ i }}">
+                    {% endif %}
+                {% endfor %}
+
+                {% if current_page_questions.has_next %}
+                    <input type="submit" class="button" value="Next &raquo;">
+                {% else %}
+                    <input type="submit" class="button disabled" aria-disabled="true" value="Next" disabled>
+                {% endif %}
+            </span>
+        </div>
+    {% endif %}
+    {% if current_page_questions.number == current_page_questions.paginator.num_pages %}
+    <input type="submit" class="button btn-submit" value="Submit">
+  {% endif %}
+</form>
+{% endblock %}

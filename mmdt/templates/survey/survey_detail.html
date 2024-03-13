@@ -10,6 +10,7 @@
     </ul>
   {% endif %}
   <form method="post" id="surveyForm">
+  <input type="hidden" name="all_responses" id="allResponsesInput" value="">
     {% csrf_token %}
     {% for question in current_page_questions %}
       <div class="questions">
@@ -30,10 +31,12 @@
           <textarea name="question_{{ question.id }}" id="long_text_question{{ question.id }}"></textarea>
         {% elif question.question_type == question.DROPDOWN %}
             <select name="question_{{ question.id }}">
-                {% for choice in question.choices.all %}
-                    <option value="{{ choice.id }}">{{ choice.choice_text }}</option>
-                {% endfor %}
+              <option value="" selected disabled>Choose your answer</option>
+              {% for choice in question.choices.all %}
+                  <option value="{{ choice.choice_text }}">{{ choice.choice_text }}</option>
+              {% endfor %}
             </select>
+
             {% elif question.question_type == question.SLIDING_SCALE %}
             <div class="slide-scale-container">
                 {% for choice in question.choices.all %}
@@ -85,50 +88,5 @@
   {% endif %}  
 </form>
 
-<script>
-  document.addEventListener("DOMContentLoaded", function () {
-    const form = document.getElementById("surveyForm");
-    const inputs = form.querySelectorAll(".questions input, .questions textarea, .questions select");
-    const submitButton = document.querySelector(".btn-submit");
-
-    // Initialize an object to store all input values
-    let storedValues = {};
-
-    // Restore input values from sessionStorage when the page loads
-    const storedData = sessionStorage.getItem("surveyFormValues");
-    if (storedData) {
-      storedValues = JSON.parse(storedData);
-      inputs.forEach(function (input) {
-        const storedValue = storedValues[input.name];
-        if (storedValue !== undefined) {
-          input.value = storedValue;
-        }
-      });
-    }
-
-    // Update storedValues dynamically on input change
-    inputs.forEach(function (input) {
-      input.addEventListener("input", function () {
-        storedValues[input.name] = input.value;
-        sessionStorage.setItem("surveyFormValues", JSON.stringify(storedValues));
-      });
-    });
-
-    // Add click event for the Submit button
-    submitButton.addEventListener("click", function (event) {
-      // Prevent the default form submission behavior
-      event.preventDefault();
-
-      // Set input values before submitting the form
-      inputs.forEach(function (input) {
-        storedValues[input.name] = input.value;
-      });
-      document.getElementById("storedValuesInput").value = JSON.stringify(storedValues);
-      // Submit the form
-      sessionStorage.setItem("surveyFormValues", JSON.stringify(storedValues));
-      form.submit();
-    });
-  });
-</script>
-
+<script src="{% static 'assets/js/store_data.js' %}"></script>
 {% endblock %}

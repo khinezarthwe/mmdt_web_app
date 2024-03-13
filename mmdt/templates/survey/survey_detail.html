@@ -9,7 +9,7 @@
       {% endfor %}
     </ul>
   {% endif %}
-  <form method="post">
+  <form action="{% url 'survey:survey_detail' survey.id %}" method="post">
     {% csrf_token %}
     {% for question in current_page_questions %}
       <div class="questions">
@@ -58,29 +58,29 @@
         <div class="pagination">
             <span class="step-links">
                 {% if current_page_questions.has_previous %}
-                    <input type="button" class="button" onclick="window.location='?page={{ current_page_questions.previous_page_number }}'"value ="&laquo; Previous">
+                    <input type="submit" class="button" value ="&laquo; Previous">
                 {% else %}
-                    <input type="button" class="button disabled" aria-disabled="true" value="Previous" disabled>
+                    <input type="submit" class="button disabled" aria-disabled="true" value="Previous" disabled>
                 {% endif %}
 
                 {% for i in current_page_questions.paginator.page_range %}
                     {% if i == current_page_questions.number %}
-                        <input type="button" class="button btn-custom" value="{{ i }}">
+                        <input type="submit" class="button btn-custom" value="{{ i }}">
                     {% else %}
-                        <input type="button" class="button" onclick="window.location='?page={{ i }}'" value="{{ i }}">
+                        <input type="submit" class="button" value="{{ i }}">
                     {% endif %}
                 {% endfor %}
 
                 {% if current_page_questions.has_next %}
-                    <input type="button" class="button" onclick="window.location='?page={{ current_page_questions.next_page_number }}'" value="Next &raquo;">
+                    <input type="submit" class="button" value="Next &raquo;">
                 {% else %}
-                    <input type="button" class="button disabled" aria-disabled="true" value="Next" disabled>
+                    <input type="submit" class="button disabled" aria-disabled="true" value="Next" disabled>
                 {% endif %}
             </span>
         </div>
     {% endif %}
     {% if current_page_questions.number == current_page_questions.paginator.num_pages %}
     <input type="submit" class="button btn-submit" value="Submit">
-  {% endif %}  
+  {% endif %}
 </form>
 {% endblock %}

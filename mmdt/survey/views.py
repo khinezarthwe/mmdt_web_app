@@ -3,6 +3,8 @@ from .models import Survey, Response, Question, Choice
 from .forms import create_survey_form
 from django.contrib import messages
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+import json
+
 class SurveyPage:
     def index(request):
         surveys = Survey.objects.filter(is_active=True)
@@ -27,12 +29,20 @@ class SurveyPage:
         SurveyForm = create_survey_form(survey)
         if request.method == "POST":
             form_data = request.POST
-            print(form_data.get('stored_values')) # you can get form data in here
-            form = SurveyForm(request.POST)
-            if form.is_valid():
+            all_responses = form_data.get('all_responses')
+            if all_responses:
+                all_responses_dict = json.loads(all_responses)
+           
 
-                for question in current_page_questions:
-                    response_text = form.cleaned_data.get(f'question_{question.id}')
+                for field_name, response_text in all_responses_dict.items():
+                    if field_name.startswith('question_'):
+                        question_id = field_name.replace('question_', '')
+                        try:
+                            question = Question.objects.get(id=question_id)
+                        except Question.DoesNotExist:
+                            # Handle the case where the question doesn't exist
+                            messages.error(request, f'Invalid question ID: {question_id}')
+                            return redirect('survey:index')
                     if response_text is not None:
                         if question.question_type == Question.CHECKBOX:
                             # For checkbox questions, response_text is a list
@@ -53,9 +63,12 @@ class SurveyPage:
                                 response_text = selected_choice.choice_text
 
                         elif question.question_type == Question.DROPDOWN: 
-                            # For drop-down questions, response_text is the selected choice text
-                            choice = get_object_or_404(Choice, id=response_text)
-                            response_text = choice.choice_text
+                            if response_text:
+                                choice = get_object_or_404(Choice, choice_text=response_text)
+                                response_text = choice.choice_text
+                            else:
+                                # Handle the default option, e.g., set response_text to a specific value
+                                response_text = "No answer selected"
                         # Create Response object
                         Response.objects.create(question=question, response_text=response_text)
                 # Display success message

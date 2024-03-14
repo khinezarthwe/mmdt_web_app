@@ -1,8 +1,8 @@
 {% extends "base.html" %}
 {% block content %}
-  <h1>Active Surveys</h1>
+  <h2>Active Surveys</h2>
   {% if submitted_successfully %}
-    <p class="vote-success-message">🎉🎉 Thank you for your survey! 😊😊</p>
+    <p class="vote-success-message">🎉🎉 Thank you for taking our survey! 😊😊</p>
     <a href="{% url 'survey:index' %}" class="button underline">Go back</a>
   {% else %}
     <ul>

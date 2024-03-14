@@ -72,4 +72,5 @@ You can now access the following URLs in your web browser:
 
 9. **DBdiagram**:
 Our Database Design
-![DB](https://github.com/khinezarthwe/mmdt_web_app/assets/5201124/c2d8a65e-1019-4442-8d62-48efe1552033)
+<!-- ![DB](https://github.com/khinezarthwe/mmdt_web_app/assets/5201124/c2d8a65e-1019-4442-8d62-48efe1552033) -->
+<img src="mmdt/static/survey/image/mmdt.png" alt="logo"/>

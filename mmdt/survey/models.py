@@ -56,3 +56,4 @@ class Response(models.Model):
 
     def __str__(self):
         return f"Response to {self.question.question_text}: {self.response_text}"
+    

@@ -58,7 +58,6 @@ p.vote-success-message {
 
 .logo {
     width: 5em;
-    height: 5em;
 }
 
 .card-img {
@@ -73,6 +72,10 @@ p.vote-success-message {
 
 .cmt-submit {
     margin-top: 1.3em;
+}
+
+.questions {
+    margin-bottom: 1.3rem;
 }
 
 .messages .warning {
@@ -120,7 +123,7 @@ p.vote-success-message {
   }
   
   button:hover {
-    background-color: #003399;
+    background-color: #003399 !important;
     color: white !important;
   }
   
@@ -142,3 +145,51 @@ p.vote-success-message {
     text-decoration: none;
   }
   
+  .slide-scale-container {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 20px;
+}
+
+.choice-container {
+    display: flex;
+    align-items: center;
+    margin: 5px 0;
+}
+
+.label-container {
+    min-width: 150px; 
+}
+
+.slider-container {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    margin-left: 10px;
+}
+
+.slider {
+    flex: 1;
+    background: #f5f6f7; 
+    width: 100%; 
+    margin-right: 10px;
+}
+
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px; 
+  height: 20px; 
+  background-color: #003399;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.slider:hover {
+  cursor: pointer;
+}
+
+.output {
+    min-width: 40px;
+    margin-left: 10px;
+}

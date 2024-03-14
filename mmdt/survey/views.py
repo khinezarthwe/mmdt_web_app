@@ -8,7 +8,8 @@ import json
 class SurveyPage:
     def index(request):
         surveys = Survey.objects.filter(is_active=True)
-        return render(request, 'survey/index.html', {'surveys': surveys})
+        submitted_successfully = request.session.pop('survey_submitted_successfully', False)
+        return render(request, 'survey/index.html', {'surveys': surveys, 'submitted_successfully': submitted_successfully})
     def survey_detail(request, survey_id):
         survey = get_object_or_404(Survey, pk=survey_id)
         questions = survey.questions.all().order_by('pub_date')
@@ -43,37 +44,42 @@ class SurveyPage:
                             # Handle the case where the question doesn't exist
                             messages.error(request, f'Invalid question ID: {question_id}')
                             return redirect('survey:index')
-                    if response_text is not None:
-                        if question.question_type == Question.CHECKBOX:
-                            # For checkbox questions, response_text is a list
-                            choices = Choice.objects.filter(id__in=response_text)
-                            response_text = ", ".join(choice.choice_text for choice in choices)
-                        elif question.question_type == Question.MULTIPLE_CHOICE:
-                            # For Multiple Choice questions, response_text is the selected choice ID
-                            choice_id = int(response_text)
-                            selected_choice = get_object_or_404(Choice, id=choice_id)
-                            response_text = selected_choice.choice_text
+                        
+                        if isinstance(response_text, list) and question.question_type == Question.CHECKBOX:
+            # For checkbox questions, response_text is a list
+                            for choice_id in response_text:
+                                choice = get_object_or_404(Choice, id=choice_id)
+                                Response.objects.create(question=question, response_text=choice.choice_text)
+                        else:
+                            
+                            if response_text is not None:
 
-                        elif question.question_type == Question.SLIDING_SCALE:
-                            selected_index = int(response_text)
-                            # Ensure the index is within the range of available choices
-                            choices = question.choices.all()
-                            if 0 <= selected_index < len(choices):
-                                selected_choice = choices[selected_index]
-                                response_text = selected_choice.choice_text
+                                if question.question_type == Question.MULTIPLE_CHOICE:
+                                    # For Multiple Choice questions, response_text is the selected choice ID
+                                    choice_id = int(response_text)
+                                    selected_choice = get_object_or_404(Choice, id=choice_id)
+                                    response_text = selected_choice.choice_text
 
-                        elif question.question_type == Question.DROPDOWN: 
-                            if response_text:
-                                choice = get_object_or_404(Choice, choice_text=response_text)
-                                response_text = choice.choice_text
-                            else:
-                                # Handle the default option, e.g., set response_text to a specific value
-                                response_text = "No answer selected"
-                        # Create Response object
-                        Response.objects.create(question=question, response_text=response_text)
-                # Display success message
-                messages.success(request, 'Survey submitted successfully!')
-                return redirect('survey:index')
+                                elif question.question_type == Question.SLIDING_SCALE:
+                                    selected_index = int(response_text)
+                                    # Ensure the index is within the range of available choices
+                                    choices = question.choices.all()
+                                    if 0 <= selected_index < len(choices):
+                                        selected_choice = choices[selected_index]
+                                        response_text = selected_choice.choice_text
+
+                                elif question.question_type == Question.DROPDOWN: 
+                                    if response_text:
+                                        choice = get_object_or_404(Choice, choice_text=response_text)
+                                        response_text = choice.choice_text
+                                    else:
+                                        # Handle the default option, e.g., set response_text to a specific value
+                                        response_text = "No answer selected"
+                                # Create Response object
+                                Response.objects.create(question=question, response_text=response_text)
+            # Display success message
+            request.session['survey_submitted_successfully'] = True
+            return redirect('survey:index')
         else:
             form = SurveyForm()
         context = {
@@ -82,3 +88,4 @@ class SurveyPage:
             'current_page_questions': current_page_questions,
         }
         return render(request, 'survey/survey_detail.html', context)
+    

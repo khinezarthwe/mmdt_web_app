@@ -67,7 +67,7 @@
             </div>
         {% endif %}
         {% if latest_question_list %}
-            <input type="submit" value="Vote">
+            <input type="submit" value="Vote" {% if results_released %}disabled{% endif %} >
         {% endif %}
         {% if is_admin %}
         <!-- Display "View Results" button for admins -->

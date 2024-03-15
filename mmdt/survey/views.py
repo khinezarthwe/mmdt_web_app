@@ -1,10 +1,10 @@
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
-
+from django.db import transaction
 from .forms import create_survey_form
-from .models import Survey
-
+from .models import Question, Response, Survey
+from django.contrib import messages
 
 class SurveyPage:
     def index(request):
@@ -14,6 +14,7 @@ class SurveyPage:
     def survey_detail(request, survey_id):
         survey = get_object_or_404(Survey, pk=survey_id)
         questions = survey.questions.all().order_by('pub_date')
+        print("Request and survey_id", request, survey_id)
 
         questions_per_page = 5
         paginator = Paginator(questions, questions_per_page)
@@ -29,18 +30,46 @@ class SurveyPage:
             current_page_questions = paginator.page(paginator.num_pages)
         form = create_survey_form(current_page_questions)
         session_key = f'survey_{survey_id}_responses'
+        # print ("session data on GET request:", request.session.get(session_key))
         if not request.session[session_key]:
             request.session[session_key]= {}
         if request.method == 'POST':
+            print("Form is being submitted...")
             for key, data in request.POST.items():
                 if key.startswith("question"):
                     request.session[session_key].update({key: request.POST.getlist(key)})
-            print(request.session[session_key])
+            print("Session data on POST request", request.session[session_key])
             if current_page_questions.has_next():
                 next_page = current_page_questions.next_page_number()
-                return HttpResponseRedirect(f'?page={next_page}')
+                print("Redirecting to next page:", next_page)
+                
+                for question_id, responses in request.session[session_key].items():
+                    question = get_object_or_404(Question, pk=question_id.split("_")[1])
+                    for response_text in responses:
+                        Response.objects.create(question=question, response_text=response_text)
+                    return HttpResponseRedirect(f'?page={next_page}')
             # please continue for save data to db when user click submit, you already have all response data in request.session[session_key]
             # please clear the session data after form save the data to database
+            else:
+                if 'submit_form' in request.POST:
+                    try:
+                        with transaction.atomic():
+                            print("Saving responses to the database")
+                            for question_id, responses in request.session[session_key].items():
+                                question = get_object_or_404(Question, pk=question_id.split("_")[1])
+                                for response_text in responses:
+                                    Response.objects.create(question=question, response_text=response_text)
+                    except Exception as e:
+                        print("Error occured while saving responses:", e)
+                        messages.error(request, "Error while saving responses")
+                        return HttpResponseRedirect(request.path)
+                    else:
+                        print("Responses saved successfully.")
+                        messages.success(request, "Saved Responses")
+                        del request.session[session_key]
+                        return HttpResponseRedirect('/')
+                else:
+                    print("Not submitting the whole form")
         context = {
             'survey': survey,
             'form': form,

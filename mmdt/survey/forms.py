@@ -1,5 +1,7 @@
 from django import forms
 from .models import Question
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.models import User
 
 def create_survey_form(survey):
     class SurveyForm(forms.Form):
@@ -24,3 +26,8 @@ def create_survey_form(survey):
                     choices = [(choice.id, choice.choice_text) for choice in question.choices.all()]
                     self.fields[field_name] = forms.IntegerField(label=question.question_text, widget=forms.NumberInput(attrs={'type': 'range'}), required=False)
     return SurveyForm
+
+class CustomUserCreationForm(UserCreationForm):
+    class Meta:
+        model = User
+        fields = ['username', 'email', 'password1', 'password2']

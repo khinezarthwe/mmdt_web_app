@@ -2,6 +2,7 @@ import datetime
 from django.contrib import admin
 from django.db import models
 from django.utils import timezone
+from django.contrib.auth.models import User
 
 class Survey(models.Model):
     title = models.CharField(max_length=255)
@@ -9,6 +10,7 @@ class Survey(models.Model):
     start_date = models.DateTimeField(default=timezone.now)
     end_date = models.DateTimeField(null=True, blank=True)
     is_active = models.BooleanField(default=True)
+    registration_required = models.BooleanField(default=False)
 
     def __str__(self):
         return self.title
@@ -56,4 +58,8 @@ class Response(models.Model):
 
     def __str__(self):
         return f"Response to {self.question.question_text}: {self.response_text}"
+    
+class UserSurveyResponse(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    survey = models.ForeignKey(Survey, on_delete=models.CASCADE)
     

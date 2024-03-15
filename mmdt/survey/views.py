@@ -1,18 +1,45 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import Survey, Response, Question, Choice
+from .models import Survey, Response, Question, Choice,  UserSurveyResponse
 from .forms import create_survey_form
 from django.contrib import messages
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 import json
+from django.contrib.auth import login
+from .forms import CustomUserCreationForm
+
+def register(request):
+    if request.method == 'POST':
+        form = CustomUserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            return redirect('survey:index')
+    else:
+        form = CustomUserCreationForm()
+    
+    return render(request, 'survey/register.html', {'form': form})
+
 
 class SurveyPage:
     def index(request):
         surveys = Survey.objects.filter(is_active=True)
         submitted_successfully = request.session.pop('survey_submitted_successfully', False)
-        return render(request, 'survey/index.html', {'surveys': surveys, 'submitted_successfully': submitted_successfully})
+        # Get any messages passed from the view
+        message_list = messages.get_messages(request)
+        return render(request, 'survey/index.html', {'surveys': surveys, 'submitted_successfully': submitted_successfully, 'messages': message_list})
+    
     def survey_detail(request, survey_id):
         survey = get_object_or_404(Survey, pk=survey_id)
+        # Check if registration is required for this survey
+        if survey.registration_required and not request.user.is_authenticated:
+            messages.warning(request, f'You need to log in to participate in this survey.')
+            return redirect('survey:index')
         questions = survey.questions.all().order_by('pub_date')
+
+        if UserSurveyResponse.objects.filter(user=request.user, survey=survey).exists():
+            messages.warning(request, 'You have already responded to this survey.')
+            return redirect('survey:index')
+
         # Set the number of questions to display per page
         questions_per_page = 5
         paginator = Paginator(questions, questions_per_page)
@@ -46,7 +73,7 @@ class SurveyPage:
                             return redirect('survey:index')
                         
                         if isinstance(response_text, list) and question.question_type == Question.CHECKBOX:
-            # For checkbox questions, response_text is a list
+                            # For checkbox questions, response_text is a list
                             for choice_id in response_text:
                                 choice = get_object_or_404(Choice, id=choice_id)
                                 Response.objects.create(question=question, response_text=choice.choice_text)
@@ -77,6 +104,8 @@ class SurveyPage:
                                         response_text = "No answer selected"
                                 # Create Response object
                                 Response.objects.create(question=question, response_text=response_text)
+            
+            UserSurveyResponse.objects.create(user=request.user, survey=survey)
             # Display success message
             request.session['survey_submitted_successfully'] = True
             return redirect('survey:index')

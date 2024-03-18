@@ -36,9 +36,10 @@ class SurveyPage:
             return redirect('survey:index')
         questions = survey.questions.all().order_by('pub_date')
 
-        if UserSurveyResponse.objects.filter(user=request.user, survey=survey).exists():
-            messages.warning(request, 'You have already responded to this survey.')
-            return redirect('survey:index')
+        if request.user.is_authenticated:  # Check if the user is authenticated
+            if UserSurveyResponse.objects.filter(user=request.user, survey=survey).exists():
+                messages.warning(request, 'You have already responded to this survey.')
+                return redirect('survey:index')
 
         # Set the number of questions to display per page
         questions_per_page = 5

@@ -73,8 +73,12 @@
         <!-- Display "View Results" button for admins -->
             <a href="{% url 'polls:all_results' %}" class="button view-btn">View Results</a>
         {% elif results_released %}
-        <!-- Display "View Results" button for normal users if results are released -->
-            <a href="{% url 'polls:all_results' %}" class="button view-btn">View Results</a>
+        <!-- Conditionally display "View Results" button based on user authentication -->
+            {% if user.is_authenticated %}
+                <a href="{% url 'polls:all_results' %}" class="button view-btn">View Results</a>
+            {% else %}
+                <button class="button view-btn" hidden> View Results</button>
+            {% endif %}
         {% endif %}
     {% endif %}
 </form>

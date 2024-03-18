@@ -1,11 +1,15 @@
-{% extends "base.html" %}
-
+{% extends "base.html" %} 
 {% block content %}
-  <div class="card">
-    <h2 class="title">Register</h2>
-    <form method="post" class="auth-form">
-      {% csrf_token %}
-      {{ form.username.label_tag }}
+<div class="card">
+  <h2 class="title">Register</h2>
+  {% if form.errors %}
+  <div class="alert alert-danger">
+    <strong>Error Registering. Please consider containing at least 8 characters for password and other symbols.</strong><br>
+  </div>
+  {% endif %}
+  <form method="post" class="auth-form">
+    {% csrf_token %}
+    {{ form.username.label_tag }}
       {{ form.username }}
       {{ form.email.label_tag }}
       {{ form.email }}
@@ -13,8 +17,8 @@
       {{ form.password1 }}
       {{ form.password2.label_tag }}
       {{ form.password2 }}
-      <button type="submit" class="form-button">Register</button>
-    </form>
-  </div>
-  <p>Already have an account? <a href="{% url 'polls:login' %}">Login here</a>.</p>
+    <button type="submit" class="form-button">Register</button>
+  </form>
+</div>
+<p>Already have an account? <a href="{% url 'polls:login' %}">Login here</a>.</p>
 {% endblock %}

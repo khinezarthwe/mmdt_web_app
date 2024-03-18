@@ -67,8 +67,8 @@
                             <!-- If the user is not authenticated, show a dropdown with Login and Register -->
                             <span class="opener">User Profile</span>
                             <ul>
-                                <li><a href="{% url 'polls:login' %}?next={% url 'home' %}">Login</a></li>
-                                <li><a href="{% url 'polls:register' %}?next={% url 'home' %}">Register</a></li>
+                                <li><a href="{% url 'accounts:login' %}?next={% url 'home' %}">Login</a></li>
+                                <li><a href="{% url 'accounts:register' %}?next={% url 'home' %}">Register</a></li>
                             </ul>
                         {% endif %}
                     </li>

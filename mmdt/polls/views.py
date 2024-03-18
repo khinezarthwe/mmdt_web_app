@@ -6,8 +6,7 @@ from .models import Question, Choice, ActiveGroup
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger, InvalidPage
 from django.contrib.admin.views.decorators import staff_member_required
 
-from django.contrib.auth import login
-from .forms import CustomUserCreationForm
+from accounts.views import register
 
 
 @staff_member_required
@@ -17,17 +16,8 @@ def release_results(request, group_id):
     group.save()
     return HttpResponseRedirect(reverse('polls:all_results'))
 
-def register(request):
-    if request.method == 'POST':
-        form = CustomUserCreationForm(request.POST)
-        if form.is_valid():
-            user = form.save()
-            login(request, user)
-            return redirect('polls:index')
-    else:
-        form = CustomUserCreationForm()
-    
-    return render(request, 'polls/register.html', {'form': form})
+def polls_register(request):
+    return register(request)
 
 
 class PollHomePage:

@@ -4,20 +4,10 @@ from .forms import create_survey_form
 from django.contrib import messages
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 import json
-from django.contrib.auth import login
-from .forms import CustomUserCreationForm
+from accounts.views import register  # Import the register method
 
-def register(request):
-    if request.method == 'POST':
-        form = CustomUserCreationForm(request.POST)
-        if form.is_valid():
-            user = form.save()
-            login(request, user)
-            return redirect('survey:index')
-    else:
-        form = CustomUserCreationForm()
-    
-    return render(request, 'survey/register.html', {'form': form})
+def survey_register(request):
+    return register(request) 
 
 
 class SurveyPage:

@@ -41,6 +41,20 @@ class Question(models.Model):
 
     def __str__(self):
         return self.question_text
+    
+    def get_results_data(self):
+        labels = []
+        data = []
+
+        for choice in self.choices.all():
+            labels.append(choice.choice_text)
+            count = self.responses.filter(response_text=choice.choice_text).count()
+            data.append(count)
+
+        return {
+            'labels': labels,
+            'data': data,
+        }
 
 
 class Choice(models.Model):

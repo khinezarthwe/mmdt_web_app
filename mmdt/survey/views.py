@@ -1,3 +1,4 @@
+from django.http import HttpResponseForbidden
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Survey, Response, Question, Choice
 from .forms import create_survey_form
@@ -89,3 +90,21 @@ class SurveyPage:
         }
         return render(request, 'survey/survey_detail.html', context)
     
+    def all_results(request):
+        # Get  user's responses to each enabled question in the survey
+        all_questions = Question.objects.filter(is_enabled=True).exclude(question_type__in=['T', 'LT', 'SS'])
+        # Check if survey is actived or not
+        active_survey = Survey.objects.filter(is_active=True).first()
+        if not active_survey:
+            return HttpResponseForbidden("Results are not released yet.")
+        
+        # Get questions which are in active survey
+        all_questions = all_questions.filter(
+            survey__is_active=True
+        )
+
+        # return no result if there is no question
+        if not all_questions:
+            return HttpResponseForbidden("No results available for the specified conditions.")
+        
+        return render(request, 'survey/all_results.html', {'all_questions' : all_questions})

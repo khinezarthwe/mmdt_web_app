@@ -1,11 +1,15 @@
-{% extends "base.html" %}
-
+{% extends "base.html" %} 
 {% block content %}
-  <div class="card">
-    <h2 class="title">Register</h2>
-    <form method="post" class="auth-form">
-      {% csrf_token %}
-      {{ form.username.label_tag }}
+<div class="card">
+  <h2 class="title">Register</h2>
+  {% if form.errors %}
+  <div class="alert alert-danger">
+    <strong>Error Registering. Please consider containing at least 8 characters for password and other symbols.</strong><br>
+  </div>
+  {% endif %}
+  <form method="post" class="auth-form">
+    {% csrf_token %}
+    {{ form.username.label_tag }}
       {{ form.username }}
       {{ form.email.label_tag }}
       {{ form.email }}
@@ -17,4 +21,5 @@
     </form>
   </div>
   <p>Already have an account? <a href="{% url 'login' %}">Login here</a>.</p>
+
 {% endblock %}

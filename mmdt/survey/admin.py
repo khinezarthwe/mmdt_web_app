@@ -20,7 +20,14 @@ class QuestionInLine(admin.TabularInline):
 
 class QuestionAdmin(admin.ModelAdmin):
     inlines = [ChoiceInLine]
-    fieldsets = [(None, {'fields': ['survey', 'question_text', 'question_type', 'pub_date', 'is_enabled']}),]
+    list_display = ['question_text', 'survey_id']
+    list_filter = ['survey', 'question_type', 'is_enabled']
+    search_fields = ['question_text']
+
+    def survey_id(self, instance):
+        return instance.survey_id
+
+    survey_id.short_description = 'Survey ID'
 
     def get_formsets_with_inlines(self, request, obj=None):
         for inline in self.get_inline_instances(request, obj):
@@ -67,19 +74,28 @@ def export_to_csv(modeladmin, request, queryset):
 export_to_csv.short_description = 'Export Selected Responses to CSV'
 
 class ResponseAdmin(admin.ModelAdmin):
-    list_display = ['question', 'response_text']
+    list_display = ['question', 'response_text', 'survey_id']
     search_fields = ['question__question_text', 'response_text']
     actions = [export_to_csv]
 
+    def survey_id(self, instance):
+        return instance.question.survey_id
+
+    survey_id.short_description = 'Survey ID'
+
 class ChoiceAdmin(admin.ModelAdmin):
-    list_display = ['choice_text', 'question_type', 'question',]
+    list_display = ['choice_text', 'question_type', 'question', 'survey_id']
     search_fields = ['question__question_text', 'choice_text']
     list_filter = ['question__question_type']
 
     def question_type(self, instance):
         return instance.question.question_type
 
+    def survey_id(self, instance):
+        return instance.question.survey_id
+
     question_type.short_description = 'Question Type'
+    survey_id.short_description = 'Survey ID'
 
 class UserSurveyResponseAdmin(admin.ModelAdmin):
     list_display = ['user', 'survey']

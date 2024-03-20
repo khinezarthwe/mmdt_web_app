@@ -34,6 +34,7 @@ ALLOWED_HOSTS = ['mmdt.istarvz.com', 'mmdt-dev.thingaha.org', '127.0.0.1']
 INSTALLED_APPS = [
     'polls.apps.PollsConfig',
     'survey.apps.SurveyConfig',
+    'users.apps.UsersConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -203,4 +204,6 @@ LOGGING = {
     },
 }
 
-LOGIN_REDIRECT_URL = 'polls:index'
+LOGIN_REDIRECT_URL = 'users:dashboard'
+
+LOGOUT_REDIRECT_URL = 'users:dashboard'

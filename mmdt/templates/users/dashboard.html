@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <h3>Hello, {{ user.username|default:'Guest' }}!</h3>
+  <h4>Welcome To Myanmar Data Tech Team</h4>
+
+  <div>
+    {% if user.is_authenticated %}
+      <button onclick="window.location.href='{% url 'logout' %}'" class="form-button">Logout</button>
+    {% else %}
+      <button onclick="window.location.href='{% url 'login' %}'" class="form-button">Login</button>
+    {% endif %}
+  </div>
+{% endblock %}

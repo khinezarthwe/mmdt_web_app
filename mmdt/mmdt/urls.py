@@ -24,6 +24,7 @@ from django.contrib.auth.views import LoginView, LogoutView
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('blog.urls')),
+    path('', include('users.urls', namespace='users')),
     path('polls/', include('polls.urls', namespace='polls')),
     path('survey/', include('survey.urls', namespace='survey')),
     path('summernote/', include('django_summernote.urls')),

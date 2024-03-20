@@ -17,8 +17,9 @@
       {{ form.password1 }}
       {{ form.password2.label_tag }}
       {{ form.password2 }}
-    <button type="submit" class="form-button">Register</button>
-  </form>
-</div>
-<p>Already have an account? <a href="{% url 'polls:login' %}">Login here</a>.</p>
+      <button type="submit" class="form-button">Register</button>
+    </form>
+  </div>
+  <p>Already have an account? <a href="{% url 'login' %}">Login here</a>.</p>
+
 {% endblock %}

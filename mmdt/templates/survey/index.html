@@ -1,6 +1,14 @@
 {% extends "base.html" %}
 {% block content %}
   <h2>Active Surveys</h2>
+
+  {% if messages %}
+  {% for message in messages %}
+    <p class="message {% if message.tags %}{{ message.tags }}{% endif %}">{{ message }}</p>
+  {% endfor %}
+{% endif %}
+
+
   {% if submitted_successfully %}
     <p class="vote-success-message">🎉🎉 Thank you for taking our survey! 😊😊</p>
     <a href="{% url 'survey:index' %}" class="button underline">Go back</a>
@@ -13,4 +21,5 @@
       {% endfor %}
     </ul>
   {% endif %}
+  
 {% endblock %}

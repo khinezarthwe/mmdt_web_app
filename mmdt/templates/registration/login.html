@@ -3,7 +3,7 @@
 {% block content %}
   <div class="card">
     <h2 class="title">Login</h2>
-    <form method="post" class="auth-form" action="{% url 'accounts:login' %}">
+    <form method="post" class="auth-form">
       {% csrf_token %}
       {{ form.username.label_tag }}
       {{ form.username }}
@@ -13,5 +13,6 @@
       <button type="submit" class="form-button">Login</button>
     </form>
   </div>
-  <p>Don't have an account? <a href="{% url 'accounts:register' %}">Register here</a>.</p>
+  <p>If you don't want to login <a href="{% url 'users:dashboard' %}">Back to dashboard</a>.</p>
+  <p>Don't have an account? <a href="{% url 'users:register' %}">Register</a>.</p>
 {% endblock %}

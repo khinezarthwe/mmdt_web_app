@@ -4,10 +4,6 @@ from .forms import create_survey_form
 from django.contrib import messages
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 import json
-from accounts.views import register  # Import the register method
-
-def survey_register(request):
-    return register(request) 
 
 
 class SurveyPage:

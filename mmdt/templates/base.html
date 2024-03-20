@@ -61,17 +61,17 @@
                             <!-- If the user is authenticated, show their username and a dropdown with Logout -->
                             <span class="opener">{{ user.username }}</span>
                             <ul>
-                                <li><a href="{% url 'logout' %}?next={% url 'home' %}">Logout</a></li>
+                                <li><a href="{% url 'users:dashboard' %}">User Dashboard</a></li>
                             </ul>
                         {% else %}
                             <!-- If the user is not authenticated, show a dropdown with Login and Register -->
                             <span class="opener">User Profile</span>
                             <ul>
-                                <li><a href="{% url 'accounts:login' %}?next={% url 'home' %}">Login</a></li>
-                                <li><a href="{% url 'accounts:register' %}?next={% url 'home' %}">Register</a></li>
+                                <li><a href="{% url 'users:dashboard' %}">Sign Up</a></li>
                             </ul>
                         {% endif %}
                     </li>
+                    
 
                 </ul>
             </nav>

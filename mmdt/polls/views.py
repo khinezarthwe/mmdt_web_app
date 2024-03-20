@@ -6,8 +6,6 @@ from .models import Question, Choice, ActiveGroup
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger, InvalidPage
 from django.contrib.admin.views.decorators import staff_member_required
 
-from accounts.views import register
-
 
 @staff_member_required
 def release_results(request, group_id):
@@ -15,9 +13,6 @@ def release_results(request, group_id):
     group.is_results_released = True
     group.save()
     return HttpResponseRedirect(reverse('polls:all_results'))
-
-def polls_register(request):
-    return register(request)
 
 
 class PollHomePage:

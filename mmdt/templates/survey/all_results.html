@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% load static %}
+{% load templatetags %}
+{% block content %}
+<h2>Survey Results</h2>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<div class="tab-content">
+{% for survey_data in surveys_chart_data %}
+    <h2>{{ survey_data.survey_title }}</h2>
+        {% for question_data in survey_data.questions_chart_data %}
+            <div style="max-width: 800px; margin-top: 20px; display: flex;">
+                <div class="tab-pane" role="tabpanel">
+                    <h3>{{ question_data.question_text }}</h3>
+                    
+                    {% if question_data.chart_type %}
+                        <canvas id="chart-{{ forloop.parentloop.counter }}-{{ forloop.counter }}"></canvas>
+                        <script>
+                            var ctx = document.getElementById('chart-{{ forloop.parentloop.counter }}-{{ forloop.counter }}').getContext('2d');
+                            var chartType = '{{ question_data.chart_type }}';
+                            var labels = {{ question_data.data|pluck:"label"|safe }};
+                            var data = {{ question_data.data|pluck:"value"|safe }};
+                            var chartData = {
+                                type: chartType === 'PC' ? 'pie' : 'bar',
+                                data: {
+                                    labels: labels,
+                                    datasets: [{
+                                        label: '{{ question_data.question_text }}',
+                                        data: data,
+                                        backgroundColor: [
+                                            'rgba(255, 99, 132, 0.2)',
+                                            'rgba(54, 162, 235, 0.2)',
+                                            'rgba(255, 206, 86, 0.2)',
+                                            'rgba(75, 192, 192, 0.2)',
+                                            'rgba(153, 102, 255, 0.2)',
+                                            'rgba(255, 159, 64, 0.2)'
+                                        ],
+                                        borderColor: [
+                                            'rgba(255, 99, 132, 1)',
+                                            'rgba(54, 162, 235, 1)',
+                                            'rgba(255, 206, 86, 1)',
+                                            'rgba(75, 192, 192, 1)',
+                                            'rgba(153, 102, 255, 1)',
+                                            'rgba(255, 159, 64, 1)'
+                                        ],
+                                        borderWidth: 1
+                                    }]
+                                },
+                                options: {
+                                    scales: {
+                                        y: {
+                                            beginAtZero: true
+                                        }
+                                    }
+                                }
+                            };
+        
+                            new Chart(ctx, chartData);
+                        </script>
+                    {% elif question_data.text_responses %}
+                        <ul>
+                            {% for response in question_data.text_responses %}
+                                <li>{{ response }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% elif question_data.average_scale %}
+                        <p>Average scale: {{ question_data.average_scale }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+    {% endfor %}
+</div>
+{% endblock %}

@@ -35,11 +35,16 @@ class Question(models.Model):
         (DROPDOWN, 'Drop-down'),
         (SLIDING_SCALE, 'Sliding Scale')
     ]
+    CHART_TYPES = [
+        ('PC', 'Pie Chart'),
+        ('BC', 'Bar Chart')
+    ]
     survey = models.ForeignKey(Survey, on_delete=models.CASCADE, related_name='questions')
     question_text = models.CharField(max_length=200)
     pub_date = models.DateTimeField('date published', null=True, default=timezone.now)
     is_enabled = models.BooleanField(default=True)
     question_type = models.CharField(max_length=255, choices=QUESTION_TYPES, default=TEXT)
+    chart_type = models.CharField(max_length=2, choices=CHART_TYPES, default='PC', null=True, blank=True)
 
     def __str__(self):
         return self.question_text

@@ -3,6 +3,8 @@ from .models import Survey, Response, Question, Choice,  UserSurveyResponse
 from .forms import create_survey_form
 from django.contrib import messages
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from collections import Counter
+from django.db.models import Avg
 import json
 
 
@@ -106,3 +108,52 @@ class SurveyPage:
         }
         return render(request, 'survey/survey_detail.html', context)
     
+    def all_results(request):
+        # Fetch all surveys
+        surveys = Survey.objects.all()
+
+        # Prepare data for charts for all surveys
+        surveys_chart_data = []
+
+        for survey in surveys:
+            questions = survey.questions.prefetch_related('responses').all()
+
+            questions_chart_data = []
+            for question in questions:
+                # Initialize chart data structure for each question
+                chart_data = {'question_text': question.question_text, 'chart_type': question.chart_type, 'data': []}
+
+                # Process only the questions that can be represented in charts
+                if question.question_type in [Question.MULTIPLE_CHOICE, Question.CHECKBOX, Question.DROPDOWN]:
+                    responses = [response.response_text for response in question.responses.all()]
+                    # Count occurrences of each response
+                    response_counts = Counter(responses)
+
+                    # Prepare data for the chart
+                    for choice in question.choices.all():
+                        chart_data['data'].append({'label': choice.choice_text, 'value': response_counts.get(choice.choice_text, 0)})
+
+                elif question.question_type in [Question.TEXT, Question.LONG_TEXT]:
+                    responses = question.responses.all()
+                    chart_data['text_responses'] = [response.response_text for response in responses]
+
+                elif question.question_type == Question.SLIDING_SCALE:
+                    average_response = question.responses.aggregate(Avg('response_text'))['response_text__avg']
+                    if average_response is not None:
+                        chart_data['chart_type'] = 'BC'
+                        chart_data['data'] = [{'label': 'Average Scale', 'value': round(average_response, 2)}]
+
+                # Add the prepared data for this question to the list for the current survey
+                questions_chart_data.append(chart_data)
+
+            # Add the survey and its questions chart data to the surveys chart data list
+            surveys_chart_data.append({
+                'survey_title': survey.title,
+                'questions_chart_data': questions_chart_data
+            })
+
+        context = {
+            'surveys_chart_data': surveys_chart_data,
+        }
+
+        return render(request, 'survey/all_results.html', context)

@@ -20,7 +20,7 @@ class QuestionInLine(admin.TabularInline):
 
 class QuestionAdmin(admin.ModelAdmin):
     inlines = [ChoiceInLine]
-    list_display = ['question_text', 'survey_id']
+    list_display = ['question_text', 'survey_id', 'chart_type']
     list_filter = ['survey', 'question_type', 'is_enabled']
     search_fields = ['question_text']
 

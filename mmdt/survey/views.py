@@ -91,8 +91,9 @@ class SurveyPage:
                                         response_text = "No answer selected"
                                 # Create Response object
                                 Response.objects.create(question=question, response_text=response_text)
-            
-            UserSurveyResponse.objects.create(user=request.user, survey=survey)
+            if survey.registration_required:
+                # we will create response if surveys required to login
+                UserSurveyResponse.objects.create(user=request.user, survey=survey)
             # Display success message
             request.session['survey_submitted_successfully'] = True
             return redirect('survey:index')

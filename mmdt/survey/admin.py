@@ -1,7 +1,7 @@
 import csv
 from django.contrib import admin
 from django.http import HttpResponse
-from .models import Survey, Question, Choice, Response
+from .models import Survey, Question, Choice, Response, UserSurveyResponse
 
 
 class ChoiceInLine(admin.TabularInline):
@@ -42,6 +42,26 @@ class SurveyAdmin(admin.ModelAdmin):
         (None, {'fields': ['title', 'description', 'start_date', 'end_date', 'is_active']})
     ]
 
+    list_display = ['title', 'is_active', 'registration_required']
+    list_filter = ["registration_required"]
+    actions = ['activate_surveys', 'deactivate_surveys', 'registration_surveys', 'guests_surveys']
+
+    def activate_surveys(self, request, queryset):
+        queryset.update(is_active=True)
+    activate_surveys.short_description = 'Activate selected surveys'
+
+    def deactivate_surveys(self, request, queryset):
+        queryset.update(is_active=False)
+    deactivate_surveys.short_description = 'Deactivate selected surveys'
+
+    def registration_surveys(self, request, queryset):
+        queryset.update(registration_required=True)
+    registration_surveys.short_description = 'Registrations required selected surveys'
+
+    def guests_surveys(self, request, queryset):
+        queryset.update(registration_required=False)
+    guests_surveys.short_description = 'Registrations are not required selected surveys'
+
 def export_to_csv(modeladmin, request, queryset):
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="survey_results.csv"'
@@ -77,6 +97,12 @@ class ChoiceAdmin(admin.ModelAdmin):
     question_type.short_description = 'Question Type'
     survey_id.short_description = 'Survey ID'
 
+class UserSurveyResponseAdmin(admin.ModelAdmin):
+    list_display = ['user', 'survey']
+    search_fields = ['user__username', 'survey__title']
+    list_filter = ['survey']
+
+admin.site.register(UserSurveyResponse, UserSurveyResponseAdmin)
 admin.site.register(Survey, SurveyAdmin)
 admin.site.register(Question, QuestionAdmin)
 admin.site.register(Choice, ChoiceAdmin)

@@ -1,5 +1,7 @@
 from django import forms
 from .models import Question
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.models import User
 
 def create_survey_form(survey):
     class SurveyForm(forms.Form):

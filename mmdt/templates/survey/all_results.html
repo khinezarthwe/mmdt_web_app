@@ -3,7 +3,7 @@
 {% load templatetags %}
 {% block content %}
 <h2>Survey Results</h2>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{% static 'assets/js/chart.min.js' %}"></script>
 <div class="tab-content">
 {% for survey_data in surveys_chart_data %}
     <h2>{{ survey_data.survey_title }}</h2>

@@ -39,7 +39,7 @@ class QuestionAdmin(admin.ModelAdmin):
 class SurveyAdmin(admin.ModelAdmin):
     inlines = [QuestionInLine]
     fieldsets = [
-        (None, {'fields': ['title', 'description', 'start_date', 'end_date', 'is_active']})
+        (None, {'fields': ['title', 'description', 'start_date', 'end_date', 'is_active', 'is_result_released']})
     ]
 
     list_display = ['title', 'is_active', 'registration_required']

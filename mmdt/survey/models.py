@@ -1,8 +1,7 @@
-import datetime
-from django.contrib import admin
+from django.contrib.auth.models import User
 from django.db import models
 from django.utils import timezone
-from django.contrib.auth.models import User
+
 
 class Survey(models.Model):
     title = models.CharField(max_length=255)
@@ -11,6 +10,7 @@ class Survey(models.Model):
     end_date = models.DateTimeField(null=True, blank=True)
     is_active = models.BooleanField(default=True)
     registration_required = models.BooleanField(default=False)
+    is_result_released = models.BooleanField(default=False)
 
     def __str__(self):
         return self.title
@@ -19,6 +19,7 @@ class Survey(models.Model):
         # Returns True if the survey is currently active based on its start and end dates.
         now = timezone.now()
         return self.start_date <= now and (self.end_date is None or now <= self.end_date)
+
 
 class Question(models.Model):
     TEXT = 'T'
@@ -56,15 +57,16 @@ class Choice(models.Model):
 
     def __str__(self):
         return self.choice_text
-    
+
+
 class Response(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='responses')
     response_text = models.TextField()
 
     def __str__(self):
         return f"Response to {self.question.question_text}: {self.response_text}"
-    
+
+
 class UserSurveyResponse(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     survey = models.ForeignKey(Survey, on_delete=models.CASCADE)
-    

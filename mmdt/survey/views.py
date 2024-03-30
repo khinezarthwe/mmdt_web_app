@@ -110,7 +110,7 @@ class SurveyPage:
     
     def all_results(request):
         # Fetch all surveys
-        surveys = Survey.objects.all()
+        surveys = Survey.objects.filter(is_result_released=True)
 
         # Prepare data for charts for all surveys
         surveys_chart_data = []

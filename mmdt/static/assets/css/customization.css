@@ -1,5 +1,5 @@
 .btn-custom {
-    background-color: #003399; 
+    background-color: #003399;
     color: white !important;
 }
 
@@ -32,7 +32,7 @@
 }
 
 p.vote-success-message {
-    font-size: 32px; 
+    font-size: 32px;
     color: black;
 }
 
@@ -45,14 +45,14 @@ p.vote-success-message {
 }
 
 .question-image {
-    width: 100%; 
-    height: 350px; 
-    object-fit: contain; 
+    width: 100%;
+    height: 350px;
+    object-fit: contain;
     object-position: left;
 }
 
 .default-image {
-    max-width: 100%; 
+    max-width: 100%;
     height: auto;
 }
 
@@ -61,8 +61,8 @@ p.vote-success-message {
 }
 
 .card-img {
-    width: 100%; 
-    height: 350px; 
+    width: 100%;
+    height: 350px;
     object-fit: contain;
 }
 
@@ -94,17 +94,17 @@ p.vote-success-message {
     border-radius: 5px;
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
   }
-  
+
   h2.title {
     text-align: center;
     color: #003399;
   }
-  
+
   label {
     margin-bottom: 3px;
     font-size: 1rem;
   }
-  
+
   input {
     padding: 10px;
     margin-bottom: 1.3rem;
@@ -113,30 +113,28 @@ p.vote-success-message {
   }
 
 .auth-form {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-  
+  font-family: "Roboto Slab", serif;
+}
+
   .form-button {
     margin-top: 10px;
   }
-  
+
   button:hover {
     background-color: #003399 !important;
     color: white !important;
   }
-  
+
   p {
     text-align: center;
     margin-top: 16px;
   }
-  
+
   a {
     color: #3498db;
     text-decoration: none;
   }
-  
+
   a:hover {
     text-decoration: underline;
   }
@@ -144,7 +142,7 @@ p.vote-success-message {
   .view-btn:hover {
     text-decoration: none;
   }
-  
+
   .slide-scale-container {
     display: flex;
     flex-direction: column;
@@ -158,7 +156,7 @@ p.vote-success-message {
 }
 
 .label-container {
-    min-width: 150px; 
+    min-width: 150px;
 }
 
 .slider-container {
@@ -170,16 +168,16 @@ p.vote-success-message {
 
 .slider {
     flex: 1;
-    background: #f5f6f7; 
-    width: 100%; 
+    background: #f5f6f7;
+    width: 100%;
     margin-right: 10px;
 }
 
 .slider::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 20px; 
-  height: 20px; 
+  width: 20px;
+  height: 20px;
   background-color: #003399;
   border-radius: 50%;
   cursor: pointer;

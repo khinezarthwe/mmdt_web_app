@@ -56,24 +56,25 @@
                     <li><a href="{% url 'survey:index' %}">Surveys</a></li>
                     <li><a href="{% url 'polls:index' %}">Polls</a></li>
 
-                    <li>
-                        {% if user.is_authenticated %}
-                            <!-- If the user is authenticated, show their username and a dropdown with Logout -->
-                            <span class="opener">{{ user.username }}</span>
-                            <ul>
-                                <li><a href="{% url 'users:dashboard' %}">User Dashboard</a></li>
-                            </ul>
-                        {% else %}
-                            <!-- If the user is not authenticated, show a dropdown with Login and Register -->
-                            <span class="opener">User Profile</span>
-                            <ul>
-                                <li><a href="{% url 'users:dashboard' %}">Sign Up</a></li>
-                            </ul>
-                        {% endif %}
-                    </li>
-                    
-
                 </ul>
+                <hr />
+                <section>
+                    {% if user.is_authenticated %}
+                        <header class="major">
+                          <h2>Hi <a href="{% url 'users:dashboard' %}" class"user-profile-link">{{ user.username }}!</a></h2>
+                        </header>
+                        <div>
+                          <a href="{% url 'logout' %}">Logout</a>
+                        </div>
+                      {% else %}
+                        <div>
+                          New to the site?
+                        </div>
+                        <div>
+                          <a href="{% url 'login' %}">Log in</a> or <a href="{% url 'users:register' %}">Register an account</a>
+                        </div>
+                    {% endif %}
+                </section>
             </nav>
             <!-- Section -->
             <section>

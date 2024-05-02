@@ -16,3 +16,4 @@ django-storages==1.14
 python-decouple==3.8
 numpy==1.26.1
 scikit-learn==1.2.2
+django-nested-admin==4.0.2

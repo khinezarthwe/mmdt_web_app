@@ -46,7 +46,8 @@ INSTALLED_APPS = [
     'crispy_forms',
     'crispy_bootstrap4',
     'django_summernote',
-    'django_bootstrap_icons'
+    'django_bootstrap_icons',
+    'nested_admin',
 ]
 
 CSRF_TRUSTED_ORIGINS = ['https://*.istarvz.com', 'https://*.127.0.0.1']

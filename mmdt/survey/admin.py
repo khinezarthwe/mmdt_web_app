@@ -2,6 +2,7 @@ import csv
 from django.contrib import admin
 from django.http import HttpResponse
 from .models import Survey, Question, Choice, Response, UserSurveyResponse
+from nested_admin.nested import NestedModelAdmin, NestedStackedInline
 
 
 class ChoiceInLine(admin.TabularInline):
@@ -14,9 +15,11 @@ class ChoiceInLine(admin.TabularInline):
             return 1
         return super().get_max_num(request, obj, **kwargs)
 
+
 class QuestionInLine(admin.TabularInline):
     model = Question
     extra = 1
+
 
 class QuestionAdmin(admin.ModelAdmin):
     inlines = [ChoiceInLine]
@@ -36,8 +39,18 @@ class QuestionAdmin(admin.ModelAdmin):
                 continue
             yield inline.get_formset(request, obj), inline
 
-class SurveyAdmin(admin.ModelAdmin):
-    inlines = [QuestionInLine]
+
+class ChoiceinSurvey(NestedStackedInline):
+    model = Choice
+
+
+class QuestioninSurvey(NestedStackedInline):
+    model = Question
+    inlines = [ChoiceinSurvey]
+
+
+class SurveyAdmin(NestedModelAdmin):
+    inlines = [QuestioninSurvey]
     fieldsets = [
         (None, {'fields': ['title', 'description', 'start_date', 'end_date', 'is_active', 'is_result_released']})
     ]
@@ -62,6 +75,7 @@ class SurveyAdmin(admin.ModelAdmin):
         queryset.update(registration_required=False)
     guests_surveys.short_description = 'Registrations are not required selected surveys'
 
+
 def export_to_csv(modeladmin, request, queryset):
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="survey_results.csv"'
@@ -71,7 +85,9 @@ def export_to_csv(modeladmin, request, queryset):
         writer.writerow([obj.question.question_text, obj.response_text])
     return response
 
+
 export_to_csv.short_description = 'Export Selected Responses to CSV'
+
 
 class ResponseAdmin(admin.ModelAdmin):
     list_display = ['question', 'response_text', 'survey_id']
@@ -82,6 +98,7 @@ class ResponseAdmin(admin.ModelAdmin):
         return instance.question.survey_id
 
     survey_id.short_description = 'Survey ID'
+
 
 class ChoiceAdmin(admin.ModelAdmin):
     list_display = ['choice_text', 'question_type', 'question', 'survey_id']
@@ -97,10 +114,12 @@ class ChoiceAdmin(admin.ModelAdmin):
     question_type.short_description = 'Question Type'
     survey_id.short_description = 'Survey ID'
 
+
 class UserSurveyResponseAdmin(admin.ModelAdmin):
     list_display = ['user', 'survey']
     search_fields = ['user__username', 'survey__title']
     list_filter = ['survey']
+
 
 admin.site.register(UserSurveyResponse, UserSurveyResponseAdmin)
 admin.site.register(Survey, SurveyAdmin)

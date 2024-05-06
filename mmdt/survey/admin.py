@@ -52,7 +52,7 @@ class QuestioninSurvey(NestedStackedInline):
 class SurveyAdmin(NestedModelAdmin):
     inlines = [QuestioninSurvey]
     fieldsets = [
-        (None, {'fields': ['title', 'description', 'start_date', 'end_date', 'is_active', 'is_result_released']})
+        (None, {'fields': ['title', 'description', 'start_date', 'end_date', 'is_active', 'is_result_released', 'registration_required']})
     ]
 
     list_display = ['title', 'is_active', 'registration_required']

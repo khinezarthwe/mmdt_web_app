@@ -32,6 +32,10 @@ class SurveyPage:
                     messages.warning(request, f'You need to log in to participate in this survey.')
                     return redirect('survey:index')
             # Display success message
+            if not user_survey_response.validate():
+                messages.warning(request, 'Please answer all required questions before submitting the survey.')
+                return redirect('survey:survey_detail', survey_id=survey_id)
+
             user_survey_response.is_draft = False
             user_survey_response.save()
             request.session['survey_submitted_successfully'] = True

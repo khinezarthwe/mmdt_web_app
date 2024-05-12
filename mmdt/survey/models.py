@@ -31,6 +31,21 @@ class UserSurveyResponse(models.Model):
     def user_display(self):
         return self.user.username if self.user else 'Anonymous' + ' (' + self.guest_id or '' + ')'
 
+    def validate(self):
+        for question in self.survey.questions.all():
+            responses = self.responses.filter(question=question)
+            if question.optional:
+                continue
+            if len(responses) == 0:
+                return False
+            if question.question_type == Question.MULTIPLE_CHOICE:
+                if len(responses) > 1:
+                    return False
+            if question.question_type == Question.CHECKBOX:
+                if len(responses) == 0:
+                    return False
+        return True
+
     @staticmethod
     def find_or_create_draft_guest(guest_id, survey):
         user_survey_response = UserSurveyResponse.objects.filter(guest_id=guest_id, survey=survey, is_draft=True).first()
@@ -70,6 +85,7 @@ class Question(models.Model):
     is_enabled = models.BooleanField(default=True)
     question_type = models.CharField(max_length=255, choices=QUESTION_TYPES, default=TEXT)
     chart_type = models.CharField(max_length=2, choices=CHART_TYPES, default='PC', null=True, blank=True)
+    optional = models.BooleanField(default=False)
 
     def __str__(self):
         return self.question_text

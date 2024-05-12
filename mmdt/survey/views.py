@@ -6,7 +6,8 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from collections import Counter
 from django.db.models import Avg
 import json
-
+from django.http import HttpResponse
+import uuid
 
 class SurveyPage:
     def index(request):
@@ -15,99 +16,113 @@ class SurveyPage:
         # Get any messages passed from the view
         message_list = messages.get_messages(request)
         return render(request, 'survey/index.html', {'surveys': surveys, 'submitted_successfully': submitted_successfully, 'messages': message_list})
-    
+
     def survey_detail(request, survey_id):
         survey = get_object_or_404(Survey, pk=survey_id)
         # Check if registration is required for this survey
-        if survey.registration_required and not request.user.is_authenticated:
-            messages.warning(request, f'You need to log in to participate in this survey.')
-            return redirect('survey:index')
-        questions = survey.questions.all().order_by('pub_date')
-
-        if request.user.is_authenticated:  # Check if the user is authenticated
-            if UserSurveyResponse.objects.filter(user=request.user, survey=survey).exists():
-                messages.warning(request, 'You have already responded to this survey.')
-                return redirect('survey:index')
-
-        # Set the number of questions to display per page
-        questions_per_page = 5
-        paginator = Paginator(questions, questions_per_page)
-        # Get the current page number from the request's GET parameters
-        page = request.GET.get('page')
-        try:
-            current_page_questions = paginator.page(page)
-        except PageNotAnInteger:
-            # If page is not an integer, deliver the first page.
-            current_page_questions = paginator.page(1)
-        except EmptyPage:
-            # If page is out of range, deliver the last page of results.
-            current_page_questions = paginator.page(paginator.num_pages)
-            
-        SurveyForm = create_survey_form(survey)
         if request.method == "POST":
-            form_data = request.POST
-            all_responses = form_data.get('all_responses')
-            if all_responses:
-                all_responses_dict = json.loads(all_responses)
-           
+            if request.user.is_authenticated:
+                user_survey_response = UserSurveyResponse.objects.filter(user=request.user, survey=survey).first()
+            else:
+                guest_id = request.session.get('guest_id', None)
+                user_survey_response = UserSurveyResponse.objects.filter(guest_id=guest_id, survey=survey).first()
 
-                for field_name, response_text in all_responses_dict.items():
-                    if field_name.startswith('question_'):
-                        question_id = field_name.replace('question_', '')
-                        try:
-                            question = Question.objects.get(id=question_id)
-                        except Question.DoesNotExist:
-                            # Handle the case where the question doesn't exist
-                            messages.error(request, f'Invalid question ID: {question_id}')
-                            return redirect('survey:index')
-                        
-                        if isinstance(response_text, list) and question.question_type == Question.CHECKBOX:
-                            # For checkbox questions, response_text is a list
-                            for choice_id in response_text:
-                                choice = get_object_or_404(Choice, id=choice_id)
-                                Response.objects.create(question=question, response_text=choice.choice_text)
-                        else:
-                            
-                            if response_text is not None:
-
-                                if question.question_type == Question.MULTIPLE_CHOICE:
-                                    # For Multiple Choice questions, response_text is the selected choice ID
-                                    choice_id = int(response_text)
-                                    selected_choice = get_object_or_404(Choice, id=choice_id)
-                                    response_text = selected_choice.choice_text
-
-                                elif question.question_type == Question.SLIDING_SCALE:
-                                    selected_index = int(response_text)
-                                    # Ensure the index is within the range of available choices
-                                    choices = question.choices.all()
-                                    if 0 <= selected_index < len(choices):
-                                        selected_choice = choices[selected_index]
-                                        response_text = selected_choice.choice_text
-
-                                elif question.question_type == Question.DROPDOWN: 
-                                    if response_text:
-                                        choice = get_object_or_404(Choice, choice_text=response_text)
-                                        response_text = choice.choice_text
-                                    else:
-                                        # Handle the default option, e.g., set response_text to a specific value
-                                        response_text = "No answer selected"
-                                # Create Response object
-                                Response.objects.create(question=question, response_text=response_text)
-            if survey.registration_required:
-                # we will create response if surveys required to login
-                UserSurveyResponse.objects.create(user=request.user, survey=survey)
+                if survey.registration_required:
+                    # we will create response if surveys required to login
+                    messages.warning(request, f'You need to log in to participate in this survey.')
+                    return redirect('survey:index')
             # Display success message
+            user_survey_response.is_draft = False
+            user_survey_response.save()
             request.session['survey_submitted_successfully'] = True
             return redirect('survey:index')
+
         else:
+            if survey.registration_required and not request.user.is_authenticated:
+                messages.warning(request, f'You need to log in to participate in this survey.')
+                return redirect('survey:index')
+            guest_id = request.session.get('guest_id', None)
+            if guest_id is None:
+                guest_id = str(uuid.uuid4())
+                request.session['guest_id'] = guest_id
+
+            questions = survey.questions.all().order_by('pub_date')
+
+            if request.user.is_authenticated:  # Check if the user is authenticated
+                if UserSurveyResponse.objects.filter(user=request.user, survey=survey, is_draft=False).exists():
+                    messages.warning(request, 'You have already responded to this survey.')
+                    return redirect('survey:index')
+                else:
+                    user_survey_response = UserSurveyResponse.find_or_create_draft_user(request.user, survey)
+            else:
+                if UserSurveyResponse.objects.filter(guest_id=guest_id, survey=survey, is_draft=False).exists():
+                    messages.warning(request, 'You have already responded to this survey.')
+                    return redirect('survey:index')
+                else:
+                    user_survey_response = UserSurveyResponse.find_or_create_draft_guest(guest_id, survey)
+
+            # Set the number of questions to display per page
+            questions_per_page = 5
+            paginator = Paginator(questions, questions_per_page)
+            # Get the current page number from the request's GET parameters
+            page = request.GET.get('page')
+            try:
+                current_page_questions = paginator.page(page)
+            except PageNotAnInteger:
+                # If page is not an integer, deliver the first page.
+                current_page_questions = paginator.page(1)
+            except EmptyPage:
+                # If page is out of range, deliver the last page of results.
+                current_page_questions = paginator.page(paginator.num_pages)
+
+            SurveyForm = create_survey_form(survey, user_survey_response, current_page_questions)
             form = SurveyForm()
-        context = {
-            'survey': survey,
-            'form': form,
-            'current_page_questions': current_page_questions,
-        }
-        return render(request, 'survey/survey_detail.html', context)
-    
+            context = {
+                'survey': survey,
+                'form': form,
+                'current_page_questions': current_page_questions,
+            }
+            return render(request, 'survey/survey_detail.html', context)
+
+    def save_survey_response(request, survey_id, question_id):
+        survey = get_object_or_404(Survey, pk=survey_id)
+        user = request.user if request.user.is_authenticated else None
+        guest_id = request.session.get('guest_id', None)
+        if user:
+            user_survey_response = UserSurveyResponse.find_or_create_draft_user(user, survey)
+        else:
+            user_survey_response = UserSurveyResponse.find_or_create_draft_guest(guest_id, survey)
+
+            # Or may be just return a 404
+            # return HttpResponseNotFound('UserSurveyResponse not found')
+        choice_id = request.POST.get('choice_id')
+        is_text = request.POST.get('is_text')
+        question = Question.objects.filter(id=question_id).first()
+        if question == None:
+            return HttpResponse(400)
+
+        if is_text:
+            response = Response.objects.filter(question=question, user_survey_response=user_survey_response).first();
+            if response == None:
+                Response.objects.create(question=question, choice=None, user_survey_response=user_survey_response, response_text=choice_id)
+            else:
+                Response.objects.filter(id=response.id).update(question=question, choice=None, user_survey_response=user_survey_response, response_text=choice_id)
+
+            return HttpResponse(200)
+
+        else:
+            choice = Choice.objects.filter(id=choice_id).first()
+            if choice == None:
+                return HttpResponse(400)
+
+            response = Response.objects.filter(question=question, user_survey_response=user_survey_response).first();
+            if response == None:
+                Response.objects.create(question=question, choice=choice, user_survey_response=user_survey_response, response_text=choice.choice_text)
+            else:
+                Response.objects.filter(id=response.id).update(question=question, choice=choice, user_survey_response=user_survey_response, response_text=choice.choice_text)
+
+            return HttpResponse(200)
+
     def all_results(request):
         # Fetch all surveys
         surveys = Survey.objects.filter(is_result_released=True)

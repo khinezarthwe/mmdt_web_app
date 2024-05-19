@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", function () {
    // save each question response in server
-  $('#surveyForm input[type=radio], #surveyForm select').on('change', function () {
+  $('#surveyForm input[type=radio], #surveyForm input[type=checkbox], #surveyForm select').on('change', function () {
     var surveyId = $("form[data-survey-id]").data('surveyId');
     var csrfMiddlewareToken = $('input[name="csrfmiddlewaretoken"]').val();
     const questionId = $(this).attr('name').replace('question_', '');

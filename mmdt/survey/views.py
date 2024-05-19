@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import Survey, Response, Question, Choice,  UserSurveyResponse
+from .models import Survey, Response, Question, Choice,  UserSurveyResponse, ResponseChoice
 from .forms import create_survey_form
 from django.contrib import messages
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
@@ -99,33 +99,47 @@ class SurveyPage:
 
             # Or may be just return a 404
             # return HttpResponseNotFound('UserSurveyResponse not found')
-        choice_id = request.POST.get('choice_id')
         question_type = request.POST.get('question_type')
         question = Question.objects.filter(id=question_id).first()
         if question == None:
             return HttpResponse(400)
 
         if question_type == 'text':
+            payload = request.POST.get('payload')
             response = Response.objects.filter(question=question, user_survey_response=user_survey_response).first();
             if response == None:
-                Response.objects.create(question=question, choice=None, user_survey_response=user_survey_response, response_text=choice_id)
+                Response.objects.create(question=question, user_survey_response=user_survey_response, response_text=payload)
             else:
-                Response.objects.filter(id=response.id).update(question=question, choice=None, user_survey_response=user_survey_response, response_text=choice_id)
+                Response.objects.filter(id=response.id).update(question=question, user_survey_response=user_survey_response, response_text=payload)
 
             return HttpResponse(200)
-        # elif question_type == 'checkbox':
+        elif question_type == 'multiple_options':
+            payload = request.POST.getlist('payload[]')
+            choice_ids =  [int(item) for item in payload]
+            choices = Choice.objects.filter(id__in=choice_ids)
+            if len(choices) != len(choice_ids):
+                return HttpResponse(400)
+
+            response = Response.objects.filter(question=question, user_survey_response=user_survey_response).first();
+            if response == None:
+                response = Response.objects.create(question=question, user_survey_response=user_survey_response)
+            else:
+                for choice in choices:
+                    ResponseChoice.objects.create(response=response, choice=choice)
+
+
+            return HttpResponse(200)
 
         else:
+            choice_id = int(request.POST.get('payload'))
             choice = Choice.objects.filter(id=choice_id).first()
             if choice == None:
                 return HttpResponse(400)
 
             response = Response.objects.filter(question=question, user_survey_response=user_survey_response).first();
             if response == None:
-                Response.objects.create(question=question, choice=choice, user_survey_response=user_survey_response, response_text=choice.choice_text)
-            else:
-                Response.objects.filter(id=response.id).update(question=question, choice=choice, user_survey_response=user_survey_response, response_text=choice.choice_text)
-
+                response = Response.objects.create(question=question, user_survey_response=user_survey_response)
+            ResponseChoice.objects.create(response=response, choice=choice)
             return HttpResponse(200)
 
     def all_results(request):

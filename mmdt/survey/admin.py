@@ -1,7 +1,7 @@
 import csv
 from django.contrib import admin
 from django.http import HttpResponse
-from .models import Survey, Question, Choice, Response, UserSurveyResponse
+from .models import Survey, Question, Choice, Response, UserSurveyResponse, ResponseChoice
 from nested_admin.nested import NestedModelAdmin, NestedStackedInline
 
 
@@ -90,7 +90,7 @@ export_to_csv.short_description = 'Export Selected Responses to CSV'
 
 
 class ResponseAdmin(admin.ModelAdmin):
-    list_display = ['choice_id', 'response_text', 'survey_title', 'question_text', 'choice_text', 'user']
+    list_display = ['response_text', 'survey_title', 'question_text', 'user']
     search_fields = ['question__question_text', 'response_text']
     actions = [export_to_csv]
 
@@ -103,8 +103,11 @@ class ResponseAdmin(admin.ModelAdmin):
     def question_text(self, instance):
         return instance.question.question_text
 
-    def choice_text(self, instance):
-        return instance.choice.choice_text if instance.choice else instance.reponse_text
+    def response_text(self, instance):
+        if len( instance.choices.all()) > 0:
+            return ",".join([choice.choice_text for choice in instance.choices ])
+        else:
+            instance.reponse_text
 
     def user(self, instance):
         return instance.user_survey_response.user.username if instance.user_survey_response.user else 'Anonymous' + ' (' + instance.user_survey_response.guest_id + ')'
@@ -128,9 +131,19 @@ class UserSurveyResponseAdmin(admin.ModelAdmin):
     list_display = ['user_display', 'survey', 'guest_id', 'is_draft', 'created_at', 'updated_at']
     search_fields = ['user__username', 'survey__title']
     list_filter = ['survey']
+    
+class ResponseChoiceAdmin(admin.ModelAdmin):
+    list_display = ('response', 'choice', 'get_question')
+    search_fields = ('response__question__question_text', 'choice__text')
+    list_filter = ('response__question', )
+
+    def get_question(self, obj):
+        return obj.response.question.question_text
+    get_question.short_description = 'Question'
 
 admin.site.register(UserSurveyResponse, UserSurveyResponseAdmin)
 admin.site.register(Survey, SurveyAdmin)
 admin.site.register(Question, QuestionAdmin)
 admin.site.register(Choice, ChoiceAdmin)
 admin.site.register(Response, ResponseAdmin)
+admin.site.register(ResponseChoice, ResponseChoiceAdmin)

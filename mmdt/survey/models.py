@@ -101,9 +101,16 @@ class Choice(models.Model):
 
 class Response(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='responses')
-    choice = models.ForeignKey(Choice, on_delete=models.CASCADE, related_name='responses', null=True, blank=True)
+    choices = models.ManyToManyField(Choice, through='ResponseChoice', blank=True)
+
     user_survey_response = models.ForeignKey(UserSurveyResponse, on_delete=models.CASCADE, related_name='responses')
-    response_text = models.TextField()
+    response_text = models.TextField(null=True, blank=True, default=None)
 
     def __str__(self):
         return f"Response to {self.question.question_text}: {self.response_text}"
+class ResponseChoice(models.Model):
+    response = models.ForeignKey(Response, on_delete=models.CASCADE)
+    choice = models.ForeignKey(Choice, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f'{self.response} - {self.choice.choice_text}'

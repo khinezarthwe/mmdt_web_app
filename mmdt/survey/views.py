@@ -125,8 +125,7 @@ class SurveyPage:
                 response = Response.objects.create(question=question, user_survey_response=user_survey_response)
             else:
                 for choice in choices:
-                    ResponseChoice.objects.create(response=response, choice=choice)
-
+                    ResponseChoice.find_or_create_response_choice(response, choice)
 
             return HttpResponse(200)
 
@@ -139,7 +138,7 @@ class SurveyPage:
             response = Response.objects.filter(question=question, user_survey_response=user_survey_response).first();
             if response == None:
                 response = Response.objects.create(question=question, user_survey_response=user_survey_response)
-            ResponseChoice.objects.create(response=response, choice=choice)
+            ResponseChoice.find_or_create_response_choice(response, choice)
             return HttpResponse(200)
 
     def all_results(request):

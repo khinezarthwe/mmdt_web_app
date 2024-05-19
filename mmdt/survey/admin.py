@@ -90,8 +90,8 @@ export_to_csv.short_description = 'Export Selected Responses to CSV'
 
 
 class ResponseAdmin(admin.ModelAdmin):
-    list_display = ['response_text', 'survey_title', 'question_text', 'user']
-    search_fields = ['question__question_text', 'response_text']
+    list_display = ['survey_title', 'user', 'question_text', 'answer']
+    search_fields = ['question__question_text', 'answer']
     actions = [export_to_csv]
 
     def survey_id(self, instance):
@@ -100,17 +100,23 @@ class ResponseAdmin(admin.ModelAdmin):
     def survey_title(self, instance):
         return instance.question.survey.title
 
+    def question_id(self, instance):
+        return instance.question.id
+
     def question_text(self, instance):
         return instance.question.question_text
 
-    def response_text(self, instance):
-        if len( instance.choices.all()) > 0:
-            return ",".join([choice.choice_text for choice in instance.choices ])
+    def answer(self, instance):
+        if instance.choices.exists():
+            return ",".join([f"[{choice.choice_text}]" for choice in instance.choices.all() ])
         else:
-            instance.reponse_text
+            return instance.response_text
 
     def user(self, instance):
         return instance.user_survey_response.user.username if instance.user_survey_response.user else 'Anonymous' + ' (' + instance.user_survey_response.guest_id + ')'
+
+    def survey_id(self, obj):
+        return obj.user_survey_response.survey.id
 
 class ChoiceAdmin(admin.ModelAdmin):
     list_display = ['choice_text', 'question_type', 'question', 'survey_id']
@@ -131,14 +137,15 @@ class UserSurveyResponseAdmin(admin.ModelAdmin):
     list_display = ['user_display', 'survey', 'guest_id', 'is_draft', 'created_at', 'updated_at']
     search_fields = ['user__username', 'survey__title']
     list_filter = ['survey']
-    
+
 class ResponseChoiceAdmin(admin.ModelAdmin):
-    list_display = ('response', 'choice', 'get_question')
+    list_display = ('response', 'choice')
     search_fields = ('response__question__question_text', 'choice__text')
     list_filter = ('response__question', )
 
-    def get_question(self, obj):
-        return obj.response.question.question_text
+    def get_question(self, instance):
+        return instance.response.question.question_text
+
     get_question.short_description = 'Question'
 
 admin.site.register(UserSurveyResponse, UserSurveyResponseAdmin)

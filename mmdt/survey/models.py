@@ -114,3 +114,10 @@ class ResponseChoice(models.Model):
 
     def __str__(self):
         return f'{self.response} - {self.choice.choice_text}'
+
+    @staticmethod
+    def find_or_create_response_choice(response, choice):
+        response_choice = response.choices.filter(id=choice.id).first()
+        if response_choice is None:
+            response_choice = ResponseChoice.objects.create(response=response, choice=choice)
+        return response_choice

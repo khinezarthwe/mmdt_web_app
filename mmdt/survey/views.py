@@ -100,12 +100,12 @@ class SurveyPage:
             # Or may be just return a 404
             # return HttpResponseNotFound('UserSurveyResponse not found')
         choice_id = request.POST.get('choice_id')
-        is_text = request.POST.get('is_text')
+        question_type = request.POST.get('question_type')
         question = Question.objects.filter(id=question_id).first()
         if question == None:
             return HttpResponse(400)
 
-        if is_text:
+        if question_type == 'text':
             response = Response.objects.filter(question=question, user_survey_response=user_survey_response).first();
             if response == None:
                 Response.objects.create(question=question, choice=None, user_survey_response=user_survey_response, response_text=choice_id)
@@ -113,6 +113,7 @@ class SurveyPage:
                 Response.objects.filter(id=response.id).update(question=question, choice=None, user_survey_response=user_survey_response, response_text=choice_id)
 
             return HttpResponse(200)
+        # elif question_type == 'checkbox':
 
         else:
             choice = Choice.objects.filter(id=choice_id).first()

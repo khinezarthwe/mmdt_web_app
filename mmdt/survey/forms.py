@@ -37,6 +37,6 @@ def create_survey_form(survey, user_survey_response, current_page_questions):
                     self.fields[field_name] = forms.ChoiceField(choices=choices, label=question.question_text, required=not question.optional, initial=initial_value)
                 elif question.question_type == Question.SLIDING_SCALE:
                     choices = [(choice.id, choice.choice_text) for choice in question.choices.all()]
-                    initial_value = existing_response.choices.first().id if existing_response else None
+                    initial_value = existing_response.response_text if existing_response else None
                     self.fields[field_name] = forms.IntegerField(label=question.question_text, widget=forms.NumberInput(attrs={'type': 'range'}), required=not question.optional, initial=initial_value)
     return SurveyForm

@@ -49,4 +49,11 @@ document.addEventListener("DOMContentLoaded", function () {
     saveViaAjax(surveyId, questionId, payload, 'text')
   });
 
+  $('#surveyForm input[type=range]').on('change', function () {
+    var surveyId = $("form[data-survey-id]").data('surveyId');
+    const questionId = $(this).attr('name').replace('question_', '');
+    const payload = $(this).val();
+    saveViaAjax(surveyId, questionId, payload, 'text')
+  });
+
 });

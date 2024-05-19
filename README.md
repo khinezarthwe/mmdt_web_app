@@ -43,13 +43,13 @@ Let's set up the project step by step:
 
 3. **Create a Virtual Environment** (Recommended): It's a good practice to isolate project dependencies. You can create a virtual environment by following [these instructions](https://docs.python.org/3/tutorial/venv.html).
 
-4. **Install Project Dependencies**: Run the command `pip install -r requirement.txt` to install the necessary libraries.
+4. **Install Project Dependencies**: Run the command `pip install -r requirement.txt` to install the necessary libraries. Install setuptools by running the command `pip install setuptools`.
    - create .env in file under mmdt-web-app/mmdt/.env and add the following key:value pair
     ```
     AWS_ACCESS_KEY_ID = 'your AWS S3 key'
     AWS_SECRET_ACCESS_KEY = 'your AWS S3 secret key '
     AWS_STORAGE_BUCKET_NAME = 'your S3 bucketname '
-    DEBUG = True or False
+    DEBUG = True # or use False to run without debugging
     SECRET_KEY = 'xxxxx'
     ```
    

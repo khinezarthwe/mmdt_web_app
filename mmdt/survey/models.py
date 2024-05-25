@@ -106,6 +106,12 @@ class Response(models.Model):
     user_survey_response = models.ForeignKey(UserSurveyResponse, on_delete=models.CASCADE, related_name='responses')
     response_text = models.TextField(null=True, blank=True, default=None)
 
+    def survey_id(self):
+        return self.question.survey.id
+
+    def survey_title(self):
+        return self.question.survey.title
+
     def __str__(self):
         return f"Response to {self.question.question_text}: {self.response_text}"
 class ResponseChoice(models.Model):

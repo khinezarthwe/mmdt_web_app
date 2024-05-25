@@ -2,6 +2,7 @@
 {% load static %}
 {% load crispy_forms_tags %}
 {% block content %}
+<link rel="stylesheet" href="{% static 'assets/css/customization.css' %}"/>
 <h2>{{ survey.title }}</h2>
 {% if messages %}
   <ul class="messages">

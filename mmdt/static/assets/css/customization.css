@@ -56,10 +56,6 @@ p.vote-success-message {
     height: auto;
 }
 
-.logo {
-    width: 5em;
-}
-
 .card-img {
     width: 100%;
     height: 350px;
@@ -127,6 +123,11 @@ p.vote-success-message {
 
   p {
     text-align: center;
+    margin-top: 16px;
+  }
+
+  p.card-text {
+    text-align: left;
     margin-top: 16px;
   }
 

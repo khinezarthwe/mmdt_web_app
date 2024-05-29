@@ -138,7 +138,10 @@ class SurveyPage:
             response = Response.objects.filter(question=question, user_survey_response=user_survey_response).first();
             if response == None:
                 response = Response.objects.create(question=question, user_survey_response=user_survey_response)
-            ResponseChoice.find_or_create_response_choice(response, choice)
+            response_choice = ResponseChoice.find_or_create_response_choice(response, choice)
+
+            # Delete all other response choices if the question is a single choice question
+            ResponseChoice.objects.filter(response__question_id=question.id).exclude(id=response_choice.id).delete()
             return HttpResponse(200)
 
     def all_results(request):

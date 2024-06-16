@@ -1109,6 +1109,7 @@ input[type="radio"] {
     font-weight: 400;
     padding-left: 2.4em;
     padding-right: 0.75em;
+    padding-top: 0.2em;
     position: relative; }
     input[type="checkbox"] + label:before,
     input[type="radio"] + label:before {

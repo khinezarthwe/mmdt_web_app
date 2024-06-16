@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
+{% load static %}
+<link rel="stylesheet" href="{% static 'assets/css/customization.css' %}"/>
 <div class="card">
   <h2 class="title">Register</h2>
   {% if form.errors %}

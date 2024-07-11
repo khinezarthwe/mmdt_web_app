@@ -1,9 +1,9 @@
 document.addEventListener("DOMContentLoaded", function () {
-  const saveViaAjax = function(surveyId, questionId, payload, questionType) {
+  const saveViaAjax = function(surveySlug, questionId, payload, questionType) {
     var csrfMiddlewareToken = $('input[name="csrfmiddlewaretoken"]').val();
     $.ajax({
       type: 'POST',
-      url: `/survey/surveys/${surveyId}/questions/${questionId}`,
+      url: `/survey/surveys/${surveySlug}/questions/${questionId}`,
       data: {
         csrfmiddlewaretoken: csrfMiddlewareToken,
         payload: payload,
@@ -17,14 +17,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
    // save each question response in server
   $('#surveyForm input[type=radio], #surveyForm select').on('change', function () {
-    var surveyId = $("form[data-survey-id]").data('surveyId');
+    var surveySlug = $("form[data-survey-slug]").data('surveySlug');
     const questionId = $(this).attr('name').replace('question_', '');
     const payload = $(this).val();
-    saveViaAjax(surveyId, questionId, payload, 'single_option')
+    saveViaAjax(surveySlug, questionId, payload, 'single_option')
   });
 
   $('#surveyForm input[type=checkbox]').on('change', function () {
-    var surveyId = $("form[data-survey-id]").data('surveyId');
+    var surveySlug = $("form[data-survey-slug]").data('surveySlug');
     const questionId = $(this).attr('name').replace('question_', '');
 
     // Looks like crispy form rendered bootstrap is not properly updating multiple checkboxes with checked attribute.
@@ -36,24 +36,24 @@ document.addEventListener("DOMContentLoaded", function () {
       return Number(this.value);
     }).get();
 
-    saveViaAjax(surveyId, questionId, payload, 'multiple_options')
+    saveViaAjax(surveySlug, questionId, payload, 'multiple_options')
   });
 
   $('#surveyForm input[type=text], #surveyForm textarea').on('blur', function () {
     if ($(this).val() === '') {
       return;
     }
-    var surveyId = $("form[data-survey-id]").data('surveyId');
+    var surveySlug = $("form[data-survey-slug]").data('surveySlug');
     const questionId = $(this).attr('name').replace('question_', '');
     const payload = $(this).val();
-    saveViaAjax(surveyId, questionId, payload, 'text')
+    saveViaAjax(surveySlug, questionId, payload, 'text')
   });
 
   $('#surveyForm input[type=range]').on('change', function () {
-    var surveyId = $("form[data-survey-id]").data('surveyId');
+    var surveySlug = $("form[data-survey-slug]").data('surveySlug');
     const questionId = $(this).attr('name').replace('question_', '');
     const payload = $(this).val();
-    saveViaAjax(surveyId, questionId, payload, 'text')
+    saveViaAjax(surveySlug, questionId, payload, 'text')
   });
 
 });

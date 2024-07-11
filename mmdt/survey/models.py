@@ -1,11 +1,13 @@
 from django.contrib.auth.models import User
 from django.db import models
 from django.utils import timezone
+from django.utils.text import slugify
 
 
 class Survey(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True, null=True)
+    slug = models.SlugField(unique=True, blank=True)
     start_date = models.DateTimeField(default=timezone.now)
     end_date = models.DateTimeField(null=True, blank=True)
     is_active = models.BooleanField(default=True)
@@ -20,10 +22,16 @@ class Survey(models.Model):
         now = timezone.now()
         return self.start_date <= now and (self.end_date is None or now <= self.end_date)
 
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.title)
+        super(Survey, self).save(*args, **kwargs)
+
+
 class UserSurveyResponse(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     survey = models.ForeignKey(Survey, on_delete=models.CASCADE)
-    guest_id=models.CharField(max_length=255, null=True, blank=True)
+    guest_id = models.CharField(max_length=255, null=True, blank=True)
     is_draft = models.BooleanField(default=True)
     created_at = models.DateTimeField(default=timezone.now, null=True)
     updated_at = models.DateTimeField(default=timezone.now, null=True)
@@ -59,6 +67,7 @@ class UserSurveyResponse(models.Model):
         if user_survey_response is None:
             user_survey_response = UserSurveyResponse.objects.create(user=user, survey=survey, is_draft=True)
         return user_survey_response
+
 
 class Question(models.Model):
     TEXT = 'T'
@@ -114,6 +123,8 @@ class Response(models.Model):
 
     def __str__(self):
         return f"Response to {self.question.question_text}: {self.response_text}"
+
+
 class ResponseChoice(models.Model):
     response = models.ForeignKey(Response, on_delete=models.CASCADE)
     choice = models.ForeignKey(Choice, on_delete=models.CASCADE)

@@ -16,7 +16,7 @@
     <ul>
       {% for survey in surveys %}
       <li>
-        <a href="{% url 'survey:survey_detail' survey.id %}">{{ survey.title }}</a>
+        <a href="{% url 'survey:survey_detail' survey.slug %}">{{ survey.title }}</a>
       </li>
       {% endfor %}
     </ul>

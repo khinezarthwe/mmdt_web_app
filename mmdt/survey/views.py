@@ -1,13 +1,16 @@
-from django.shortcuts import render, redirect, get_object_or_404
 from .models import Survey, Response, Question, Choice,  UserSurveyResponse, ResponseChoice
-from .forms import create_survey_form
-from django.contrib import messages
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from collections import Counter
-from django.db.models import Avg
-import json
-from django.http import HttpResponse
 import uuid
+from collections import Counter
+
+from django.contrib import messages
+from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
+from django.db.models import Avg
+from django.http import HttpResponse
+from django.shortcuts import get_object_or_404, redirect, render
+
+from .forms import create_survey_form
+from .models import Survey, Response, Question, Choice, UserSurveyResponse, ResponseChoice
+
 
 class SurveyPage:
     def index(request):
@@ -17,8 +20,8 @@ class SurveyPage:
         message_list = messages.get_messages(request)
         return render(request, 'survey/index.html', {'surveys': surveys, 'submitted_successfully': submitted_successfully, 'messages': message_list})
 
-    def survey_detail(request, survey_id):
-        survey = get_object_or_404(Survey, pk=survey_id)
+    def survey_detail(request, survey_slug):
+        survey = get_object_or_404(Survey, slug=survey_slug)
         # Check if registration is required for this survey
         if request.method == "POST":
             if request.user.is_authenticated:
@@ -28,13 +31,13 @@ class SurveyPage:
                 user_survey_response = UserSurveyResponse.objects.filter(guest_id=guest_id, survey=survey).first()
 
                 if survey.registration_required:
-                    # we will create response if surveys required to login
+                    # We will create response if surveys require to log in
                     messages.warning(request, f'You need to log in to participate in this survey.')
                     return redirect('survey:index')
             # Display success message
             if not user_survey_response.validate():
                 messages.warning(request, 'Please answer all required questions before submitting the survey.')
-                return redirect('survey:survey_detail', survey_id=survey_id)
+                return redirect('survey:survey_detail', survey_slug=survey_slug)
 
             user_survey_response.is_draft = False
             user_survey_response.save()
@@ -88,8 +91,8 @@ class SurveyPage:
             }
             return render(request, 'survey/survey_detail.html', context)
 
-    def save_survey_response(request, survey_id, question_id):
-        survey = get_object_or_404(Survey, pk=survey_id)
+    def save_survey_response(request, survey_slug, question_id):
+        survey = get_object_or_404(Survey, slug=survey_slug)
         user = request.user if request.user.is_authenticated else None
         guest_id = request.session.get('guest_id', None)
         if user:
@@ -97,52 +100,74 @@ class SurveyPage:
         else:
             user_survey_response = UserSurveyResponse.find_or_create_draft_guest(guest_id, survey)
 
-            # Or may be just return a 404
+            # Or maybe just return a 404
             # return HttpResponseNotFound('UserSurveyResponse not found')
+
         question_type = request.POST.get('question_type')
         question = Question.objects.filter(id=question_id).first()
-        if question == None:
+        if not question:
             return HttpResponse(400)
 
         if question_type == 'text':
             payload = request.POST.get('payload')
-            response = Response.objects.filter(question=question, user_survey_response=user_survey_response).first();
-            if response == None:
-                Response.objects.create(question=question, user_survey_response=user_survey_response, response_text=payload)
+            response = Response.objects.filter(question=question, user_survey_response=user_survey_response).first()
+            if not response:
+                Response.objects.create(question=question, user_survey_response=user_survey_response,
+                                        response_text=payload)
             else:
-                Response.objects.filter(id=response.id).update(question=question, user_survey_response=user_survey_response, response_text=payload)
+                Response.objects.filter(id=response.id).update(question=question,
+                                                               user_survey_response=user_survey_response,
+                                                               response_text=payload)
 
             return HttpResponse(200)
         elif question_type == 'multiple_options':
             payload = request.POST.getlist('payload[]')
-            choice_ids =  [int(item) for item in payload]
+            choice_ids = [int(item) for item in payload]
             choices = Choice.objects.filter(id__in=choice_ids)
             if len(choices) != len(choice_ids):
                 return HttpResponse(400)
 
-            response = Response.objects.filter(question=question, user_survey_response=user_survey_response).first();
-            if response == None:
+            response = Response.objects.filter(question=question, user_survey_response=user_survey_response).first()
+            if not response:
                 response = Response.objects.create(question=question, user_survey_response=user_survey_response)
-            else:
-                for choice in choices:
-                    ResponseChoice.find_or_create_response_choice(response, choice)
+                # Delete previous choices that are not in the new choices
+            previous_choices = response.choices.all()
+            previous_choice_ids = set(previous_choices.values_list('id', flat=True))
+            new_choice_ids = set(choice_ids)
+
+            choices_to_delete = previous_choice_ids - new_choice_ids
+            if choices_to_delete:
+                ResponseChoice.objects.filter(response=response, choice_id__in=choices_to_delete).delete()
+
+            # Add new choices
+            for choice in choices:
+                ResponseChoice.find_or_create_response_choice(response, choice)
 
             return HttpResponse(200)
-
         else:
             choice_id = int(request.POST.get('payload'))
             choice = Choice.objects.filter(id=choice_id).first()
-            if choice == None:
+            if not choice:
                 return HttpResponse(400)
 
-            response = Response.objects.filter(question=question, user_survey_response=user_survey_response).first();
-            if response == None:
+            response = Response.objects.filter(question=question, user_survey_response=user_survey_response).first()
+            if not response:
                 response = Response.objects.create(question=question, user_survey_response=user_survey_response)
             response_choice = ResponseChoice.find_or_create_response_choice(response, choice)
 
-            # Delete all other response choices if the question is a single choice question
-            ResponseChoice.objects.filter(response__question_id=question.id).exclude(id=response_choice.id).delete()
-            return HttpResponse(200)
+            # Delete all other response choices if the question is a single choice question, filtered by user_id and guest_id
+            if user:
+                ResponseChoice.objects.filter(
+                    response__question_id=question.id,
+                    response__user_survey_response__user_id=user.id
+                ).exclude(id=response_choice.id).delete()
+                return HttpResponse(200)
+            else:
+                ResponseChoice.objects.filter(
+                    response__question_id=question.id,
+                    response__user_survey_response__guest_id=guest_id
+                ).exclude(id=response_choice.id).delete()
+                return HttpResponse(200)
 
     def all_results(request):
         # Fetch all surveys

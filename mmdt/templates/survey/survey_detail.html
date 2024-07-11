@@ -11,7 +11,7 @@
     {% endfor %}
   </ul>
 {% endif %}
-<form method="post" id="surveyForm" data-survey-id="{{survey.id}}">
+<form method="post" id="surveyForm" data-survey-slug="{{survey.slug}}">
   <input type="hidden" name="all_responses" id="allResponsesInput" value="">
   {% csrf_token %}
   {{ form|crispy }}

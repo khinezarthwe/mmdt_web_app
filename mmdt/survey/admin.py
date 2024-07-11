@@ -92,11 +92,14 @@ export_to_csv.short_description = 'Export Selected Responses to CSV'
 class ResponseAdmin(admin.ModelAdmin):
     list_display = ['survey_title', 'user', 'question_text', 'answer']
     search_fields = ['question__question_text', 'answer']
-    list_filter = [('question__survey__id'), 'question__survey__title', 'question_id']
+    list_filter = ['question__survey__slug', 'question__survey__title', 'question_id']
     actions = [export_to_csv]
 
     def survey_id(self, instance):
         return instance.question.survey_id
+
+    def survey_slug(self, instance):
+        return instance.question.survey.slug
 
     def survey_title(self, instance):
         return instance.question.survey.title
@@ -109,15 +112,16 @@ class ResponseAdmin(admin.ModelAdmin):
 
     def answer(self, instance):
         if instance.choices.exists():
-            return ",".join([f"[{choice.choice_text}]" for choice in instance.choices.all() ])
+            return ",".join([f"{choice.choice_text}" for choice in instance.choices.all()])
         else:
             return instance.response_text
 
     def user(self, instance):
         return instance.user_survey_response.user.id if instance.user_survey_response.user else 'Anonymous' + ' (' + instance.user_survey_response.guest_id + ')'
 
-    survey_id.short_description = 'Survey ID'
+    survey_slug.short_description = 'Survey Slug'
     survey_title.short_description = 'Survey Title'
+
 
 class ChoiceAdmin(admin.ModelAdmin):
     list_display = ['choice_text', 'question_type', 'question', 'survey_id']
@@ -139,6 +143,7 @@ class UserSurveyResponseAdmin(admin.ModelAdmin):
     search_fields = ['user__username', 'survey__title']
     list_filter = ['survey']
 
+
 class ResponseChoiceAdmin(admin.ModelAdmin):
     list_display = ('response', 'choice')
     search_fields = ('response__question__question_text', 'choice__text')
@@ -148,6 +153,7 @@ class ResponseChoiceAdmin(admin.ModelAdmin):
         return instance.response.question.question_text
 
     get_question.short_description = 'Question'
+
 
 admin.site.register(UserSurveyResponse, UserSurveyResponseAdmin)
 admin.site.register(Survey, SurveyAdmin)

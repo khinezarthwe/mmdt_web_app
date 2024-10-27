@@ -12,7 +12,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 import os
 from pathlib import Path
-
+import logging
 from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -34,12 +34,9 @@ ALLOWED_HOSTS = ['mmdt.istarvz.com', 'mmdt-dev.thingaha.org', '127.0.0.1']
 INSTALLED_APPS = [
     'polls.apps.PollsConfig',
     'survey.apps.SurveyConfig',
-    'users.apps.UsersConfig',
     'django.contrib.admin',
-    'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
-    'django.contrib.messages',
     'django.contrib.staticfiles',
     'blog',
     'debug_toolbar',
@@ -48,7 +45,19 @@ INSTALLED_APPS = [
     'django_summernote',
     'django_bootstrap_icons',
     'nested_admin',
+    'django.contrib.sites',
+    'django.contrib.auth',
+    'django.contrib.messages',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    # include the providers you want to enable:
+    'allauth.socialaccount.providers.google',
+    'django_extensions',
+
 ]
+
+SITE_ID = 1
 
 CSRF_TRUSTED_ORIGINS = ['https://*.istarvz.com', 'https://*.127.0.0.1']
 
@@ -60,7 +69,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'debug_toolbar.middleware.DebugToolbarMiddleware'
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
+    'allauth.account.middleware.AccountMiddleware',
 ]
 
 ROOT_URLCONF = 'mmdt.urls'
@@ -77,6 +87,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'django.template.context_processors.request',
             ],
         },
     },
@@ -92,6 +103,9 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
+        'OPTIONS': {
+            'timeout': 20,  # Timeout in seconds
+        }
     }
 }
 
@@ -154,22 +168,24 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 
 X_FRAME_OPTIONS = 'SAMEORIGIN'
 
-#Load AWS settings from .env file
+
+# Load AWS settings from .env file
 AWS_ACCESS_KEY_ID = config('AWS_ACCESS_KEY_ID', default = '')
 AWS_SECRET_ACCESS_KEY = config('AWS_SECRET_ACCESS_KEY', default = '')
 AWS_STORAGE_BUCKET_NAME = config('AWS_STORAGE_BUCKET_NAME', default = '')
 
-#Conditional S3 configuration
-if AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY and  AWS_STORAGE_BUCKET_NAME:
-    #AWS S3 settings
+
+# Conditional S3 configuration
+if AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY and AWS_STORAGE_BUCKET_NAME:
+    # AWS S3 settings
     AWS_S3_SIGNATURE_NAME = "s3v4"
     AWS_S3_REGION_NAME = "us-west-1"
     AWS_S3_FILE_OVERWRITE = False
     AWS_DEFAULT_ACL = None
-    AWS_S3_VERITY = True
+    AWS_S3_VERIFY = True
     DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 else:
-    #Local storage settings
+    # Local storage settings
     MEDIA_URL = '/media/'
     MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
@@ -205,6 +221,35 @@ LOGGING = {
     },
 }
 
+# logging.basicConfig(level=logging.DEBUG) # will use in debug only
+
 LOGIN_REDIRECT_URL = '/'
 
 LOGOUT_REDIRECT_URL = '/'
+
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'allauth.account.auth_backends.AuthenticationBackend',
+]
+
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
+ACCOUNT_AUTHENTICATION_METHOD = 'email'
+ACCOUNT_USERNAME_REQUIRED = False
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'mmdt@istarvz.com'
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
+DEFAULT_FROM_EMAIL = 'mmdt@istarvz.com'
+EMAIL_USE_SSL = False
+
+if EMAIL_HOST_PASSWORD:
+    SESSION_COOKIE_SECURE = True  # Use only if your site is on HTTPS
+else:
+    SESSION_COOKIE_SECURE = False  # Use only if your site is on HTTPS
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+SESSION_COOKIE_AGE = 1209600  # 2 weeks in seconds

@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block content %}
+{% load static %}
+<link rel="stylesheet" href="{% static 'assets/css/customization.css' %}"/>
+<div class="card">
+    <h2>Email Verification Sent</h2>
+    <p>
+        A verification email has been sent to your email address. Please check your email and follow the instructions to verify your email address.
+    </p>
+</div>
+{% endblock %}

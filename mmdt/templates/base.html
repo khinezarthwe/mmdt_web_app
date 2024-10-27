@@ -58,17 +58,18 @@
                 <section>
                     {% if user.is_authenticated %}
                         <header class="major">
-                          <h2>Hi <a href="{% url 'users:dashboard' %}" class"user-profile-link">{{ user.username }}!</a></h2>
+                          <h2>Hi {{ user.username }}! </h2>
                         </header>
-                        <div>
-                          <a href="{% url 'logout' %}">Logout</a>
-                        </div>
+                        <form method="post" action="{% url 'account_logout' %}" class="logout-form">
+                            {% csrf_token %}
+                            <button type="submit">Logout</button>
+                        </form>
                       {% else %}
                         <div>
                           New to the site?
                         </div>
                         <div>
-                          <a href="{% url 'login' %}">Log in</a> or <a href="{% url 'users:register' %}">Register an account</a>
+                          <a href="{% url 'account_login' %}">Log in</a> or <a href="{% url 'account_signup' %}">Register an account</a>
                         </div>
                     {% endif %}
                 </section>

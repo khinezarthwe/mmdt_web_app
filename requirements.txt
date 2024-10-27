@@ -17,3 +17,6 @@ python-decouple==3.8
 numpy==1.26.1
 scikit-learn==1.2.2
 django-nested-admin==4.0.2
+django-allauth==0.63.6
+pyjwt==2.8.0
+cryptography==42.0.8

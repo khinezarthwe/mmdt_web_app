@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Welcome to Our Platform</title>
+</head>
+<body>
+    <p>Dear {{ user.username }},</p>
+    <p>To get started, please confirm your email address by clicking the link below:</p>
+    <p>
+        <a href="{{ activate_url }}">{{ activate_url }}</a>
+    </p>
+    <p>If you did not sign up for this account, please ignore this email.</p>
+    <p>Thank you!</p>
+    <p>Best regards,<br>Myanmar Data Tech Team</p>
+</body>
+</html>

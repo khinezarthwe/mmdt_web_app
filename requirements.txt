@@ -20,3 +20,4 @@ django-nested-admin==4.0.2
 django-allauth==0.63.6
 pyjwt==2.8.0
 cryptography==42.0.8
+django-extensions==3.2.3

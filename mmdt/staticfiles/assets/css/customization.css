@@ -1,0 +1,201 @@
+.btn-custom {
+    background-color: #003399;
+    color: white !important;
+}
+
+.btn-custom:hover {
+    color:#003399 !important;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+.step-links {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.disabled {
+    pointer-events: none;
+    opacity: 0.5;
+}
+
+.underline:hover {
+    text-decoration: none;
+}
+
+p.vote-success-message {
+    font-size: 32px;
+    color: black;
+}
+
+.choice {
+    color: #999;
+}
+
+.image-container {
+    margin-bottom: 20px;
+}
+
+.question-image {
+    width: 100%;
+    height: 350px;
+    object-fit: contain;
+    object-position: left;
+}
+
+.default-image {
+    max-width: 100%;
+    height: auto;
+}
+
+.card-img {
+    width: 100%;
+    height: 350px;
+    object-fit: contain;
+}
+
+.comments {
+    padding: 10px;
+}
+
+.cmt-submit {
+    margin-top: 1.3em;
+}
+
+.questions {
+    margin-bottom: 1.3rem;
+}
+
+.messages .warning {
+    color: red;
+    text-shadow: 0 5px 12px #ffe602;
+    font-family: "Roboto Slab", serif;
+    font-weight: 700;
+}
+
+.card {
+    max-width: 500px;
+    margin: auto;
+    margin-top: 2rem;
+    padding: 20px;
+    border: 2px solid #003399;
+    border-radius: 5px;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+  }
+
+  h2.title {
+    text-align: center;
+    color: #003399;
+  }
+
+  label {
+    margin-bottom: 3px;
+    font-size: 1rem;
+  }
+
+  input {
+    padding: 10px;
+    margin-bottom: 1.3rem;
+    border: 1px solid #cccbcb;
+    border-radius: 4px;
+  }
+
+.auth-form {
+  font-family: "Roboto Slab", serif;
+}
+
+  .form-button {
+    margin-top: 10px;
+  }
+
+  button:hover {
+    background-color: #003399 !important;
+    color: white !important;
+  }
+
+  p {
+    text-align: center;
+    margin-top: 16px;
+  }
+
+  p.card-text {
+    text-align: left;
+    margin-top: 16px;
+  }
+
+  a {
+    color: #3498db;
+    text-decoration: none;
+  }
+
+  a:hover {
+    text-decoration: underline;
+  }
+
+  .view-btn:hover {
+    text-decoration: none;
+  }
+
+  .slide-scale-container {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 20px;
+}
+
+.choice-container {
+    display: flex;
+    align-items: center;
+    margin: 5px 0;
+}
+
+.label-container {
+    min-width: 150px;
+}
+
+.slider-container {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    margin-left: 10px;
+}
+
+.slider {
+    flex: 1;
+    background: #f5f6f7;
+    width: 100%;
+    margin-right: 10px;
+}
+
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  background-color: #003399;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.slider:hover {
+  cursor: pointer;
+}
+
+.output {
+    min-width: 40px;
+    margin-left: 10px;
+}
+
+.message.warning {
+  color: red;
+  text-shadow: 0 5px 12px #ffe602;
+  font-family: "Roboto Slab", serif;
+  font-weight: 700;
+}

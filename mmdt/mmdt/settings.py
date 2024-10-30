@@ -54,7 +54,8 @@ INSTALLED_APPS = [
     # include the providers you want to enable:
     'allauth.socialaccount.providers.google',
     'django_extensions',
-
+    'djf_surveys',
+    'tinymce',  # dependency
 ]
 
 SITE_ID = 1
@@ -88,12 +89,14 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'django.template.context_processors.request',
+                'djf_surveys.context_processors.surveys_context'
             ],
         },
     },
 ]
 
 WSGI_APPLICATION = 'mmdt.wsgi.application'
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
 
 # Database
@@ -253,3 +256,9 @@ else:
     SESSION_COOKIE_SECURE = False  # Use only if your site is on HTTPS
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 SESSION_COOKIE_AGE = 1209600  # 2 weeks in seconds
+
+SURVEY_MASTER_TEMPLATE = 'surveys/master.html'
+SURVEY_PAGINATION_NUMBER = {
+    'answer_list': 10,
+    'survey_list': 10
+}

@@ -5,7 +5,7 @@
     <title>Myanmar Data Tech Team</title>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no"/>
-	<link rel="stylesheet" href="{% static 'assets/css/bootstrap.css' %}"/>
+    <link rel="stylesheet" href="{% static 'assets/css/bootstrap.css' %}"/>
     <link rel="stylesheet" href="{% static 'assets/css/main.css' %}"/>
 
 </head>
@@ -21,9 +21,9 @@
             <header id="header">
                 <a href="{% url 'home' %}" class="logo"><strong>Myanmar</strong> Data Tech Team</a>
             </header>
-			{% block content %}
-			<!-- Content Goes here -->
-			{% endblock content %}
+            {% block content %}
+            <!-- Content Goes here -->
+            {% endblock content %}
         </div>
     </div>
 
@@ -53,38 +53,36 @@
                         </ul>
                     </li>
                     <li><a href="{% url 'survey:index' %}">Surveys</a></li>
+                    <li><a href="{% url 'post_list_only_subscriber' %}">Our Latest Update</a></li>
                 </ul>
-                <hr />
-                <section>
-                    {% if user.is_authenticated %}
-                        <header class="major">
-                          <h2>Hi {{ user.username }}! </h2>
-                        </header>
-                        <form method="post" action="{% url 'account_logout' %}" class="logout-form">
-                            {% csrf_token %}
-                            <button type="submit">Logout</button>
-                        </form>
-                      {% else %}
-                        <div>
-                          Please contact mmdt@istarvz.com to become our paid subscriber.
-                        </div>
-                        <div>
-<!--                          <a href="{% url 'account_login' %}">Log in</a> or <a href="{% url 'account_signup' %}">Register an account</a>-->
-                        </div>
-                    {% endif %}
-                </section>
             </nav>
-            <!-- Section -->
+            <section>
+                {% if user.is_authenticated %}
+                <header class="major">
+                    <h2>Hi {{ user.username }}! </h2>
+                </header>
+                <form method="post" action="{% url 'account_logout' %}" class="logout-form">
+                    {% csrf_token %}
+                    <button type="submit">Logout</button>
+                </form>
+                {% else %}
+                <ul class="actions">
+                    <li><a href="{% url 'subscriber_request' %}" class="button">Subscribe Us</a></li>
+                </ul>
+                {% endif %}
+            </section>
             <section>
                 <header class="major">
                     <h2>Our Partner</h2>
                 </header>
-                <ul class="contact">
-                    <li class="icon fa-solid fa-handshake">
-                        <a href='https://www.datacamp.com/'><img class="logo" src="{% static 'blog/images/DC.png' %}"></a>
-                    </li>
-                </ul>
+                <div class="mini-posts">
+                    <article>
+                        <a href="https://www.datacamp.com/" class="image"><img src="{% static 'blog/images/DC.png' %}"
+                                                                               alt=""/></a>
+                    </article>
+                </div>
             </section>
+
             <!-- Section -->
             <section>
                 <header class="major">
@@ -97,12 +95,12 @@
             </section>
         </div>
     </div>
-<script src="{% static 'assets/js/jquery.min.js' %}"></script>
-<script src="{% static 'assets/js/browser.min.js' %}"></script>
-<script src="{% static 'assets/js/breakpoints.min.js'%}"></script>
-<script src="{% static 'assets/js/util.js' %}"></script>
-<script src="{% static 'assets/js/main.js' %}"></script>
-<script src="{% static 'assets/js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'assets/js/jquery.min.js' %}"></script>
+    <script src="{% static 'assets/js/browser.min.js' %}"></script>
+    <script src="{% static 'assets/js/breakpoints.min.js'%}"></script>
+    <script src="{% static 'assets/js/util.js' %}"></script>
+    <script src="{% static 'assets/js/main.js' %}"></script>
+    <script src="{% static 'assets/js/bootstrap.min.js' %}"></script>
 </div>
 </body>
 </html>

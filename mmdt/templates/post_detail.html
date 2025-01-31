@@ -1,7 +1,6 @@
 {% extends 'base.html' %} {% load crispy_forms_tags %} {% block content %}
 <section>
   <div class="card mb-3">
-    <!-- fallback mechanism to use default photo is there is no AWS S3 keys or no photos are uploaded from admin -->
     {% if post.image %}
     <img
       class="card-img"
@@ -30,36 +29,4 @@
     </div>
   </div>
 </section>
-<!--<div class="col-md-8 card mb-4 mt-3">-->
-<!--  <div class="card-body">-->
-<!--    &lt;!&ndash; comments &ndash;&gt;-->
-<!--    <h2>{{ comments.count }} comments</h2>-->
-<!--    {% for comment in comments %}-->
-<!--    <div class="comments">-->
-<!--      <p class="font-weight-bold">-->
-<!--        {{ comment.name }}-->
-<!--        <span class="text-muted font-weight-normal">-->
-<!--          {{ comment.created_on }}-->
-<!--        </span>-->
-<!--      </p>-->
-<!--      {{ comment.body | linebreaks }}-->
-<!--    </div>-->
-<!--    {% endfor %}-->
-<!--  </div>-->
-<!--</div>-->
-<!--<div class="col-md-8 card mb-4 mt-3">-->
-<!--  <div class="card-body">-->
-<!--    {% if new_comment %}-->
-<!--    <div class="alert alert-success" role="alert">-->
-<!--      Your comment is awaiting moderation-->
-<!--    </div>-->
-<!--    {% else %}-->
-<!--    <h3>Leave a comment</h3>-->
-<!--    <form method="post" class="cmt-submit">-->
-<!--      {{ comment_form | crispy }} {% csrf_token %}-->
-<!--      <button type="submit" class="button">Submit</button>-->
-<!--    </form>-->
-<!--    {% endif %}-->
-<!--  </div>-->
-<!--</div>-->
 {% endblock content %}

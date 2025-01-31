@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <h2>Subscriber-Only Content</h2>
+    <p>This content is exclusively available to subscribers.</p>
+    <p>Please subscribe to access this content or sign in if you're already a subscriber.</p>
+
+    <div class="actions">
+        <a href="{% url 'subscriber_request' %}" class="button primary">Subscribe Now</a>
+        <a href="{% url 'account_login' %}" class="button">Sign In</a>
+    </div>
+</div>
+{% endblock %}

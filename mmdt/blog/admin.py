@@ -1,7 +1,19 @@
 from django.contrib import admin
+from django.contrib.auth.admin import UserAdmin
+from django.contrib.auth.models import User
 from django_summernote.admin import SummernoteModelAdmin
 
 from .models import Post, Comment
+from .models import SubscriberRequest
+
+
+class CustomUserAdmin(UserAdmin):
+    list_display = ('username', 'email', 'first_name', 'last_name', 'is_staff', 'is_active')
+
+
+# Unregister the default UserAdmin and register our custom one
+admin.site.unregister(User)
+admin.site.register(User, CustomUserAdmin)
 
 
 class PostAdmin(SummernoteModelAdmin):
@@ -28,3 +40,19 @@ class CommentAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Post, PostAdmin)
+
+
+@admin.register(SubscriberRequest)
+class SubscriberRequestAdmin(admin.ModelAdmin):
+    list_display = ['name', 'email', 'country', 'status', 'created_at']
+    list_filter = ['status', 'looking_for_job', 'free_waiver', 'created_at']
+    search_fields = ['name', 'email', 'country']
+    actions = ['approve_requests', 'reject_requests']
+
+    def approve_requests(self, request, queryset):
+        queryset.update(status='approved')
+    approve_requests.short_description = "Approve selected requests"
+
+    def reject_requests(self, request, queryset):
+        queryset.update(status='rejected')
+    reject_requests.short_description = "Reject selected requests"

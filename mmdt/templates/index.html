@@ -1,46 +1,62 @@
 {% extends "base.html" %}
 {% load static %}
 {% block content %}
-<section>
-    <header class="major">
-        <h4>Our Research Projects</h4>
-        <nav>
-            <ul>
-                <li><a href="#project1">Learn Together with DataCamp Program(Phase: 1)</a></li>
-                <li><a href="#project2">Women in Tech Workshop Evaluation</a></li>
-                <li><a href="#project3">Myanmar Women In Tech: Research and Analysis</a></li>
-                <li><a href="#project4">Higher Education Gap in
-                Digital Space</a></li>
-            </ul>
-        </nav>
-    </header>
-    <div id="project1" class="row mt-4 py-3">
-        <div class="col-md-12">
-            <iframe
-                    src="https://public.tableau.com/views/LearnwithMMDT/Pre-Phase1?:showVizHome=no&:embed=true"
-                    width="100%" height="600"></iframe>
-        </div>
+
+<h2>Our Research Projects</h2>
+
+<section id="banner">
+    <div class="content">
+        <header>
+            <h3>Learn Together with DataCamp Program</h3>
+            <p></p>
+        </header>
+        <p></p>
+        <ul class="actions">
+            <li><a href="https://public.tableau.com/views/LearnwithMMDT/Pre-Phase1?:showVizHome=no&:embed=true" target="_blank" class="button big">Learn More</a></li>
+        </ul>
     </div>
-    <div id="project2" class="row mt-4 py-3">
-        <div class="col-md-12">
-            <iframe
-                    src="https://public.tableau.com/views/WiTEvaluation/Story1?:showVizHome=no&:embed=true"
-                    width="100%" height="600"></iframe>
-        </div>
+    <span class="image object"><img src="{% static 'blog/images/MMDTDATACAMP.png' %}" alt=""/></span>
+</section>
+
+<section id="banner">
+    <div class="content">
+        <header>
+            <h3>Women in Tech Workshop Evaluation</h3>
+            <p></p>
+        </header>
+        <p></p>
+        <ul class="actions">
+            <li><a href="https://public.tableau.com/views/WiTEvaluation/Story1?:showVizHome=no&:embed=true" target="_blank" class="button big">Learn More</a></li>
+        </ul>
     </div>
-    <div id="project3" class="row mt-4 py-3">
-        <div class="col-md-12">
-            <iframe
-                    src="https://public.tableau.com/views/WomenInTech_16726391156830/MyanmarWomenInTechResearchDataAnalytic?:showVizHome=no&:embed=true"
-                    width="100%" height="600"></iframe>
-        </div>
+    <span class="image object"><img src="{% static 'blog/images/insightsfromwit.png' %}" alt=""/></span>
+</section>
+<section id="banner">
+    <div class="content">
+        <header>
+            <h3>Myanmar Women In Tech: Research and Analysis</h3>
+            <p></p>
+        </header>
+        <p></p>
+        <ul class="actions">
+            <li><a href="https://public.tableau.com/views/WomenInTech_16726391156830/MyanmarWomenInTechResearchDataAnalytic?:showVizHome=no&:embed=true" target="_blank" class="button big">Learn More</a></li>
+        </ul>
     </div>
-    <div id="project4" class="row mt-4 py-3">
-        <div class="col-md-12">
-            <iframe
-                    src="https://public.tableau.com/views/HigherEducation_16941006467670/Story1?:showVizHome=no&:embed=true"
-                    width="100%" height="600"></iframe>
-        </div>
+    <span class="image object"><img src="{% static 'blog/images/wit.png' %}" alt=""/></span>
+</section>
+
+
+<section id="banner">
+    <div class="content">
+        <header>
+            <h3>Higher Education Gap in Digital Space</h3>
+            <p></p>
+        </header>
+        <p></p>
+        <ul class="actions">
+            <li><a href="https://public.tableau.com/views/HigherEducation_16941006467670/Story1?:showVizHome=no&:embed=true" target="_blank" class="button big">Learn More</a></li>
+        </ul>
     </div>
+    <span class="image object"><img src="{% static 'blog/images/digitalgap.png' %}" alt=""/></span>
 </section>
 {%endblock%}

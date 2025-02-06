@@ -30,11 +30,12 @@ class SubscriberRequestForm(forms.ModelForm):
         self.fields['city'].widget.attrs['placeholder'] = 'Current residing city'
         self.fields['job_title'].widget.attrs['placeholder'] = 'Job Title'
         self.fields['message'].widget.attrs['placeholder'] = 'Enter your message'
+        self.fields['plan'].widget.attrs['class'] = 'form-control'
 
     class Meta:
         model = SubscriberRequest
         fields = [
             'name', 'email', 'country', 'city',
             'job_title', 'looking_for_job',
-            'free_waiver', 'message'
+            'free_waiver', 'plan', 'message',
         ]

@@ -42,6 +42,10 @@ class Comment(models.Model):
 
 
 class SubscriberRequest(models.Model):
+    PLAN_CHOICES = [
+        ('6month', '6-Month Plan'),
+        ('annual', 'Annual Plan'),
+    ]
     name = models.CharField(max_length=200)
     email = models.EmailField(unique=True)
     country = models.CharField(max_length=100)
@@ -51,11 +55,13 @@ class SubscriberRequest(models.Model):
     free_waiver = models.BooleanField(default=False)
     message = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
     status = models.CharField(max_length=20, choices=[
         ('pending', 'Pending'),
         ('approved', 'Approved'),
         ('rejected', 'Rejected')
     ], default='pending')
+    plan = models.CharField(max_length=10, choices=PLAN_CHOICES, default='6month')
 
     def __str__(self):
         return f"{self.name} - {self.email}"

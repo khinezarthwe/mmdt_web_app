@@ -44,9 +44,9 @@ admin.site.register(Post, PostAdmin)
 
 @admin.register(SubscriberRequest)
 class SubscriberRequestAdmin(admin.ModelAdmin):
-    list_display = ['name', 'email', 'country', 'status', 'created_at']
-    list_filter = ['status', 'looking_for_job', 'free_waiver', 'created_at']
-    search_fields = ['name', 'email', 'country']
+    list_display = ['name', 'email', 'country', 'plan', 'status', 'created_at', 'updated_at']
+    list_filter = ['status', 'looking_for_job', 'free_waiver', 'created_at', 'updated_at']
+    search_fields = ['name', 'email', 'country', 'status']
     actions = ['approve_requests', 'reject_requests']
 
     def approve_requests(self, request, queryset):

@@ -13,23 +13,23 @@
     <!-- Content -->
     <h2 id="content-1">Join a Thriving Community</h2>
     <ul>
-                    <li>Be part of a network of like-minded students, researchers, and professionals striving for
-                        success and
-                        making an impact.
-                    </li>
-                    <li>Exchange ideas, collaborate on projects, and gain inspiration from peers and experts alike.</li>
-                    <li>Stay informed with regular updates on learning opportunities, career resources, and industry
-                        news, empowering you to make informed decisions and stay ahead in your field.
-                    </li>
-                </ul>
-
+        <li>Be part of a network of like-minded students, researchers, and professionals striving for
+            success and
+            making an impact.
+        </li>
+        <li>Exchange ideas, collaborate on projects, and gain inspiration from peers and experts alike.</li>
+        <li>Stay informed with regular updates on learning opportunities, career resources, and industry
+            news, empowering you to make informed decisions and stay ahead in your field.
+        </li>
+    </ul>
     <div class="features">
         <article>
             <span class="icon solid fa-paper-plane"></span>
             <div class="content">
                 <h3>Access to Exclusive Member-Only Events</h3>
-                <b>Interactive Sessions:</b> Opportunities to interact with professionals, mentors, and thought leaders across
-        diverse industries, offering inspiration and guidance.
+                <b>Interactive Sessions:</b> Opportunities to interact with professionals, mentors, and thought leaders
+                across
+                diverse industries, offering inspiration and guidance.
                 <b>Monthly Webinars:</b> Engaging and carefully curated topics
             </div>
         </article>
@@ -60,6 +60,19 @@
         </article>
     </div>
 </section>
+<h3>Subscription Plans</h3>
+        <div class="row">
+            <div class="col-6 col-12-small">
+                <ul class="actions fit">
+                    <li><p class="button primary fit">6-Month Plan: $12 total</p></li>
+				</ul>
+            </div>
+            <div class="col-6 col-12-small">
+                <ul class="actions fit">
+                    <li><p class="button primary fit">Annual Plan: $24 total</p></li>
+				</ul>
+            </div>
+        </div>
 {% if not user.is_authenticated %}
 <!-- Form -->
 <h3>Subscriber Request Form</h3>
@@ -81,6 +94,13 @@
         </div>
         <div class="col-6 col-12-xsmall">
             {{ form.job_title }}
+        </div>
+        <div class="col-12 col-12-xsmall">
+            <select name="plan" id="plan" required>
+                <option value="">- Select Plan -</option>
+                <option value="6month">6-Month Plan</option>
+                <option value="annual">Annual Plan</option>
+            </select>
         </div>
         <div class="col-6 col-12-small">
             <div class="checkbox">

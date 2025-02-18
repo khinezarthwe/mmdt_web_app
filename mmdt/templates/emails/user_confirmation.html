@@ -1,0 +1,47 @@
+<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+   <p style="margin-bottom: 15px;">Dear {{ name }},</p>
+
+   <p style="margin-bottom: 15px;">Thank you for your subscription request to MMDT. We have received your request for the {{ plan }}.</p>
+
+   <p style="margin-bottom: 15px; font-weight: bold;">To complete your subscription, please:</p>
+
+   <div style="background-color: #f5f5f5; padding: 15px; margin-bottom: 20px; border-radius: 5px;">
+       <p style="margin-bottom: 10px; font-weight: bold;">Transfer the subscription fee:</p>
+       {% if subscriber.plan == '6month' %}
+           <p style="color: #2c5282; font-size: 16px; font-weight: bold;">USD $12 for 6-Month Plan</p>
+       {% else %}
+           <p style="color: #2c5282; font-size: 16px; font-weight: bold;">USD $24 for Annual Plan</p>
+       {% endif %}
+   </div>
+
+   <div style="background-color: #f5f5f5; padding: 15px; margin-bottom: 20px; border-radius: 5px;">
+       <p style="margin-bottom: 10px; font-weight: bold;">Bank Account Details:</p>
+       <p style="margin-bottom: 5px;">Bank Name: Bangkok Bank</p>
+       <p style="margin-bottom: 5px;">Account Name: Myo Thida</p>
+       <p style="margin-bottom: 5px;">Account Number: 860-0-290269</p>
+       <br>
+       <p style="margin-bottom: 5px;"><strong>KPay:</strong> 09402741691 (Nuam Man Cing)</p>
+   </div>
+
+   <p style="margin-bottom: 15px; font-style: italic;">You are free to use any reasonable Exchange rate on the day of transfer. However, please indicate the rate you use.</p>
+
+   <div style="background-color: #f5f5f5; padding: 15px; margin-bottom: 20px; border-radius: 5px;">
+       <p style="margin-bottom: 10px; font-weight: bold;">After completing the transfer, please reply to this email with:</p>
+       <ul style="margin-left: 20px; padding-left: 0;">
+           <li style="margin-bottom: 5px;">Screenshot of the transfer</li>
+           <li style="margin-bottom: 5px;">Exchange rate used</li>
+           <li style="margin-bottom: 5px;">Date of transfer</li>
+       </ul>
+   </div>
+
+   <p style="margin-bottom: 15px;">Once we verify your payment, we will activate your subscription.</p>
+
+   <p style="margin-bottom: 15px; font-style: italic; font-weight: bold;">If you are applying for a fee waiver, provide supporting evidence for our review.</p>
+
+   <p style="margin-bottom: 15px;">If you have any questions, please contact us at <a href="mailto:mmdt@istarvz.com" style="color: #2c5282;">mmdt@istarvz.com</a></p>
+
+   <p style="margin-top: 30px;">
+       Best regards,<br>
+       <strong>MMDT Team</strong>
+   </p>
+</div>

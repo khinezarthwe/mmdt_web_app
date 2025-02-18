@@ -61,24 +61,35 @@
     </div>
 </section>
 <h3>Subscription Plans</h3>
-        <div class="row">
-            <div class="col-6 col-12-small">
-                <ul class="actions fit">
-                    <li><p class="button primary fit">6-Month Plan: $12 total</p></li>
-				</ul>
-            </div>
-            <div class="col-6 col-12-small">
-                <ul class="actions fit">
-                    <li><p class="button primary fit">Annual Plan: $24 total</p></li>
-				</ul>
-            </div>
-        </div>
+<div class="row">
+    <div class="col-6 col-12-small">
+        <ul class="actions fit">
+            <li><p class="button primary fit">6-Month Plan: $12 total</p></li>
+        </ul>
+    </div>
+    <div class="col-6 col-12-small">
+        <ul class="actions fit">
+            <li><p class="button primary fit">Annual Plan: $24 total</p></li>
+        </ul>
+    </div>
+</div>
 {% if not user.is_authenticated %}
 <!-- Form -->
 <h3>Subscriber Request Form</h3>
 
 <form method="post" action="{% url 'subscriber_request' %}">
     {% csrf_token %}
+    {% if form.errors %}
+    <div class="col-12">
+        <div class="alert alert-danger">
+            {% for field, errors in form.errors.items %}
+            {% for error in errors %}
+            <p>{{ error }}</p>
+            {% endfor %}
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
     <div class="row gtr-uniform">
         <div class="col-6 col-12-xsmall">
             {{ form.name }}
@@ -104,14 +115,8 @@
         </div>
         <div class="col-6 col-12-small">
             <div class="checkbox">
-                {{ form.looking_for_job }}
-                <label for="{{ form.looking_for_job.id_for_label }}">Looking for a Job</label>
-            </div>
-        </div>
-        <div class="col-6 col-12-small">
-            <div class="checkbox">
                 {{ form.free_waiver }}
-                <label for="{{ form.free_waiver.id_for_label }}">Free waiver</label>
+                <label for="{{ form.free_waiver.id_for_label }}">Fee waiver</label>
             </div>
         </div>
         <div class="col-12">

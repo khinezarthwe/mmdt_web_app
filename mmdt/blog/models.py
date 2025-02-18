@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta
+from django.utils import timezone
 from django.contrib.auth.models import User
 from django.db import models
 
@@ -46,12 +48,20 @@ class SubscriberRequest(models.Model):
         ('6month', '6-Month Plan'),
         ('annual', 'Annual Plan'),
     ]
+
+    class Meta:
+        # Additional validation to catch duplicate emails with case insensitivity
+        constraints = [
+            models.UniqueConstraint(
+                fields=['email'],
+                name='unique_subscriber_email'
+            )
+        ]
     name = models.CharField(max_length=200)
     email = models.EmailField(unique=True)
     country = models.CharField(max_length=100)
     city = models.CharField(max_length=100)
     job_title = models.CharField(max_length=200, blank=True, null=True)
-    looking_for_job = models.BooleanField(default=False)
     free_waiver = models.BooleanField(default=False)
     message = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -59,9 +69,27 @@ class SubscriberRequest(models.Model):
     status = models.CharField(max_length=20, choices=[
         ('pending', 'Pending'),
         ('approved', 'Approved'),
-        ('rejected', 'Rejected')
+        ('rejected', 'Rejected'),
+        ('expired', 'Expired'),
     ], default='pending')
     plan = models.CharField(max_length=10, choices=PLAN_CHOICES, default='6month')
+
+    def calculate_expiry_date(self):
+        now = timezone.localtime(timezone.now())
+        if self.plan == '6month':
+            return now + timedelta(days=180)
+        elif self.plan == 'annual':
+            return now + timedelta(days=365)
+        return None
+
+    expiry_date = models.DateTimeField(null=True, blank=True)
+
+    def save(self, *args, **kwargs):
+        if not self.expiry_date:  # Only set if not already set
+            self.expiry_date = self.calculate_expiry_date()
+        if self.expiry_date and timezone.now() >= self.expiry_date:
+            self.status = 'expired'
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.name} - {self.email}"

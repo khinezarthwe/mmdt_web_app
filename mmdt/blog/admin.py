@@ -9,6 +9,12 @@ from .models import SubscriberRequest
 
 class CustomUserAdmin(UserAdmin):
     list_display = ('username', 'email', 'first_name', 'last_name', 'is_staff', 'is_active')
+    add_fieldsets = (
+        (None, {
+            'classes': ('wide',),
+            'fields': ('username', 'email', 'password1', 'password2', 'is_active'),
+        }),
+    )
 
 
 # Unregister the default UserAdmin and register our custom one
@@ -44,8 +50,8 @@ admin.site.register(Post, PostAdmin)
 
 @admin.register(SubscriberRequest)
 class SubscriberRequestAdmin(admin.ModelAdmin):
-    list_display = ['name', 'email', 'country', 'plan', 'status', 'created_at', 'updated_at']
-    list_filter = ['status', 'looking_for_job', 'free_waiver', 'created_at', 'updated_at']
+    list_display = ['name', 'email', 'country', 'plan', 'status', 'created_at', 'updated_at', 'expiry_date']
+    list_filter = ['status', 'free_waiver', 'created_at', 'updated_at', 'expiry_date']
     search_fields = ['name', 'email', 'country', 'status']
     actions = ['approve_requests', 'reject_requests']
 

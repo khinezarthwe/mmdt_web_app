@@ -1,10 +1,14 @@
 import pickle
 
 import numpy as np
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.mail import send_mail
 from django.shortcuts import redirect
 from django.shortcuts import render
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
 from django.views import generic
 from django.views.generic import TemplateView
 
@@ -125,12 +129,31 @@ def subscriber_request_success(request):
 
 
 def subscriber_request(request):
+    if request.user.is_authenticated:
+        return redirect('home')
+
     form = SubscriberRequestForm()
 
     if request.method == 'POST':
         form = SubscriberRequestForm(request.POST)
         if form.is_valid():
-            subscriber_request = form.save()
+
+            subscriber = form.save()
+            user_subject = 'Thank you for your subscription request'
+            html_message = render_to_string('emails/user_confirmation.html', {
+                'name': subscriber.name,
+                'plan': subscriber.get_plan_display(),
+            })
+            plain_message = strip_tags(html_message)
+            send_mail(
+                subject=user_subject,
+                message=plain_message,  # plain text version
+                from_email=settings.EMAIL_HOST_USER,
+                recipient_list=[subscriber.email],
+                html_message=html_message,  # HTML version
+                fail_silently=False,
+            )
+
             messages.success(request, 'Your subscriber request has been submitted successfully.')
             return redirect('subscriber_request_success')
 

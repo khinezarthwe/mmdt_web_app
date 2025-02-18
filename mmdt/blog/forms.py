@@ -1,6 +1,7 @@
 from django import forms
 from django.forms import ModelForm
-
+from django.core.exceptions import ValidationError
+from django.core.validators import validate_email
 from .models import Comment
 from .models import SubscriberRequest
 
@@ -29,13 +30,20 @@ class SubscriberRequestForm(forms.ModelForm):
         self.fields['country'].widget.attrs['placeholder'] = 'Current residing country'
         self.fields['city'].widget.attrs['placeholder'] = 'Current residing city'
         self.fields['job_title'].widget.attrs['placeholder'] = 'Job Title'
-        self.fields['message'].widget.attrs['placeholder'] = 'Enter your message'
+        self.fields['message'].widget.attrs['placeholder'] = \
+            'If you are applying for a fee waiver, please write your message here.'
         self.fields['plan'].widget.attrs['class'] = 'form-control'
+
+    def clean_email(self):
+        email = self.cleaned_data['email']
+        if SubscriberRequest.objects.filter(email__iexact=email).exists():
+            raise ValidationError("A subscription request with this email already exists.")
+        validate_email
+        return email
 
     class Meta:
         model = SubscriberRequest
         fields = [
             'name', 'email', 'country', 'city',
-            'job_title', 'looking_for_job',
-            'free_waiver', 'plan', 'message',
+            'job_title', 'free_waiver', 'plan', 'message',
         ]

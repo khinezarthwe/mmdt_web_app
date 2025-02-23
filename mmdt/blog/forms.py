@@ -28,7 +28,7 @@ class SubscriberRequestForm(forms.ModelForm):
         self.fields['name'].widget.attrs['placeholder'] = 'Name'
         self.fields['email'].widget.attrs['placeholder'] = 'Email'
         self.fields['mmdt_email'].widget.attrs['placeholder'] = \
-            'MMDT Learn students? please provide your email.'
+            'your mmdt mail (if you have joined the mmdt before)'
         self.fields['country'].widget.attrs['placeholder'] = 'Current residing country'
         self.fields['city'].widget.attrs['placeholder'] = 'Current residing city'
         self.fields['job_title'].widget.attrs['placeholder'] = 'Job Title'

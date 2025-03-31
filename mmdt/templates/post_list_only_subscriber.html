@@ -4,15 +4,17 @@
 {% block content %}
 <section>
     <header class="major">
-        <h2>Our latest News</h2>
+        <h2>Our latest Update News [Only Subscriber] </h2>
     </header>
 
-    <div class="posts">
-            {% if post_list_only_subscriber|length == 0%}
-        <article>
-            New Posts are coming...
-            </article>
+    {% if post_list_only_subscriber|length == 0%}
+        <div class="row mt-4">
+            <div class="col-md-12">
+                <h1 class="text-muted my-5 py-5 text-center">New Posts are coming...</h1>
+            </div>
+        </div>
     {% else %}
+        <div class="posts">
         {% for post in post_list_only_subscriber %}
         <article>
             {% if post.image %}
@@ -31,16 +33,16 @@
 </section>
 <!-- Page Navigation -->
 <div class="row">
-        {% if post_list.has_other_pages %}
+        {% if post_list_only_subscriber.has_other_pages %}
         <header class="major">
         {% if post_list.has_previous %}
-            <a href="?page={{ post_list.previous_page_number }}" aria-label="Previous">
+            <a href="?page={{ post_list_only_subscriber.previous_page_number }}" aria-label="Previous">
                 <span aria-hidden="true">&laquo;Previous</span>
                 <span class="sr-only">Previous</span>
             </a>
         {% endif %}
-        {% if post_list.has_next %}
-            <a href="?page={{ post_list.next_page_number }}" aria-label="Next">
+        {% if post_list_only_subscriber.has_next %}
+            <a href="?page={{ post_list_only_subscriber.next_page_number }}" aria-label="Next">
                 <span aria-hidden="true">&raquo;Next</span>
                 <span class="sr-only">Next</span>
             </a>

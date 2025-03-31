@@ -60,78 +60,82 @@
         </article>
     </div>
 </section>
-<h3>Subscription Plans</h3>
-<div class="row">
-    <div class="col-6 col-12-small">
-        <ul class="actions fit">
-            <li><p class="button primary fit">6-Month Plan: $12 total</p></li>
-        </ul>
-    </div>
-    <div class="col-6 col-12-small">
-        <ul class="actions fit">
-            <li><p class="button primary fit">Annual Plan: $24 total</p></li>
-        </ul>
-    </div>
-</div>
-{% if not user.is_authenticated %}
-<!-- Form -->
-<h3>Subscriber Request Form</h3>
+<!--<h3>Subscription Plans</h3>-->
+<!--<div class="row">-->
+<!--    <div class="col-6 col-12-small">-->
+<!--        <ul class="actions fit">-->
+<!--            <li><p class="button primary fit">6-Month Plan: $12 total</p></li>-->
+<!--        </ul>-->
+<!--    </div>-->
+<!--    <div class="col-6 col-12-small">-->
+<!--        <ul class="actions fit">-->
+<!--            <li><p class="button primary fit">Annual Plan: $24 total</p></li>-->
+<!--        </ul>-->
+<!--    </div>-->
+<!--</div>-->
+<section>
+<h2>Our subscriber program for the first batch is now closed. We’ll announce when the next batch opens. Stay tuned!</h2>
+    </section>
 
-<form method="post" action="{% url 'subscriber_request' %}">
-    {% csrf_token %}
-    {% if form.errors %}
-    <div class="col-12">
-        <div class="alert alert-danger">
-            {% for field, errors in form.errors.items %}
-            {% for error in errors %}
-            <p>{{ error }}</p>
-            {% endfor %}
-            {% endfor %}
-        </div>
-    </div>
-    {% endif %}
-    <div class="row gtr-uniform">
-        <div class="col-6 col-12-xsmall">
-            {{ form.name }}
-        </div>
-        <div class="col-6 col-12-xsmall">
-            {{ form.email }}
-        </div>
-        <div class="col-6 col-12-xsmall">
-            {{ form.mmdt_email }}
-        </div>
-        <div class="col-6 col-12-xsmall">
-            {{ form.country }}
-        </div>
-        <div class="col-6 col-12-xsmall">
-            {{ form.city }}
-        </div>
-        <div class="col-6 col-12-xsmall">
-            {{ form.job_title }}
-        </div>
-        <div class="col-12 col-12-xsmall">
-            <select name="plan" id="plan" required>
-                <option value="">- Select Plan -</option>
-                <option value="6month">6-Month Plan</option>
-                <option value="annual">Annual Plan</option>
-            </select>
-        </div>
-        <div class="col-6 col-12-small">
-            <div class="checkbox">
-                {{ form.free_waiver }}
-                <label for="{{ form.free_waiver.id_for_label }}">Fee waiver</label>
-            </div>
-        </div>
-        <div class="col-12">
-            {{ form.message }}
-        </div>
-        <div class="col-12">
-            <ul class="actions">
-                <li><input type="submit" value="Request to Subscribe" class="primary"/></li>
-                <li><input type="reset" value="Reset"/></li>
-            </ul>
-        </div>
-    </div>
-</form>
-{% endif %}
+<!--{% if not user.is_authenticated %}-->
+<!-- Form -->
+<!--<h3>Subscriber Request Form</h3>-->
+
+<!--<form method="post" action="{% url 'subscriber_request' %}">-->
+<!--    {% csrf_token %}-->
+<!--    {% if form.errors %}-->
+<!--    <div class="col-12">-->
+<!--        <div class="alert alert-danger">-->
+<!--            {% for field, errors in form.errors.items %}-->
+<!--            {% for error in errors %}-->
+<!--            <p>{{ error }}</p>-->
+<!--            {% endfor %}-->
+<!--            {% endfor %}-->
+<!--        </div>-->
+<!--    </div>-->
+<!--    {% endif %}-->
+<!--    <div class="row gtr-uniform">-->
+<!--        <div class="col-6 col-12-xsmall">-->
+<!--            {{ form.name }}-->
+<!--        </div>-->
+<!--        <div class="col-6 col-12-xsmall">-->
+<!--            {{ form.email }}-->
+<!--        </div>-->
+<!--        <div class="col-6 col-12-xsmall">-->
+<!--            {{ form.mmdt_email }}-->
+<!--        </div>-->
+<!--        <div class="col-6 col-12-xsmall">-->
+<!--            {{ form.country }}-->
+<!--        </div>-->
+<!--        <div class="col-6 col-12-xsmall">-->
+<!--            {{ form.city }}-->
+<!--        </div>-->
+<!--        <div class="col-6 col-12-xsmall">-->
+<!--            {{ form.job_title }}-->
+<!--        </div>-->
+<!--        <div class="col-12 col-12-xsmall">-->
+<!--            <select name="plan" id="plan" required>-->
+<!--                <option value="">- Select Plan -</option>-->
+<!--                <option value="6month">6-Month Plan</option>-->
+<!--                <option value="annual">Annual Plan</option>-->
+<!--            </select>-->
+<!--        </div>-->
+<!--        <div class="col-6 col-12-small">-->
+<!--            <div class="checkbox">-->
+<!--                {{ form.free_waiver }}-->
+<!--                <label for="{{ form.free_waiver.id_for_label }}">Fee waiver</label>-->
+<!--            </div>-->
+<!--        </div>-->
+<!--        <div class="col-12">-->
+<!--            {{ form.message }}-->
+<!--        </div>-->
+<!--        <div class="col-12">-->
+<!--            <ul class="actions">-->
+<!--                <li><input type="submit" value="Request to Subscribe" class="primary"/></li>-->
+<!--                <li><input type="reset" value="Reset"/></li>-->
+<!--            </ul>-->
+<!--        </div>-->
+<!--    </div>-->
+<!--</form>-->
+<!--{% endif %}-->
 {% endblock content %}

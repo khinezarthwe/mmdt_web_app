@@ -24,7 +24,7 @@
             <h3>{{ post.title }}</h3>
             <p>{{ post.content|slice:":700"| safe }}...</p>
             <br>
-            <ul class="actions"><li><a href="{% url 'post_detail' post.slug  %}" class="button big">Learn More</a></li></ul>
+            <p class="actions"><a href="{% url 'post_detail' post.slug  %}" class="button big">Learn More</a></p>
         </article>
         {% endfor %}
         {% endif %}

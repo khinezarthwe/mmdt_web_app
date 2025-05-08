@@ -7,7 +7,7 @@
         <h2>Our latest Update News [Only Subscriber] </h2>
     </header>
 
-    {% if post_list_only_subscriber|length == 0%}
+    {% if object_list|length == 0%}
         <div class="row mt-4">
             <div class="col-md-12">
                 <h1 class="text-muted my-5 py-5 text-center">New Posts are coming...</h1>
@@ -15,7 +15,7 @@
         </div>
     {% else %}
         <div class="posts">
-        {% for post in post_list_only_subscriber %}
+        {% for post in object_list %}
         <article>
             {% if post.image %}
             <a href="{% url 'post_detail' post.slug  %}" class="image"><img src="{{ post.image.url }}" alt=""/></a>
@@ -33,16 +33,16 @@
 </section>
 <!-- Page Navigation -->
 <div class="row">
-        {% if post_list_only_subscriber.has_other_pages %}
+        {% if page_obj.has_other_pages %}
         <header class="major">
-        {% if post_list.has_previous %}
-            <a href="?page={{ post_list_only_subscriber.previous_page_number }}" aria-label="Previous">
+        {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}" aria-label="Previous">
                 <span aria-hidden="true">&laquo;Previous</span>
                 <span class="sr-only">Previous</span>
             </a>
         {% endif %}
-        {% if post_list_only_subscriber.has_next %}
-            <a href="?page={{ post_list_only_subscriber.next_page_number }}" aria-label="Next">
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}" aria-label="Next">
                 <span aria-hidden="true">&raquo;Next</span>
                 <span class="sr-only">Next</span>
             </a>

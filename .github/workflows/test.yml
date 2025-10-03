@@ -1,0 +1,85 @@
+name: Test Suite
+
+on:
+  pull_request:
+    branches: [ main, develop ]
+  push:
+    branches: [ main, develop ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        python-version: [3.9, 3.10, 3.11]
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+    
+    - name: Cache pip dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Create .env file for testing
+      run: |
+        cd mmdt
+        cat > .env << EOF
+        SECRET_KEY=test-secret-key-for-github-actions
+        DEBUG=True
+        EMAIL_HOST_PASSWORD=test-password
+        EOF
+    
+    - name: Run migrations
+      run: |
+        cd mmdt
+        python manage.py makemigrations --check
+        python manage.py migrate
+    
+    - name: Run tests with coverage
+      run: |
+        cd mmdt
+        coverage run --source='.' manage.py test blog.tests --verbosity=2
+    
+    - name: Generate coverage report
+      run: |
+        cd mmdt
+        coverage report --include="blog/*" --show-missing
+    
+    - name: Upload coverage reports to Codecov
+      if: matrix.python-version == '3.11'
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./mmdt/coverage.xml
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: false
+    
+    - name: Run all tests (not just blog)
+      run: |
+        cd mmdt
+        python manage.py test --verbosity=2
+    
+    - name: Check for linting issues
+      run: |
+        cd mmdt
+        python manage.py check --deploy
+    
+    - name: Test database integrity
+      run: |
+        cd mmdt
+        python manage.py validate_templates

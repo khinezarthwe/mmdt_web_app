@@ -22,3 +22,9 @@ pyjwt==2.8.0
 cryptography==42.0.8
 django-extensions==3.2.3
 django-form-surveys==2.4.0
+coverage==7.10.7
+flake8==6.1.0
+black==23.12.1
+isort==5.13.2
+safety==2.3.5
+bandit==1.7.5

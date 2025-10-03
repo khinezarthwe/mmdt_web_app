@@ -42,11 +42,7 @@ Enable the following options:
 - Check **Require status checks to pass before merging**
 - Check **Require branches to be up to date before merging**
 - In the search box, add these required status checks:
-  - `test (3.9)`
-  - `test (3.10)` 
-  - `test (3.11)`
-  - `lint-and-test`
-  - `security`
+  - `test`
 
 #### ✅ Additional Protection Options
 - **Require pull request reviews before merging**
@@ -85,9 +81,7 @@ After setting up branch protection:
 
 ## Required Status Checks Explained
 
-- **`test (3.9/3.10/3.11)`**: Ensures code works across Python versions
-- **`lint-and-test`**: Code quality and formatting checks
-- **`security`**: Security vulnerability scanning
+- **`test`**: Ensures code works with Python 3.9 and all tests pass
 
 ## Troubleshooting
 
@@ -117,6 +111,6 @@ With these branch protection rules in place:
 - ✅ **Security vulnerabilities** are caught early
 - ✅ **Test coverage** is maintained
 - ✅ **Code formatting** is standardized
-- ✅ **Multi-version compatibility** is ensured
+- ✅ **Python 3.9 compatibility** is ensured
 
 This setup ensures that only high-quality, tested, and secure code makes it into your main branch.

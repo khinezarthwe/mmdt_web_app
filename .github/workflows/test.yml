@@ -40,11 +40,20 @@ jobs:
         EMAIL_HOST_PASSWORD=test-password
         EOF
     
+    - name: Check for pending migrations
+      run: |
+        cd mmdt
+        python manage.py makemigrations --check --dry-run
+    
     - name: Run migrations
       run: |
         cd mmdt
-        python manage.py makemigrations --check
         python manage.py migrate
+    
+    - name: Run Django system checks
+      run: |
+        cd mmdt
+        python manage.py check --deploy
     
     - name: Run tests with coverage
       run: |
@@ -64,20 +73,21 @@ jobs:
         name: codecov-umbrella
         fail_ci_if_error: false
     
-    - name: Run all tests (not just blog)
+    - name: Run all tests
       run: |
         cd mmdt
         python manage.py test --verbosity=2
     
-    - name: Check for linting issues
+    - name: Code formatting check
       run: |
-        cd mmdt
-        python manage.py check --deploy
         black --check --diff .
         isort --check-only --diff .
+    
+    - name: Lint code
+      run: |
         flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
     
-    - name: Test database integrity
+    - name: Security check
       run: |
-        cd mmdt
-        python manage.py validate_templates
+        safety check
+        bandit -r mmdt/ -f json -o bandit-report.json || true

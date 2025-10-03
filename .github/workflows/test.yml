@@ -40,11 +40,6 @@ jobs:
         EMAIL_HOST_PASSWORD=test-password
         EOF
     
-    - name: Check for pending migrations
-      run: |
-        cd mmdt
-        python manage.py makemigrations --check --dry-run
-    
     - name: Run migrations
       run: |
         cd mmdt

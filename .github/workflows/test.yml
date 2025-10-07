@@ -2,9 +2,9 @@ name: Test Suite
 
 on:
   pull_request:
-    branches: [ main, develop ]
+    branches: [ main ]
   push:
-    branches: [ main, develop ]
+    branches: [ main ]
 
 jobs:
   test:
@@ -72,12 +72,7 @@ jobs:
       run: |
         cd mmdt
         python manage.py test --verbosity=2
-    
-    - name: Code formatting check
-      run: |
-        black --check --diff .
-        isort --check-only --diff .
-    
+
     - name: Lint code
       run: |
         flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics

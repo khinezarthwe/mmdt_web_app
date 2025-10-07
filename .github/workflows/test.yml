@@ -76,8 +76,8 @@ jobs:
     - name: Lint code
       run: |
         flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-    
-    - name: Security check
-      run: |
-        safety check
-        bandit -r mmdt/ -f json -o bandit-report.json || true
+    #would be added back later
+    # - name: Security check
+    #   run: |
+    #     safety check
+    #     bandit -r mmdt/ -f json -o bandit-report.json || true

@@ -206,5 +206,27 @@ class YourModelTest(TestCase):
 
 ## Database Schema
 
-Our Database Design
-<img src="mmdt/static/survey/image/mmdt.png" alt="Database Schema"/>
+For a detailed database schema with Mermaid ER diagram, see [DATABASE_SCHEMA.md](DATABASE_SCHEMA.md).
+
+### Quick Overview
+
+The application uses the following main models:
+
+**Blog App**:
+- `Post` - Blog posts with rich content
+- `Comment` - Comments on posts
+- `SubscriberRequest` - Subscription requests with Telegram username support
+
+**Polls App**:
+- `ActiveGroup` - Poll groups
+- `Question` - Poll questions
+- `Choice` - Poll answer choices
+
+**Survey App**:
+- `Survey` - Survey containers
+- `Question` - Survey questions (multiple types)
+- `Choice` - Answer choices
+- `UserSurveyResponse` - User/guest responses
+- `Response` - Individual question responses
+- `ResponseChoice` - Selected choices
+

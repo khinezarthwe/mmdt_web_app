@@ -94,6 +94,116 @@ You can now access the following URLs in your web browser:
 - `boto3==1.28.44` - AWS SDK
 - `Pillow==10.0.0` - Image processing
 
+## Testing
+
+This project includes comprehensive test coverage for the blog and polls functionality.
+
+### Running Tests
+
+1. **Run All Tests**:
+   ```bash
+   cd mmdt
+   python manage.py test
+   ```
+
+2. **Run Tests with Verbosity**:
+   ```bash
+   python manage.py test --verbosity=2
+   ```
+
+3. **Run Specific App Tests**:
+   ```bash
+   # Blog tests only
+   python manage.py test blog.tests
+   
+   # Polls tests only
+   python manage.py test polls.tests
+   ```
+
+4. **Run Tests with Coverage**:
+   ```bash
+   # Install coverage if not already installed
+   pip install coverage
+   
+   # Run tests with coverage
+   coverage run --source='.' manage.py test
+   
+   # View coverage report
+   coverage report
+   
+   # Generate HTML coverage report
+   coverage html
+   ```
+
+### Test Coverage
+
+**Blog App Tests (44 tests)**:
+- **Model Tests**: Post, Comment, SubscriberRequest models
+  - Creation, validation, default values
+  - String representations
+  - Ordering and relationships
+  - Expiry date calculations
+  - Telegram username field (optional)
+  
+- **Form Tests**: CommentForm, SubscriberRequestForm, FeedbackAnalyzerForm
+  - Valid data handling
+  - Invalid data and error messages
+  - Duplicate email validation
+  - Required field validation
+  
+- **View Tests**: PostListView, PostDetailView, SubscriberRequestView, PlayGroundView
+  - GET and POST requests
+  - Authentication and permissions
+  - Subscriber-only content access
+  - View count incrementation
+  - Email sending functionality
+  
+- **URL Tests**: All URL patterns and routing
+  
+- **Integration Tests**: Complete workflows for comments and subscriber requests
+
+**Polls App Tests (12 tests)**:
+- **Model Tests**: Question model
+  - `was_published_recently()` method
+  - Date/time handling
+  
+- **View Tests**: Index view, All results view
+  - Question display logic
+  - Active group filtering
+  - Staff-only access control
+  - Pagination
+
+### CI/CD Pipeline
+
+This project uses GitHub Actions for continuous integration:
+
+- **Automated Testing**: Tests run automatically on every pull request
+- **Code Quality Checks**: Black formatting, isort, flake8 linting
+- **Security Scanning**: Safety and Bandit checks
+- **Coverage Reporting**: Codecov integration
+- **Branch Protection**: PRs must pass all tests before merging
+
+See `.github/workflows/test.yml` for the complete CI/CD configuration.
+
+### Writing New Tests
+
+When adding new features, please include tests:
+
+```python
+from django.test import TestCase
+from .models import YourModel
+
+class YourModelTest(TestCase):
+    def setUp(self):
+        """Set up test data."""
+        # Create test objects here
+        
+    def test_your_feature(self):
+        """Test your feature description."""
+        # Your test assertions here
+        self.assertEqual(expected, actual)
+```
+
 ## Database Schema
 
 Our Database Design

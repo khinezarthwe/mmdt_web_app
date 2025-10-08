@@ -32,6 +32,7 @@ class SubscriberRequestForm(forms.ModelForm):
         self.fields['country'].widget.attrs['placeholder'] = 'Current residing country'
         self.fields['city'].widget.attrs['placeholder'] = 'Current residing city'
         self.fields['job_title'].widget.attrs['placeholder'] = 'Job Title'
+        self.fields['telegram_username'].widget.attrs['placeholder'] = 'Telegram Username (e.g., @username)'
         self.fields['message'].widget.attrs['placeholder'] = \
             'If you are applying for a fee waiver, please write your message here.'
         self.fields['plan'].widget.attrs['class'] = 'form-control'
@@ -46,5 +47,5 @@ class SubscriberRequestForm(forms.ModelForm):
         model = SubscriberRequest
         fields = [
             'name', 'email', 'mmdt_email', 'country', 'city',
-            'job_title', 'free_waiver', 'plan', 'message',
+            'job_title', 'telegram_username', 'free_waiver', 'plan', 'message',
         ]

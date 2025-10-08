@@ -143,6 +143,7 @@ class SubscriberRequestModelTest(TestCase):
             country='Myanmar',
             city='Yangon',
             job_title='Data Scientist',
+            telegram_username='testuser',
             plan='6month'
         )
     
@@ -153,6 +154,7 @@ class SubscriberRequestModelTest(TestCase):
         self.assertEqual(self.subscriber.country, 'Myanmar')
         self.assertEqual(self.subscriber.city, 'Yangon')
         self.assertEqual(self.subscriber.job_title, 'Data Scientist')
+        self.assertEqual(self.subscriber.telegram_username, 'testuser')
         self.assertEqual(self.subscriber.plan, '6month')
         self.assertEqual(self.subscriber.status, 'pending')
         self.assertFalse(self.subscriber.free_waiver)
@@ -205,6 +207,29 @@ class SubscriberRequestModelTest(TestCase):
                 country='Myanmar',
                 city='Yangon'
             )
+    
+    def test_telegram_username_optional(self):
+        """Test that telegram_username is optional."""
+        subscriber = SubscriberRequest.objects.create(
+            name='No Telegram',
+            email='notelegram@example.com',
+            country='Myanmar',
+            city='Yangon',
+            plan='6month'
+        )
+        self.assertIsNone(subscriber.telegram_username)
+    
+    def test_telegram_username_saved(self):
+        """Test that telegram_username is saved correctly."""
+        subscriber = SubscriberRequest.objects.create(
+            name='With Telegram',
+            email='withtelegram@example.com',
+            country='Myanmar',
+            city='Yangon',
+            telegram_username='myusername',
+            plan='6month'
+        )
+        self.assertEqual(subscriber.telegram_username, 'myusername')
 
 
 class CommentFormTest(TestCase):
@@ -254,6 +279,7 @@ class SubscriberRequestFormTest(TestCase):
             'country': 'Myanmar',
             'city': 'Yangon',
             'job_title': 'Data Scientist',
+            'telegram_username': 'testuser',
             'plan': '6month',
             'free_waiver': False,
             'message': 'Test message'

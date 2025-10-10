@@ -1,25 +1,8 @@
 from django.contrib import admin
-from django.contrib.auth.admin import UserAdmin
-from django.contrib.auth.models import User
 from django_summernote.admin import SummernoteModelAdmin
 
 from .models import Post, Comment
 from .models import SubscriberRequest
-
-
-class CustomUserAdmin(UserAdmin):
-    list_display = ('username', 'email', 'first_name', 'last_name', 'is_staff', 'is_active')
-    add_fieldsets = (
-        (None, {
-            'classes': ('wide',),
-            'fields': ('username', 'email', 'password1', 'password2', 'is_active'),
-        }),
-    )
-
-
-# Unregister the default UserAdmin and register our custom one
-admin.site.unregister(User)
-admin.site.register(User, CustomUserAdmin)
 
 
 class PostAdmin(SummernoteModelAdmin):

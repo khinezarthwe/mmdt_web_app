@@ -14,6 +14,14 @@ This Django-based web application provides content management for the Myanmar Da
 - **Comments System**: Allow readers to comment on blog posts
 - **Image Support**: Upload and display images in blog posts
 - **View Tracking**: Track post view counts
+- **Subscription Management**: Handle subscription requests with Telegram username support
+
+### 👥 User Management
+- **User Expiration System**: Automatically expire and deactivate users based on expiry dates
+- **Profile Management**: Extended user profiles with expiration tracking
+- **Bulk Actions**: Mark multiple users as expired or active
+- **Automatic Deactivation**: Users are automatically deactivated when expired
+- **Email-based Authentication**: Django Allauth integration with Google OAuth
 
 
 ## Prerequisites for project setup
@@ -63,7 +71,17 @@ Let's set up the project step by step:
 
 8. **Run the Project**: Start the web application by running: `python manage.py runserver`
 
-9. **Access the Application**:
+9. **Optional - Set Up Automatic User Expiration**:
+   ```bash
+   # Check expired users manually
+   python manage.py check_expired_users --dry-run
+   python manage.py check_expired_users
+   
+   # Or set up a cron job to run daily (Linux/Mac)
+   0 2 * * * cd /path/to/mmdt && python manage.py check_expired_users
+   ```
+
+10. **Access the Application**:
 You can now access the following URLs in your web browser:
 - [http://127.0.0.1:8000/](http://127.0.0.1:8000/): Home Page/Blog Page 
 - [http://127.0.0.1:8000/admin](http://127.0.0.1:8000/admin): Admin Panel
@@ -93,6 +111,25 @@ You can now access the following URLs in your web browser:
 - `scikit-learn==1.2.2` - Machine learning library
 - `boto3==1.28.44` - AWS SDK
 - `Pillow==10.0.0` - Image processing
+- `coverage==7.10.7` - Test coverage analysis
+
+## Management Commands
+
+The application includes several custom management commands:
+
+### Check Expired Users
+Automatically expire users based on their expiry dates:
+```bash
+python manage.py check_expired_users [--dry-run]
+```
+
+This command:
+- Finds all users with `expiry_date` set
+- Marks users as expired if their expiry date has passed
+- Automatically deactivates expired users
+- Reactivates users if their expiry date is extended
+
+**Recommended**: Run this command daily via cron job for automatic user expiration management.
 
 ## Testing
 
@@ -204,6 +241,27 @@ class YourModelTest(TestCase):
         self.assertEqual(expected, actual)
 ```
 
+## User Expiration Feature
+
+This application includes an automatic user expiration system. For complete documentation, see [USER_EXPIRATION_FEATURE.md](USER_EXPIRATION_FEATURE.md).
+
+### Key Features:
+- ✅ **Automatic Expiration**: Users are automatically expired when `expiry_date` is reached
+- ✅ **Automatic Deactivation**: Expired users are automatically deactivated (`is_active=False`)
+- ✅ **Automatic Reactivation**: Extending expiry date automatically reactivates users
+- ✅ **Admin Integration**: Manage expiration status directly in Django admin
+- ✅ **Bulk Actions**: Mark multiple users as expired or active at once
+- ✅ **Management Command**: `python manage.py check_expired_users` for batch processing
+
+### Quick Example:
+```python
+# In Django admin: Set a user's expiry date
+user.profile.expiry_date = datetime(2025, 12, 31)
+user.profile.save()
+# If date is in past: expired=True, is_active=False (automatic)
+# If date is in future: expired=False, is_active=True (automatic)
+```
+
 ## Database Schema
 
 For a detailed database schema with Mermaid ER diagram, see [DATABASE_SCHEMA.md](DATABASE_SCHEMA.md).
@@ -212,10 +270,20 @@ For a detailed database schema with Mermaid ER diagram, see [DATABASE_SCHEMA.md]
 
 The application uses the following main models:
 
+**Users App**:
+- `UserProfile` - Extended user profiles with expiration tracking
+  - `expired` - Boolean flag for user expiration status
+  - `expiry_date` - Automatic expiration date checking
+  - Automatic `is_active` status management
+  - Auto-created for all users via Django signals
+
 **Blog App**:
 - `Post` - Blog posts with rich content
 - `Comment` - Comments on posts
 - `SubscriberRequest` - Subscription requests with Telegram username support
+  - Plans: 6-month ($12) or Annual ($24)
+  - Automatic expiry date calculation
+  - Status tracking (pending, approved, rejected, expired)
 
 **Polls App**:
 - `ActiveGroup` - Poll groups

@@ -34,6 +34,7 @@ ALLOWED_HOSTS = ['mmdt.istarvz.com', 'mmdt-dev.thingaha.org', '127.0.0.1', '35.1
 INSTALLED_APPS = [
     'polls.apps.PollsConfig',
     'survey.apps.SurveyConfig',
+    'users.apps.UsersConfig',
     'django.contrib.admin',
     'django.contrib.contenttypes',
     'django.contrib.sessions',

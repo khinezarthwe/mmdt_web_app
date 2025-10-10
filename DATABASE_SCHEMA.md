@@ -19,6 +19,15 @@ erDiagram
         datetime date_joined
     }
 
+    UserProfile {
+        int id PK
+        boolean expired
+        datetime expiry_date
+        datetime created_at
+        datetime updated_at
+        int user_id FK
+    }
+
     %% Blog App Models
     Post {
         int id PK
@@ -141,6 +150,7 @@ erDiagram
     }
 
     %% Relationships
+    User ||--|| UserProfile : "has"
     User ||--o{ Post : "authors"
     Post ||--o{ Comment : "has"
     

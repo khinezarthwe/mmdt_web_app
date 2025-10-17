@@ -28,3 +28,4 @@ isort==5.13.2
 flake8==6.1.0
 safety==2.3.4
 bandit==1.7.5
+djangorestframework==3.16.1

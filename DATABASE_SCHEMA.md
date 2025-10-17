@@ -1,4 +1,4 @@
-# Myanmar Data Tech Team - Database Schema
+# Myanmar Data Tech - Database Schema
 
 ## Mermaid ER Diagram
 

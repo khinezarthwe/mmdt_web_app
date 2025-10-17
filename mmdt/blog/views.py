@@ -33,6 +33,9 @@ class OurProject(TemplateView):
     template_name = 'index.html'
 
 
+class OurInstructors(TemplateView):
+    template_name = 'our_instructors.html'
+
 class StProject(TemplateView):
     template_name = 'st_project.html'
 

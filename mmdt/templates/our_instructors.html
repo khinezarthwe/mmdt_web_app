@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<section>
+    <div class="posts">
+        <article>
+            <a href="#" class="image"><img class="image" src="{% static 'blog/images/logo.png' %}"/></a>
+            <header class="major">
+                <h3>Thet Paing Myo</h3>
+            </header>
+        </article>
+    </div>
+    <div class="row"><h4 class="card-title">Our Honorable Instructor</h4>
+        <p class="card-text">He works as a Data Engineer in Hanoi, where he builds pipelines to solve data puzzles. He’s been working in data field for over 6 years, jumping between roles like Data Analyst, Data Trainer or Data Storyteller.
+
+            Outside of work, he shares what he learns on his blog <a href="https://paing.blog" target="_blank">paing.blog</a> and volunteers with MMDT Team to promote knowledge in Data and Computer Science.
+        </p>
+    </div>
+</section>
+{% endblock content %}

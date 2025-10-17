@@ -2,7 +2,7 @@
 <html>
 {% load static %}
 <head>
-    <title>Myanmar Data Tech Team</title>
+    <title>Myanmar Data Tech</title>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no"/>
     <link rel="stylesheet" href="{% static 'assets/css/bootstrap.css' %}"/>
@@ -38,7 +38,13 @@
                 </header>
                 <ul>
                     <li><a href="{% url 'home' %}">Homepage</a></li>
-                    <li><a href="{% url 'about' %}">Our Team</a></li>
+                    <li>
+                        <span class="opener">Our Team</span>
+                        <ul>
+                            <li><a href="{% url 'about' %}">Core Team</a></li>
+                            <li><a href="{% url 'our_instructors' %}">Our Honorable Instructors/Guest Lecturers</a></li>
+                        </ul>
+                    </li>
                     <li>
                         <span class="opener">Projects</span>
                         <ul>
@@ -71,7 +77,7 @@
                 </ul>
                 {% endif %}
             </section>
-            <section>
+            <!-- <section>
                 <header class="major">
                     <h2>Our Partner</h2>
                 </header>
@@ -81,7 +87,7 @@
                                                                                alt=""/></a>
                     </article>
                 </div>
-            </section>
+            </section> -->
 
             <!-- Section -->
             <section>

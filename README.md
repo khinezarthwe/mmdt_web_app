@@ -1,10 +1,10 @@
-# Myanmar Data Tech Team Web App
+# Myanmar Data Tech Web App
 
 ## Introduction
 
-Welcome to the Myanmar Data Tech Team web application at https://mmdt.istarvz.com/
+Welcome to the Myanmar Data Tech web application at https://mmdt.istarvz.com/
 
-This Django-based web application provides content management for the Myanmar Data Tech Team.
+This Django-based web application provides content management for the Myanmar Data Tech.
 
 ## Features
 

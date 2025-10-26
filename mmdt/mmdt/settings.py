@@ -57,6 +57,8 @@ INSTALLED_APPS = [
     'django_extensions',
     'djf_surveys',
     'tinymce',  # dependency
+    'rest_framework',
+    'rest_framework.authtoken',
 ]
 
 SITE_ID = 1
@@ -264,4 +266,17 @@ SURVEY_MASTER_TEMPLATE = 'surveys/master.html'
 SURVEY_PAGINATION_NUMBER = {
     'answer_list': 10,
     'survey_list': 10
+}
+
+# Django REST Framework settings
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 10,
 }

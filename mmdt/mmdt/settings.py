@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 import os
 from pathlib import Path
 import logging
+from datetime import timedelta
 from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -35,6 +36,7 @@ INSTALLED_APPS = [
     'polls.apps.PollsConfig',
     'survey.apps.SurveyConfig',
     'users.apps.UsersConfig',
+    'api',
     'django.contrib.admin',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -58,7 +60,9 @@ INSTALLED_APPS = [
     'djf_surveys',
     'tinymce',  # dependency
     'rest_framework',
-    'rest_framework.authtoken',
+    'rest_framework_simplejwt',
+    'rest_framework_simplejwt.token_blacklist',
+    'drf_spectacular',
 ]
 
 SITE_ID = 1
@@ -271,12 +275,73 @@ SURVEY_PAGINATION_NUMBER = {
 # Django REST Framework settings
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
         'rest_framework.authentication.SessionAuthentication',
-        'rest_framework.authentication.TokenAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
     ],
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 10,
+}
+
+# Simple JWT settings
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(hours=1),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': True,
+    'UPDATE_LAST_LOGIN': True,
+
+    'ALGORITHM': 'HS256',
+    'SIGNING_KEY': SECRET_KEY,
+    'VERIFYING_KEY': None,
+    'AUDIENCE': None,
+    'ISSUER': None,
+
+    'AUTH_HEADER_TYPES': ('Bearer',),
+    'AUTH_HEADER_NAME': 'HTTP_AUTHORIZATION',
+    'USER_ID_FIELD': 'id',
+    'USER_ID_CLAIM': 'user_id',
+    'USER_AUTHENTICATION_RULE': 'rest_framework_simplejwt.authentication.default_user_authentication_rule',
+
+    'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
+    'TOKEN_TYPE_CLAIM': 'token_type',
+
+    'JTI_CLAIM': 'jti',
+}
+
+# drf-spectacular settings for OpenAPI documentation
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'MMDT API',
+    'DESCRIPTION': 'Myanmar Data Tech Team API for Telegram Bot and Website',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    'COMPONENT_SPLIT_REQUEST': True,
+    'SCHEMA_PATH_PREFIX': r'/api/v[0-9]',
+
+    # Authentication configuration
+    'SECURITY': [{'bearerAuth': []}],
+    'SECURITY_DEFINITIONS': {
+        'bearerAuth': {
+            'type': 'http',
+            'scheme': 'bearer',
+            'bearerFormat': 'JWT',
+        }
+    },
+
+    # UI configuration
+    'SWAGGER_UI_SETTINGS': {
+        'deepLinking': True,
+        'persistAuthorization': True,
+        'displayOperationId': True,
+        'filter': True,
+    },
+
+    # Schema customization
+    'POSTPROCESSING_HOOKS': [],
+    'PREPROCESSING_HOOKS': [],
+    'SERVE_PERMISSIONS': ['rest_framework.permissions.AllowAny'],
+    'SERVE_AUTHENTICATION': [],
 }

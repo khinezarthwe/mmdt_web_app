@@ -73,8 +73,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         telegram_user_id = request.data.get('telegram_user_id', None)
         telegram_username = request.data.get('telegram_username', None)
 
-        # Revoke existing sessions for this user on the same client type
-        # For telegram bot, also match by telegram_user_id to ensure single session per telegram account
+        # Check for existing active session for this user on the same client type
         filter_params = {
             'user': user,
             'client_type': client_type,
@@ -84,27 +83,15 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         if client_type == 'telegram_bot' and telegram_user_id:
             filter_params['telegram_user_id'] = telegram_user_id
 
-        existing_sessions = UserSession.objects.filter(**filter_params)
+        existing_session = UserSession.objects.filter(**filter_params).first()
 
-        for old_session in existing_sessions:
-            old_session.revoke()
-
-            # Blacklist refresh token
-            try:
-                token_record = OutstandingToken.objects.filter(jti=old_session.refresh_token_jti).first()
-                if token_record:
-                    BlacklistedToken.objects.get_or_create(token=token_record)
-            except Exception:
-                pass
-
-            # Blacklist access token
-            try:
-                if old_session.access_token_jti:
-                    access_token_record = OutstandingToken.objects.filter(jti=old_session.access_token_jti).first()
-                    if access_token_record:
-                        BlacklistedToken.objects.get_or_create(token=access_token_record)
-            except Exception:
-                pass
+        # If active session exists and hasn't expired, prevent new login
+        if existing_session and not existing_session.is_expired():
+            client_name = 'this device' if client_type == 'unknown' else client_type.replace('_', ' ')
+            raise InvalidToken(
+                f'You are already logged in on {client_name}. '
+                f'Please logout first using the logout endpoint before logging in again.'
+            )
 
         # Create OutstandingToken record for access token to enable blacklisting
         access_token_record, _ = OutstandingToken.objects.get_or_create(

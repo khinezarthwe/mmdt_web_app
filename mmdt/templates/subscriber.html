@@ -73,15 +73,15 @@
         </ul>
     </div>
 </div>
-<!-- <section>
-<h2>Our subscriber program for the first batch is now closed. We’ll announce when the next batch opens. Stay tuned!</h2>
-    </section> -->
+<section>
+<h2>Our subscriber program for the second batch is now closed. We’ll announce when the next batch opens. Stay tuned!</h2>
+</section>
 
-{% if not user.is_authenticated %}
+<!-- {% if not user.is_authenticated %} -->
 <!-- Form-->
-<h3>Subscriber Request Form</h3>
+<!-- <h3>Subscriber Request Form</h3> -->
 
-<form method="post" action="{% url 'subscriber_request' %}">
+<!-- <form method="post" action="{% url 'subscriber_request' %}">
     {% csrf_token %}
     {% if form.errors %}
     <div class="col-12">
@@ -139,6 +139,6 @@
             </ul>
         </div>
     </div>
-</form>
-{% endif %}
+</form> -->
+<!-- {% endif %} -->
 {% endblock content %}

@@ -73,24 +73,38 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         telegram_user_id = request.data.get('telegram_user_id', None)
         telegram_username = request.data.get('telegram_username', None)
 
-        # For telegram bot, revoke existing active sessions for this telegram user
+        # Revoke existing sessions for this user on the same client type
+        # For telegram bot, also match by telegram_user_id to ensure single session per telegram account
+        filter_params = {
+            'user': user,
+            'client_type': client_type,
+            'is_active': True
+        }
+
         if client_type == 'telegram_bot' and telegram_user_id:
-            existing_sessions = UserSession.objects.filter(
-                telegram_user_id=telegram_user_id,
-                is_active=True
-            )
-            for old_session in existing_sessions:
-                old_session.revoke()
-                try:
-                    token_record = OutstandingToken.objects.filter(jti=old_session.refresh_token_jti).first()
-                    if token_record:
-                        BlacklistedToken.objects.get_or_create(token=token_record)
-                    if old_session.access_token_jti:
-                        access_token_record = OutstandingToken.objects.filter(jti=old_session.access_token_jti).first()
-                        if access_token_record:
-                            BlacklistedToken.objects.get_or_create(token=access_token_record)
-                except Exception:
-                    pass
+            filter_params['telegram_user_id'] = telegram_user_id
+
+        existing_sessions = UserSession.objects.filter(**filter_params)
+
+        for old_session in existing_sessions:
+            old_session.revoke()
+
+            # Blacklist refresh token
+            try:
+                token_record = OutstandingToken.objects.filter(jti=old_session.refresh_token_jti).first()
+                if token_record:
+                    BlacklistedToken.objects.get_or_create(token=token_record)
+            except Exception:
+                pass
+
+            # Blacklist access token
+            try:
+                if old_session.access_token_jti:
+                    access_token_record = OutstandingToken.objects.filter(jti=old_session.access_token_jti).first()
+                    if access_token_record:
+                        BlacklistedToken.objects.get_or_create(token=access_token_record)
+            except Exception:
+                pass
 
         # Create OutstandingToken record for access token to enable blacklisting
         access_token_record, _ = OutstandingToken.objects.get_or_create(

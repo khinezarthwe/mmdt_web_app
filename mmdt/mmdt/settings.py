@@ -79,6 +79,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'debug_toolbar.middleware.DebugToolbarMiddleware',
     'allauth.account.middleware.AccountMiddleware',
+    'users.middleware.CheckTokenBlacklistMiddleware',
 ]
 
 ROOT_URLCONF = 'mmdt.urls'

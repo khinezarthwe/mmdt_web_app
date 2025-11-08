@@ -73,6 +73,36 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         telegram_user_id = request.data.get('telegram_user_id', None)
         telegram_username = request.data.get('telegram_username', None)
 
+        # For telegram bot, revoke existing active sessions for this telegram user
+        if client_type == 'telegram_bot' and telegram_user_id:
+            existing_sessions = UserSession.objects.filter(
+                telegram_user_id=telegram_user_id,
+                is_active=True
+            )
+            for old_session in existing_sessions:
+                old_session.revoke()
+                try:
+                    token_record = OutstandingToken.objects.filter(jti=old_session.refresh_token_jti).first()
+                    if token_record:
+                        BlacklistedToken.objects.get_or_create(token=token_record)
+                    if old_session.access_token_jti:
+                        access_token_record = OutstandingToken.objects.filter(jti=old_session.access_token_jti).first()
+                        if access_token_record:
+                            BlacklistedToken.objects.get_or_create(token=access_token_record)
+                except Exception:
+                    pass
+
+        # Create OutstandingToken record for access token to enable blacklisting
+        access_token_record, _ = OutstandingToken.objects.get_or_create(
+            jti=str(access['jti']),
+            defaults={
+                'user': user,
+                'token': str(access),
+                'created_at': timezone.now(),
+                'expires_at': timezone.now() + timedelta(hours=1)
+            }
+        )
+
         # Store session in database
         session = UserSession.objects.create(
             user=user,
@@ -174,7 +204,7 @@ class CustomTokenObtainPairView(TokenObtainPairView):
 
 
 class CustomTokenRefreshView(TokenRefreshView):
-    """JWT token refresh view."""
+    """JWT token refresh view with access token tracking."""
 
     @extend_schema(
         summary="Refresh access token",
@@ -183,7 +213,61 @@ class CustomTokenRefreshView(TokenRefreshView):
         tags=['Authentication']
     )
     def post(self, request, *args, **kwargs):
-        return super().post(request, *args, **kwargs)
+        response = super().post(request, *args, **kwargs)
+
+        if response.status_code == 200:
+            try:
+                old_refresh_token = request.data.get('refresh')
+                old_refresh = RefreshToken(old_refresh_token)
+                old_refresh_jti = str(old_refresh['jti'])
+                old_access_jti = str(old_refresh.access_token['jti'])
+
+                new_access_token = response.data.get('access')
+                new_access = AccessToken(new_access_token)
+                new_access_jti = str(new_access['jti'])
+
+                user_id = new_access['user_id']
+                user = User.objects.get(id=user_id)
+
+                # Create OutstandingToken for new access token
+                OutstandingToken.objects.get_or_create(
+                    jti=new_access_jti,
+                    defaults={
+                        'user': user,
+                        'token': new_access_token,
+                        'created_at': timezone.now(),
+                        'expires_at': timezone.now() + timedelta(hours=1)
+                    }
+                )
+
+                # Update session with new access token JTI
+                try:
+                    session = UserSession.objects.get(refresh_token_jti=old_refresh_jti, is_active=True)
+
+                    # Blacklist old access token
+                    try:
+                        old_access_record = OutstandingToken.objects.filter(jti=old_access_jti).first()
+                        if old_access_record:
+                            BlacklistedToken.objects.get_or_create(token=old_access_record)
+                    except Exception:
+                        pass
+
+                    # Update session with new tokens if refresh token was rotated
+                    if 'refresh' in response.data:
+                        new_refresh_token = response.data.get('refresh')
+                        new_refresh = RefreshToken(new_refresh_token)
+                        new_refresh_jti = str(new_refresh['jti'])
+                        session.refresh_token_jti = new_refresh_jti
+
+                    session.access_token_jti = new_access_jti
+                    session.save(update_fields=['refresh_token_jti', 'access_token_jti', 'last_activity'])
+                except UserSession.DoesNotExist:
+                    pass
+
+            except Exception:
+                pass
+
+        return response
 
 
 class LogoutView(APIView):

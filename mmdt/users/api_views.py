@@ -223,6 +223,14 @@ class UserSessionViewSet(viewsets.ReadOnlyModelViewSet):
             except OutstandingToken.DoesNotExist:
                 pass
 
+            # Blacklist the access token
+            try:
+                if session.access_token_jti:
+                    access_token = OutstandingToken.objects.get(jti=session.access_token_jti)
+                    BlacklistedToken.objects.get_or_create(token=access_token)
+            except OutstandingToken.DoesNotExist:
+                pass
+
             return Response({
                 'message': 'Session revoked successfully',
                 'session_id': session.id
@@ -263,12 +271,23 @@ class UserSessionViewSet(viewsets.ReadOnlyModelViewSet):
         revoked_count = 0
         for session in sessions:
             session.revoke()
+
+            # Blacklist refresh token
             try:
                 token = OutstandingToken.objects.get(jti=session.refresh_token_jti)
                 BlacklistedToken.objects.get_or_create(token=token)
-                revoked_count += 1
             except OutstandingToken.DoesNotExist:
                 pass
+
+            # Blacklist access token
+            try:
+                if session.access_token_jti:
+                    access_token = OutstandingToken.objects.get(jti=session.access_token_jti)
+                    BlacklistedToken.objects.get_or_create(token=access_token)
+            except OutstandingToken.DoesNotExist:
+                pass
+
+            revoked_count += 1
 
         return Response({
             'message': f'{revoked_count} session(s) revoked successfully',

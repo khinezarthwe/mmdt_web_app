@@ -4,6 +4,7 @@ JWT Authentication views with session tracking support.
 Supports authentication via username or email and tracks sessions
 for multi-device support.
 """
+import jwt
 from rest_framework import status, serializers
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -85,13 +86,40 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
 
         existing_session = UserSession.objects.filter(**filter_params).first()
 
-        # If active session exists and hasn't expired, prevent new login
-        if existing_session and not existing_session.is_expired():
-            client_name = 'this device' if client_type == 'unknown' else client_type.replace('_', ' ')
-            raise InvalidToken(
-                f'You are already logged in on {client_name}. '
-                f'Please logout first using the logout endpoint before logging in again.'
-            )
+        # Handle existing session
+        if existing_session:
+            # Check if access token is still valid (not blacklisted and not expired)
+            access_token_valid = False
+            if existing_session.access_token_jti:
+                try:
+                    access_token_record = OutstandingToken.objects.get(jti=existing_session.access_token_jti)
+                    is_blacklisted = BlacklistedToken.objects.filter(token=access_token_record).exists()
+                    is_expired = timezone.now() > access_token_record.expires_at
+                    access_token_valid = not is_blacklisted and not is_expired
+                except OutstandingToken.DoesNotExist:
+                    access_token_valid = False
+
+            # If session expired OR access token is invalid/blacklisted/expired, allow new login
+            if existing_session.is_expired() or not access_token_valid:
+                # Auto-revoke old session and allow new login
+                existing_session.revoke()
+                try:
+                    token_record = OutstandingToken.objects.filter(jti=existing_session.refresh_token_jti).first()
+                    if token_record:
+                        BlacklistedToken.objects.get_or_create(token=token_record)
+                    if existing_session.access_token_jti:
+                        access_token_record = OutstandingToken.objects.filter(jti=existing_session.access_token_jti).first()
+                        if access_token_record:
+                            BlacklistedToken.objects.get_or_create(token=access_token_record)
+                except Exception:
+                    pass
+            else:
+                # Session and access token still valid, prevent new login
+                client_name = 'this device' if client_type == 'unknown' else client_type.replace('_', ' ')
+                raise InvalidToken(
+                    f'You are already logged in on {client_name}. '
+                    f'Please logout first using the logout endpoint before logging in again.'
+                )
 
         # Create OutstandingToken record for access token to enable blacklisting
         access_token_record, _ = OutstandingToken.objects.get_or_create(
@@ -308,44 +336,67 @@ class LogoutView(APIView):
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
-            # Decode refresh token to get JTI
-            token = RefreshToken(refresh_token)
-            refresh_jti = str(token['jti'])
-
-            # Get the access token JTI from the refresh token payload
-            access_jti = str(token.access_token['jti'])
+            # Try to decode refresh token to get JTI
+            try:
+                token = RefreshToken(refresh_token)
+                refresh_jti = str(token['jti'])
+                access_jti = str(token.access_token['jti'])
+                token_valid = True
+            except TokenError:
+                # Token expired or invalid - extract JTI manually
+                token_valid = False
+                try:
+                    decoded = jwt.decode(refresh_token, options={"verify_signature": False})
+                    refresh_jti = decoded.get('jti')
+                    access_jti = None
+                except Exception:
+                    return Response(
+                        {'error': 'Invalid token format'},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
 
             # Find and revoke session
             try:
                 session = UserSession.objects.get(refresh_token_jti=refresh_jti)
                 session.revoke()
 
-                # Try to blacklist both tokens
-                # Blacklist refresh token
-                token.blacklist()
+                # Blacklist tokens if we could decode them
+                if token_valid:
+                    try:
+                        token.blacklist()
+                    except Exception:
+                        pass
 
-                # Blacklist access token if it exists in OutstandingToken
+                # Blacklist access token if available
+                if access_jti:
+                    try:
+                        access_token_record = OutstandingToken.objects.filter(jti=access_jti).first()
+                        if access_token_record:
+                            BlacklistedToken.objects.get_or_create(token=access_token_record)
+                    except Exception:
+                        pass
+
+                # Blacklist refresh token by JTI
                 try:
-                    access_token_record = OutstandingToken.objects.filter(jti=access_jti).first()
-                    if access_token_record:
-                        BlacklistedToken.objects.get_or_create(token=access_token_record)
+                    refresh_token_record = OutstandingToken.objects.filter(jti=refresh_jti).first()
+                    if refresh_token_record:
+                        BlacklistedToken.objects.get_or_create(token=refresh_token_record)
                 except Exception:
-                    pass  # Access token might not be in OutstandingToken table
+                    pass
 
             except UserSession.DoesNotExist:
-                # Still try to blacklist the token even if session not found
-                token.blacklist()
+                # Try to blacklist token even if session not found
+                if token_valid:
+                    try:
+                        token.blacklist()
+                    except Exception:
+                        pass
 
             return Response({
                 'message': 'Logout successful',
-                'detail': 'Session revoked and tokens blacklisted. Note: Access token remains valid until expiry.'
+                'detail': 'Session revoked and tokens blacklisted.'
             }, status=status.HTTP_200_OK)
 
-        except TokenError as e:
-            return Response(
-                {'error': str(e)},
-                status=status.HTTP_400_BAD_REQUEST
-            )
         except Exception as e:
             return Response(
                 {'error': 'An error occurred during logout'},

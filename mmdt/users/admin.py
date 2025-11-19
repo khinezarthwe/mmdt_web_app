@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import User
-from .models import UserProfile, UserSession
+from .models import UserProfile
 
 
 class UserProfileInline(admin.StackedInline):
@@ -54,45 +54,4 @@ class CustomUserAdmin(UserAdmin):
 # Unregister the default UserAdmin and register our custom one
 admin.site.unregister(User)
 admin.site.register(User, CustomUserAdmin)
-
-
-@admin.register(UserSession)
-class UserSessionAdmin(admin.ModelAdmin):
-    """Admin interface for UserSession model."""
-    list_display = (
-        'user',
-        'client_type',
-        'device_name',
-        'telegram_username',
-        'is_active',
-        'created_at',
-        'expires_at',
-        'ip_address'
-    )
-    list_filter = (
-        'client_type',
-        'is_active',
-        'created_at',
-        'expires_at'
-    )
-    search_fields = (
-        'user__username',
-        'user__email',
-        'telegram_username',
-        'device_name',
-        'ip_address'
-    )
-    readonly_fields = (
-        'refresh_token_jti',
-        'access_token_jti',
-        'created_at',
-        'last_activity'
-    )
-    actions = ['revoke_sessions']
-
-    def revoke_sessions(self, request, queryset):
-        """Revoke selected sessions."""
-        count = queryset.filter(is_active=True).update(is_active=False)
-        self.message_user(request, f'{count} session(s) revoked successfully.')
-    revoke_sessions.short_description = "Revoke selected sessions"
 

@@ -79,9 +79,9 @@ Response 200:
 
 ## User Endpoints
 
-### Get Current User
+### Get User by ID
 ```
-GET /api/v1/auth/users/me/
+GET /api/v1/auth/users/{id}/
 Authorization: Bearer access_token
 
 Response 200:
@@ -98,20 +98,6 @@ Response 200:
     "expiry_date": null
   }
 }
-```
-
-### List Users (Admin)
-```
-GET /api/v1/auth/users/
-Authorization: Bearer access_token
-
-Response 200: Paginated list of users
-```
-
-### Get User by ID
-```
-GET /api/v1/auth/users/{id}/
-Authorization: Bearer access_token
 ```
 
 ## Session Endpoints

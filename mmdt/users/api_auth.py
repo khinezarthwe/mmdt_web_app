@@ -413,6 +413,7 @@ class LogoutAllView(APIView):
         summary="Logout from all devices",
         description="Revokes all active sessions for the current user and blacklists all refresh tokens. "
                     "Note: Existing access tokens will remain valid until they expire.",
+        request=None,
         responses={
             200: inline_serializer(
                 name='LogoutAllResponse',

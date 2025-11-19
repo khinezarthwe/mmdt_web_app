@@ -80,7 +80,7 @@ POST /api/v1/auth/token/
 Response: {access: "token1", refresh: "token2"}
 
 # 2. Test access (should work)
-GET /api/v1/auth/users/me/
+GET /api/v1/auth/sessions/
 Authorization: Bearer token1
 Response: 200 OK
 
@@ -90,7 +90,7 @@ Body: {refresh: "token2"}
 Response: 200 OK
 
 # 4. Test access again (should fail)
-GET /api/v1/auth/users/me/
+GET /api/v1/auth/sessions/
 Authorization: Bearer token1
 Response: 401 {"detail": "Token has been revoked", "code": "token_revoked"}
 ```

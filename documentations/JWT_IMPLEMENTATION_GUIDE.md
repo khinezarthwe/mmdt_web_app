@@ -107,8 +107,6 @@ class UserSession(models.Model):
 - `POST /api/v1/auth/logout/all/` - Logout all sessions
 
 ### Users
-- `GET /api/v1/auth/users/me/` - Current user info
-- `GET /api/v1/auth/users/` - List users (admin)
 - `GET /api/v1/auth/users/{id}/` - User details
 
 ### Sessions

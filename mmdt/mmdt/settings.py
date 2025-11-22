@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 import os
+from datetime import timedelta
 from pathlib import Path
 import logging
 from decouple import config
@@ -57,6 +58,8 @@ INSTALLED_APPS = [
     'django_extensions',
     'djf_surveys',
     'tinymce',  # dependency
+    'rest_framework',
+    'rest_framework_simplejwt',
 ]
 
 SITE_ID = 1
@@ -264,4 +267,15 @@ SURVEY_MASTER_TEMPLATE = 'surveys/master.html'
 SURVEY_PAGINATION_NUMBER = {
     'answer_list': 10,
     'survey_list': 10
+}
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+    'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.openapi.AutoSchema',
+}
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),
 }

@@ -141,6 +141,9 @@ class CustomSchemaGenerator(SchemaGenerator):
                 "Authenticate with admin credentials to receive a short-lived (15 minutes) "
                 "JWT access token. Only users with admin privileges (is_staff=True) can obtain tokens."
             )
+            # Explicitly remove security requirement - this is the login endpoint
+            # and doesn't require authentication (overrides global security setting)
+            post_op["security"] = []
 
         # Ensure the GET /api/users operation has an `email` query parameter.
         user_path_item = paths.get("/api/users")

@@ -110,6 +110,11 @@ class UserDetailByEmailView(APIView):
                 {"detail": "User not found."},
                 status=status.HTTP_404_NOT_FOUND,
             )
+        except User.MultipleObjectsReturned:
+            return Response(
+                {"detail": "Multiple users found with this email address. Please contact support."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
         try:
             profile = user.profile

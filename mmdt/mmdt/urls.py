@@ -28,16 +28,6 @@ from api.views import AdminTokenView, SwaggerUIView, UserDetailByEmailView
 class CustomSchemaGenerator(SchemaGenerator):
     """Add JWT bearer auth, email query parameter, and enhance /auth/token documentation."""
 
-    def get_paths(self, request=None):
-        """Override to ensure API paths are included."""
-        # Get paths from parent class
-        paths = super().get_paths(request) or {}
-        
-        # Debug: log what paths were found
-        logger.debug(f"Schema generator found {len(paths)} paths: {list(paths.keys())}")
-        
-        return paths
-
     def get_schema(self, *args, **kwargs):
         schema = super().get_schema(*args, **kwargs)
         if not schema:

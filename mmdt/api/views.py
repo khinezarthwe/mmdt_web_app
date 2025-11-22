@@ -4,7 +4,6 @@ from django.views.generic import TemplateView
 from rest_framework import permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.schemas.openapi import AutoSchema
 from rest_framework_simplejwt.tokens import AccessToken
 
 from users.models import UserProfile
@@ -34,7 +33,6 @@ class AdminTokenView(APIView):
     # Login endpoint – we validate credentials manually.
     authentication_classes: list = []
     permission_classes: list = []
-    schema = AutoSchema()
 
     def post(self, request):
         username = request.data.get("username")
@@ -96,7 +94,6 @@ class UserDetailByEmailView(APIView):
     """
 
     permission_classes = [permissions.IsAdminUser]
-    schema = AutoSchema()
 
     def get(self, request):
         email = request.query_params.get("email")

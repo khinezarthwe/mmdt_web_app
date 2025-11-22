@@ -53,12 +53,12 @@ jobs:
     - name: Run tests with coverage
       run: |
         cd mmdt
-        coverage run --source='.' manage.py test blog.tests --verbosity=2
+        coverage run --source='.' manage.py test blog.tests users.tests --verbosity=2
     
     - name: Generate coverage report
       run: |
         cd mmdt
-        coverage report --include="blog/*" --show-missing
+        coverage report --include="blog/*,users/*,api/*" --show-missing
     
     - name: Upload coverage reports to Codecov
       uses: codecov/codecov-action@v3
@@ -67,6 +67,11 @@ jobs:
         flags: unittests
         name: codecov-umbrella
         fail_ci_if_error: false
+    
+    - name: Run API tests
+      run: |
+        cd mmdt
+        python manage.py test users.tests.AuthTokenAPITests users.tests.UserDetailByEmailAPITests --verbosity=2
     
     - name: Run all tests
       run: |

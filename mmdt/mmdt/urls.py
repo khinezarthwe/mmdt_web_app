@@ -15,9 +15,196 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.conf import settings
-from django.contrib import admin
-from django.urls import path, include
 from django.conf.urls.static import static
+from django.contrib import admin
+from django.urls import include, path
+from rest_framework.permissions import AllowAny
+from rest_framework.schemas import get_schema_view
+from rest_framework.schemas.openapi import SchemaGenerator
+
+from api.views import AdminTokenView, SwaggerUIView, UserDetailByEmailView
+
+
+class CustomSchemaGenerator(SchemaGenerator):
+    """Add JWT bearer auth, email query parameter, and enhance /auth/token documentation."""
+
+    def get_schema(self, *args, **kwargs):
+        schema = super().get_schema(*args, **kwargs)
+        if not schema:
+            return schema
+
+        # Add Bearer auth security scheme so Swagger UI shows the Authorize button.
+        components = schema.setdefault("components", {})
+        security_schemes = components.setdefault("securitySchemes", {})
+        security_schemes["bearerAuth"] = {
+            "type": "http",
+            "scheme": "bearer",
+            "bearerFormat": "JWT",
+        }
+        schema["security"] = [{"bearerAuth": []}]
+
+        paths = schema.get("paths") or {}
+
+        # Enhance POST /auth/token with proper request/response schemas
+        token_path_item = paths.get("/auth/token")
+        if token_path_item and "post" in token_path_item:
+            post_op = token_path_item["post"]
+            # Add request body schema
+            post_op["requestBody"] = {
+                "required": True,
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "type": "object",
+                            "required": ["username", "password"],
+                            "properties": {
+                                "username": {
+                                    "type": "string",
+                                    "description": "Admin username",
+                                    "example": "admin",
+                                },
+                                "password": {
+                                    "type": "string",
+                                    "format": "password",
+                                    "description": "Admin password",
+                                    "example": "your-password",
+                                },
+                            },
+                        },
+                    }
+                },
+            }
+            # Add response schemas
+            responses = post_op.setdefault("responses", {})
+            responses["200"] = {
+                "description": "Successfully authenticated. Returns access token.",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "access_token": {
+                                    "type": "string",
+                                    "description": "JWT access token (valid for 15 minutes)",
+                                    "example": "eyJ0eXAiOiJKV1QiLCJhbGc...",
+                                },
+                                "expires_in": {
+                                    "type": "integer",
+                                    "description": "Token expiration time in seconds",
+                                    "example": 900,
+                                },
+                                "token_type": {
+                                    "type": "string",
+                                    "description": "Token type",
+                                    "example": "Bearer",
+                                },
+                            },
+                        },
+                    }
+                },
+            }
+            responses["400"] = {
+                "description": "Bad request - missing username or password",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "detail": {
+                                    "type": "string",
+                                    "example": "Username and password are required.",
+                                }
+                            },
+                        },
+                    }
+                },
+            }
+            responses["401"] = {
+                "description": "Unauthorized - invalid credentials or not an admin user",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "detail": {
+                                    "type": "string",
+                                    "example": "Invalid credentials or not an admin user.",
+                                }
+                            },
+                        },
+                    }
+                },
+            }
+            # Update description
+            post_op["summary"] = "Obtain JWT access token for admin users"
+            post_op["description"] = (
+                "Authenticate with admin credentials to receive a short-lived (15 minutes) "
+                "JWT access token. Only users with admin privileges (is_staff=True) can obtain tokens."
+            )
+            # Explicitly remove security requirement - this is the login endpoint
+            # and doesn't require authentication (overrides global security setting)
+            post_op["security"] = []
+
+        # Ensure the GET /api/users operation has an `email` query parameter.
+        user_path_item = paths.get("/api/users")
+        if user_path_item and "get" in user_path_item:
+            get_op = user_path_item["get"]
+            params = get_op.setdefault("parameters", [])
+            has_email_param = any(
+                p.get("name") == "email" and p.get("in") == "query" for p in params
+            )
+            if not has_email_param:
+                params.append(
+                    {
+                        "name": "email",
+                        "in": "query",
+                        "required": True,
+                        "schema": {"type": "string", "format": "email"},
+                        "description": "Email address of the user to look up.",
+                        "example": "mmdt@example.com",
+                    }
+                )
+            # Add response schemas for /api/users
+            responses = get_op.setdefault("responses", {})
+            responses["200"] = {
+                "description": "Successfully retrieved user information",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "email": {
+                                    "type": "string",
+                                    "format": "email",
+                                    "example": "mmdt@example.com",
+                                },
+                                "enddate": {
+                                    "type": "string",
+                                    "format": "date-time",
+                                    "nullable": True,
+                                    "description": "User subscription expiry date (ISO 8601 format) or null",
+                                    "example": "2025-12-31T23:59:59Z",
+                                },
+                            },
+                        },
+                    }
+                },
+            }
+            responses["400"] = {
+                "description": "Bad request - missing email parameter",
+            }
+            responses["401"] = {
+                "description": "Unauthorized - missing or invalid JWT token",
+            }
+            responses["403"] = {
+                "description": "Forbidden - authenticated user is not an admin",
+            }
+            responses["404"] = {
+                "description": "Not found - user with given email does not exist",
+            }
+
+        return schema
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -26,7 +213,22 @@ urlpatterns = [
     path('polls/', include('polls.urls', namespace='polls')),
     path('survey/', include('survey.urls', namespace='survey')),
     path('surveys/', include('djf_surveys.urls')),
-    path('summernote/', include('django_summernote.urls'))
+    path('summernote/', include('django_summernote.urls')),
+    path('auth/token', AdminTokenView.as_view(), name='auth-token'),
+    path('api/users', UserDetailByEmailView.as_view(), name='api-user-by-email'),
+    path('api/docs/', SwaggerUIView.as_view(), name='swagger-ui'),
+    path(
+        'api/schema/',
+        get_schema_view(
+            title='MMDT API',
+            description='OpenAPI schema for token and user endpoints.',
+            version='1.0.0',
+            public=True,
+            permission_classes=[AllowAny],
+            generator_class=CustomSchemaGenerator,
+        ),
+        name='openapi-schema',
+    ),
 ]
 
 if settings.DEBUG:

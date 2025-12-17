@@ -8,6 +8,7 @@ from django.core.mail import send_mail
 from django.shortcuts import redirect
 from django.shortcuts import render
 from django.template.loader import render_to_string
+from django.utils import timezone
 from django.utils.html import strip_tags
 from django.views import generic
 from django.views.generic import TemplateView
@@ -135,6 +136,14 @@ def subscriber_request(request):
     if request.user.is_authenticated:
         return redirect('home')
 
+    from .models import Cohort
+    active_cohort = Cohort.get_active_cohort()
+
+    if not active_cohort:
+        next_cohort = Cohort.objects.filter(reg_start_date__gt=timezone.now()).order_by('reg_start_date').first()
+        messages.error(request, 'Registration is currently closed. Please check back during the next registration window.')
+        return render(request, 'subscriber_registration_closed.html', {'next_cohort': next_cohort})
+
     form = SubscriberRequestForm()
 
     if request.method == 'POST':
@@ -150,11 +159,11 @@ def subscriber_request(request):
             plain_message = strip_tags(html_message)
             send_mail(
                 subject=user_subject,
-                message=plain_message,  # plain text version
+                message=plain_message,
                 from_email=settings.EMAIL_HOST_USER,
                 recipient_list=[subscriber.email],
-                html_message=html_message,  # HTML version
-                fail_silently=False,
+                html_message=html_message,
+                fail_silently=True,
             )
 
             messages.success(request, 'Your subscriber request has been submitted successfully.')

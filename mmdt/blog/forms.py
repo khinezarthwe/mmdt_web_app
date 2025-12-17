@@ -39,9 +39,20 @@ class SubscriberRequestForm(forms.ModelForm):
 
     def clean_email(self):
         email = self.cleaned_data['email']
-        if SubscriberRequest.objects.filter(email__iexact=email).exists():
-            raise ValidationError("A subscription request with this email already exists.")
+        if SubscriberRequest.objects.filter(email__iexact=email, status='pending').exists():
+            raise ValidationError("You already have a pending subscription request with this email. Please wait for it to be processed.")
         return email
+
+    def clean(self):
+        cleaned_data = super().clean()
+        from .models import Cohort
+        active_cohort = Cohort.get_active_cohort()
+        if not active_cohort:
+            raise ValidationError(
+                "Registration is currently closed. No active cohort registration window is open. "
+                "Please check back later or contact support."
+            )
+        return cleaned_data
 
     class Meta:
         model = SubscriberRequest

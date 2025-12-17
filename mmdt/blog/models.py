@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 from django.utils import timezone
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
 from django.db import models
 
 STATUS = (
@@ -43,6 +44,78 @@ class Comment(models.Model):
         return 'Comment {} by {}'.format(self.body, self.name)
 
 
+class Cohort(models.Model):
+    cohort_id = models.CharField(max_length=20, primary_key=True, help_text="Format: YYYY_MM (e.g., 2025_01)")
+    name = models.CharField(max_length=200, help_text="Display name (e.g., 'January 2025 Cohort')")
+    reg_start_date = models.DateTimeField(help_text="Registration window start date")
+    reg_end_date = models.DateTimeField(help_text="Registration window end date")
+    exp_date_6 = models.DateTimeField(help_text="Expiry date for 6-month plan")
+    exp_date_12 = models.DateTimeField(help_text="Expiry date for 12-month plan")
+    is_active = models.BooleanField(default=True, help_text="Is this cohort accepting registrations?")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-reg_start_date']
+        verbose_name = 'Cohort'
+        verbose_name_plural = 'Cohorts'
+
+    def __str__(self):
+        return f"{self.cohort_id} - {self.name}"
+
+    def is_registration_open(self):
+        now = timezone.now()
+        return self.is_active and self.reg_start_date <= now <= self.reg_end_date
+
+    def get_expiry_for_plan(self, plan):
+        return self.exp_date_6 if plan == '6month' else self.exp_date_12
+
+    @classmethod
+    def get_active_cohort(cls, submission_date=None):
+        if submission_date is None:
+            submission_date = timezone.now()
+        return cls.objects.filter(
+            is_active=True,
+            reg_start_date__lte=submission_date,
+            reg_end_date__gte=submission_date
+        ).first()
+
+
+class CohortMembership(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='cohort_memberships')
+    cohort = models.ForeignKey(Cohort, on_delete=models.PROTECT, related_name='memberships')
+    plan = models.CharField(max_length=10, choices=[
+        ('6month', '6-Month Plan'),
+        ('annual', 'Annual Plan'),
+    ])
+    expiry_date = models.DateTimeField()
+    joined_at = models.DateTimeField(auto_now_add=True)
+    subscriber_request = models.ForeignKey(
+        'SubscriberRequest',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='cohort_memberships'
+    )
+    is_active = models.BooleanField(default=True)
+    notes = models.TextField(blank=True, help_text="Optional notes about this membership")
+
+    class Meta:
+        ordering = ['-joined_at']
+        verbose_name = 'Cohort Membership'
+        verbose_name_plural = 'Cohort Memberships'
+        indexes = [
+            models.Index(fields=['user', 'is_active']),
+            models.Index(fields=['cohort', 'is_active']),
+        ]
+
+    def __str__(self):
+        return f"{self.user.username} - {self.cohort.cohort_id} ({self.plan})"
+
+    def is_expired(self):
+        return timezone.now() >= self.expiry_date
+
+
 class SubscriberRequest(models.Model):
     PLAN_CHOICES = [
         ('6month', '6-Month Plan'),
@@ -50,15 +123,15 @@ class SubscriberRequest(models.Model):
     ]
 
     class Meta:
-        # Additional validation to catch duplicate emails with case insensitivity
         constraints = [
             models.UniqueConstraint(
                 fields=['email'],
-                name='unique_subscriber_email'
+                condition=models.Q(status='pending'),
+                name='unique_pending_subscriber_email'
             )
         ]
     name = models.CharField(max_length=200)
-    email = models.EmailField(unique=True)
+    email = models.EmailField()
     mmdt_email = models.EmailField(blank=True, null=True)
     country = models.CharField(max_length=100)
     city = models.CharField(max_length=100)
@@ -75,22 +148,40 @@ class SubscriberRequest(models.Model):
         ('expired', 'Expired'),
     ], default='pending')
     plan = models.CharField(max_length=10, choices=PLAN_CHOICES, default='6month')
+    cohort = models.ForeignKey(
+        Cohort,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name='subscriber_requests',
+        help_text="Auto-assigned based on submission date"
+    )
 
     def calculate_expiry_date(self):
-        now = timezone.localtime(timezone.now())
-        if self.plan == '6month':
-            return now + timedelta(days=180)
-        elif self.plan == 'annual':
-            return now + timedelta(days=365)
+        if self.cohort:
+            return self.cohort.get_expiry_for_plan(self.plan)
+        else:
+            now = timezone.localtime(timezone.now())
+            if self.plan == '6month':
+                return now + timedelta(days=180)
+            elif self.plan == 'annual':
+                return now + timedelta(days=365)
         return None
 
     expiry_date = models.DateTimeField(null=True, blank=True)
 
     def save(self, *args, **kwargs):
-        if not self.expiry_date:  # Only set if not already set
+        if not self.cohort and not self.pk:
+            self.cohort = Cohort.get_active_cohort(self.created_at or timezone.now())
+            if not self.cohort:
+                raise ValidationError("No active cohort registration window is currently open.")
+
+        if not self.expiry_date:
             self.expiry_date = self.calculate_expiry_date()
+
         if self.expiry_date and timezone.now() >= self.expiry_date:
             self.status = 'expired'
+
         super().save(*args, **kwargs)
 
     def __str__(self):

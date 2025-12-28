@@ -166,3 +166,8 @@ media/
 
 mmdt/Scripts/
 
+
+# Google API credentials
+*.json
+!package.json
+!package-lock.json

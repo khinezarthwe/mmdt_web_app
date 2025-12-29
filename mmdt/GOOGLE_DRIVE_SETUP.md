@@ -51,47 +51,13 @@ When first paid subscriber request is submitted, browser will open automatically
 - The Drive folder (1Oa6fhtegbjpk29msrnQkYksANPhodqbw)
 - The Google Sheet (17CeX0Q1Bf1tkK-IrKEHeym6BnMsUSdB0mXW8RFX3NlA)
 
-### 2. Payment Amounts
+### 2. Email Template
 
-**File to update:** `blog/google_api_utils.py`
-**Line:** ~18-21
-
-```python
-PAYMENT_AMOUNTS = {
-    '6month': 0,  # TODO: Set actual amount
-    'annual': 0,  # TODO: Set actual amount
-}
-```
-
-**Ask supervisor:**
-- 6-month plan price: ?
-- Annual plan price: ?
-- Currency (USD, MMK, etc.): ?
-
-### 3. Bank Transfer Details
-
-**File to update:** `templates/emails/payment_instructions.html`
-**Lines:** ~23-26
-
-```html
-<p><strong>Bank Name:</strong> [BANK_NAME]</p>
-<p><strong>Account Number:</strong> [ACCOUNT_NUMBER]</p>
-<p><strong>Account Holder:</strong> [ACCOUNT_HOLDER_NAME]</p>
-```
-
-**Ask supervisor for:**
-- Bank name
-- Account number
-- Account holder name
-
-### 4. Currency Setting
-
-**File to update:** `blog/signals.py`
-**Line:** ~68
-
-```python
-currency = "USD"  # TODO: Ask supervisor for currency
-```
+Payment amounts and bank details are already configured in `templates/emails/paid_user_confirmation.html`:
+- 6-month plan: USD $12 / MMK 54,000 / BAHT 400
+- Annual plan: USD $24 / MMK 108,000 / BAHT 800
+- Bank: Bangkok Bank (Account: 860-0-290269, Name: Myo Thida)
+- KPay: 09402741691 (Nuam Man Cing)
 
 ## How It Works
 
@@ -109,20 +75,20 @@ When a user submits a SubscriberRequest with `free_waiver=False` (paid subscript
    - Columns: name, email, tele_name, country, plan, status, created_at, payment_url
 
 3. **Send Payment Email**
-   - Bank transfer instructions
-   - Transfer reference: "FullName-MMDT"
-   - Payment amount based on plan
-   - Link to Google Drive folder
+   - Bank transfer instructions (Bangkok Bank, KPay details)
+   - Payment amounts for selected plan
+   - Link to Google Drive folder for receipt upload
    - Deadline: 1 week after cohort registration closes
+   - Note: Free waiver users receive different confirmation email
 
 ## Email Template Preview
 
 To preview the email template, simply open the HTML file in a browser:
 ```bash
-open mmdt/templates/emails/payment_instructions.html
+open mmdt/templates/emails/paid_user_confirmation.html
 ```
 
-Or manually navigate to: `/Users/zno/MMDT/mmdt_web_app/mmdt/templates/emails/payment_instructions.html`
+Or manually navigate to: `/Users/zno/MMDT/mmdt_web_app/mmdt/templates/emails/paid_user_confirmation.html`
 
 Note: Template variables like `{{ name }}` will show as-is in browser. To see with real data, use Django shell test below.
 
@@ -155,13 +121,15 @@ Current implementation:
 **New files:**
 - `blog/google_api_utils.py` - Google API integration
 - `blog/signals.py` - Automation trigger
-- `templates/emails/payment_instructions.html` - Email template
+- `templates/emails/paid_user_confirmation.html` - Payment email template for paid users
 - `GOOGLE_DRIVE_SETUP.md` - This guide
 
 **Modified files:**
 - `blog/apps.py` - Register signals
+- `blog/views.py` - Skip confirmation email for paid users (handled by signal)
 - `.gitignore` - Ignore *.json files
 - `requirements.txt` - Add Google API packages
+- `mmdt/settings.py` - Add localhost to ALLOWED_HOSTS
 
 ## Security Notes
 

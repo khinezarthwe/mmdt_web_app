@@ -142,20 +142,24 @@ def subscriber_request(request):
         if form.is_valid():
 
             subscriber = form.save()
-            user_subject = 'Thank you for your subscription request'
-            html_message = render_to_string('emails/user_confirmation.html', {
-                'name': subscriber.name,
-                'plan': subscriber.get_plan_display(),
-            })
-            plain_message = strip_tags(html_message)
-            send_mail(
-                subject=user_subject,
-                message=plain_message,  # plain text version
-                from_email=settings.EMAIL_HOST_USER,
-                recipient_list=[subscriber.email],
-                html_message=html_message,  # HTML version
-                fail_silently=False,
-            )
+
+            # Only send confirmation email for free waiver users
+            # Paid users receive payment instructions from the signal
+            if subscriber.free_waiver:
+                user_subject = 'Thank you for your subscription request'
+                html_message = render_to_string('emails/user_confirmation.html', {
+                    'name': subscriber.name,
+                    'plan': subscriber.get_plan_display(),
+                })
+                plain_message = strip_tags(html_message)
+                send_mail(
+                    subject=user_subject,
+                    message=plain_message,
+                    from_email=settings.EMAIL_HOST_USER,
+                    recipient_list=[subscriber.email],
+                    html_message=html_message,
+                    fail_silently=False,
+                )
 
             messages.success(request, 'Your subscriber request has been submitted successfully.')
             return redirect('subscriber_request_success')

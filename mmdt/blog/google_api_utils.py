@@ -23,12 +23,6 @@ OAUTH_CLIENT_SECRET_FILE = os.path.join(
 )
 TOKEN_FILE = os.path.join(settings.BASE_DIR, 'google_token.json')
 
-# TODO: Update payment amounts when supervisor provides them
-PAYMENT_AMOUNTS = {
-    '6month': 0,  # TODO: Set actual amount
-    'annual': 0,  # TODO: Set actual amount
-}
-
 # Scopes for Google APIs
 SCOPES = [
     'https://www.googleapis.com/auth/drive',

@@ -12,8 +12,7 @@ from datetime import timedelta
 from .models import SubscriberRequest
 from .google_api_utils import (
     create_subscriber_folder,
-    log_to_spreadsheet,
-    PAYMENT_AMOUNTS
+    log_to_spreadsheet
 )
 
 
@@ -66,34 +65,22 @@ def send_payment_instructions_email(subscriber_request, folder_url):
     if hasattr(subscriber_request, 'cohort') and subscriber_request.cohort:
         deadline = subscriber_request.cohort.reg_end_date + timedelta(days=7)
         deadline_str = deadline.strftime('%B %d, %Y')
-        cohort_name = subscriber_request.cohort.name
     else:
         deadline_str = "1 week from registration date"
-        cohort_name = "General"
-
-    # Get payment amount
-    # TODO: Update PAYMENT_AMOUNTS in google_api_utils.py when supervisor provides amounts
-    amount = PAYMENT_AMOUNTS.get(subscriber_request.plan, 0)
-
-    # TODO: Ask supervisor for currency (USD, MMK, etc.)
-    currency = "USD"  # Placeholder
 
     context = {
         'name': subscriber_request.name,
         'plan': subscriber_request.get_plan_display(),
-        'cohort': cohort_name,
-        'amount': amount,
-        'currency': currency,
         'folder_url': folder_url or '#',
         'deadline': deadline_str,
     }
 
     try:
-        html_message = render_to_string('emails/payment_instructions.html', context)
+        html_message = render_to_string('emails/paid_user_confirmation.html', context)
         plain_message = strip_tags(html_message)
 
         send_mail(
-            subject='Payment Instructions - Myanmar Data Tech',
+            subject='Thank you for your subscription request',
             message=plain_message,
             from_email=settings.EMAIL_HOST_USER,
             recipient_list=[subscriber_request.email],
@@ -105,4 +92,3 @@ def send_payment_instructions_email(subscriber_request, folder_url):
 
     except Exception as e:
         print(f"Error sending payment email to {subscriber_request.email}: {e}")
-        # TODO: Log this error properly

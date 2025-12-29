@@ -529,13 +529,13 @@ class SubscriberRequestViewTest(TestCase):
             'city': 'Yangon',
             'plan': '6month'
         }
-        
+
         # Clear mail outbox
         mail.outbox = []
-        
+
         response = self.client.post(reverse('subscriber_request'), data=form_data)
-        
-        # Check that email was sent
+
+        # Paid users receive payment instructions email from signal
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].subject, 'Thank you for your subscription request')
         self.assertEqual(mail.outbox[0].to, ['subscriber@example.com'])

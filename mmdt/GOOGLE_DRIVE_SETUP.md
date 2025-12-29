@@ -3,24 +3,53 @@
 ## Overview
 This feature automatically creates Google Drive folders and sends payment instructions when users submit paid subscription requests.
 
+Uses OAuth 2.0 authentication with token caching for Google Drive and Sheets access.
+
 ## Implementation Status
-✓ Code structure complete with TODO placeholders
+✓ Code rewritten to use OAuth 2.0 flow
 ✓ Google API packages installed
 ✓ Email template created
 ✓ Django signal configured
+✓ Uses existing OAuth client secret file
 
-## Required Configuration
+## Authentication Method
 
-### 1. Service Account Credentials
+**Using OAuth 2.0 with Token Caching**
 
-**File needed:** Service account JSON key file
-**Location:** `mmdt/service_account_key.json` (in project root's mmdt folder)
+### Files Used:
+- **OAuth Client Secret:** `mmdt/client_secret_476736580933-kfntrcjaerj90raof7oaqgdj6s0d5utk.apps.googleusercontent.com.json` (already have)
+- **Saved Tokens:** `mmdt/google_token.json` (created automatically after first authorization)
 
-**Steps:**
-1. Ask supervisor for service account JSON key file for `mmdt-service-account@mmdt-472812.iam.gserviceaccount.com`
-2. Save it as `service_account_key.json` in the `mmdt/` directory (same folder as settings.py)
-3. Verify it's not tracked by git (already in .gitignore)
-4. File path will be: `<project_root>/mmdt/service_account_key.json`
+### One-Time Authorization Required
+
+**First time the automation runs**, it will:
+1. Open a browser window
+2. Ask you to sign in with your Google account
+3. Ask you to click "Allow" to grant permissions
+4. Save tokens to `google_token.json` for future use
+
+**After first time**: Tokens are reused automatically, no browser needed.
+
+### How to Do First-Time Authorization
+
+**Option 1: Trigger via Test (Recommended)**
+```bash
+cd mmdt
+python manage.py shell
+```
+
+```python
+from blog.google_api_utils import get_credentials
+creds = get_credentials()  # Browser will open for authorization
+print("Authorization successful!")
+```
+
+**Option 2: Wait for Real Subscriber**
+When first paid subscriber request is submitted, browser will open automatically.
+
+**Important:** You must authorize with a Google account that has access to:
+- The Drive folder (1Oa6fhtegbjpk29msrnQkYksANPhodqbw)
+- The Google Sheet (17CeX0Q1Bf1tkK-IrKEHeym6BnMsUSdB0mXW8RFX3NlA)
 
 ### 2. Payment Amounts
 

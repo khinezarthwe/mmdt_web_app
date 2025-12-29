@@ -1,18 +1,27 @@
 """
 Google Drive and Sheets API utilities for subscriber automation.
+Uses OAuth 2.0 flow with token caching.
 """
 import os
-from google.oauth2 import service_account
+from google.auth.transport.requests import Request
+from google.oauth2.credentials import Credentials
+from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 import gspread
 from django.conf import settings
 
 
-# TODO: Update these constants when supervisor provides the information
+# Configuration
 PARENT_FOLDER_ID = '1Oa6fhtegbjpk29msrnQkYksANPhodqbw'
 SPREADSHEET_ID = '17CeX0Q1Bf1tkK-IrKEHeym6BnMsUSdB0mXW8RFX3NlA'
 MMDT_ADMIN_EMAIL = 'mmdt@istarvz.com'
-SERVICE_ACCOUNT_FILE = os.path.join(settings.BASE_DIR, 'mmdt', 'service_account_key.json')
+
+# OAuth credentials files
+OAUTH_CLIENT_SECRET_FILE = os.path.join(
+    settings.BASE_DIR,
+    'client_secret_476736580933-kfntrcjaerj90raof7oaqgdj6s0d5utk.apps.googleusercontent.com.json'
+)
+TOKEN_FILE = os.path.join(settings.BASE_DIR, 'google_token.json')
 
 # TODO: Update payment amounts when supervisor provides them
 PAYMENT_AMOUNTS = {
@@ -29,26 +38,46 @@ SCOPES = [
 
 def get_credentials():
     """
-    Get Google API credentials from service account file.
+    Get Google API credentials using OAuth 2.0 flow.
+
+    First time: Opens browser for authorization and saves tokens.
+    Subsequent times: Reuses saved tokens.
 
     Returns:
-        google.oauth2.service_account.Credentials
+        google.oauth2.credentials.Credentials
 
     Raises:
-        FileNotFoundError: If service account file doesn't exist
+        FileNotFoundError: If OAuth client secret file doesn't exist
     """
-    # TODO: Replace with actual service account key file when provided
-    if not os.path.exists(SERVICE_ACCOUNT_FILE):
+    if not os.path.exists(OAUTH_CLIENT_SECRET_FILE):
         raise FileNotFoundError(
-            f"Service account key file not found at {SERVICE_ACCOUNT_FILE}. "
-            "Please obtain the service account JSON key from supervisor."
+            f"OAuth client secret file not found at {OAUTH_CLIENT_SECRET_FILE}"
         )
 
-    credentials = service_account.Credentials.from_service_account_file(
-        SERVICE_ACCOUNT_FILE,
-        scopes=SCOPES
-    )
-    return credentials
+    creds = None
+
+    # Load saved tokens if they exist
+    if os.path.exists(TOKEN_FILE):
+        creds = Credentials.from_authorized_user_file(TOKEN_FILE, SCOPES)
+
+    # If no valid credentials, get new ones
+    if not creds or not creds.valid:
+        if creds and creds.expired and creds.refresh_token:
+            # Refresh expired tokens
+            creds.refresh(Request())
+        else:
+            # Run OAuth flow (opens browser for first-time authorization)
+            flow = InstalledAppFlow.from_client_secrets_file(
+                OAUTH_CLIENT_SECRET_FILE,
+                SCOPES
+            )
+            creds = flow.run_local_server(port=0)
+
+        # Save tokens for next time
+        with open(TOKEN_FILE, 'w') as token:
+            token.write(creds.to_json())
+
+    return creds
 
 
 def create_subscriber_folder(subscriber_request):

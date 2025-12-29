@@ -97,7 +97,7 @@ def create_subscriber_folder(subscriber_request):
         # Create cohort folder if it doesn't exist
         cohort_folder_id = get_or_create_cohort_folder(
             drive_service,
-            subscriber_request.cohort.cohort_id if subscriber_request.cohort else 'NO_COHORT'
+            subscriber_request.cohort.cohort_id if hasattr(subscriber_request, 'cohort') and subscriber_request.cohort else 'NO_COHORT'
         )
 
         # Create user folder: fullname-email

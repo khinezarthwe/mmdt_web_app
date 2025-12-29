@@ -62,13 +62,14 @@ def send_payment_instructions_email(subscriber_request, folder_url):
         folder_url: URL to Google Drive folder for receipt upload
     """
     # Calculate deadline: 1 week after cohort registration closes
-    if subscriber_request.cohort:
+    # Use hasattr for backward compatibility with branches without cohort field
+    if hasattr(subscriber_request, 'cohort') and subscriber_request.cohort:
         deadline = subscriber_request.cohort.reg_end_date + timedelta(days=7)
         deadline_str = deadline.strftime('%B %d, %Y')
         cohort_name = subscriber_request.cohort.name
     else:
         deadline_str = "1 week from registration date"
-        cohort_name = "No cohort assigned"
+        cohort_name = "General"
 
     # Get payment amount
     # TODO: Update PAYMENT_AMOUNTS in google_api_utils.py when supervisor provides amounts

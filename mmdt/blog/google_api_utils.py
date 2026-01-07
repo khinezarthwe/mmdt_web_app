@@ -35,7 +35,7 @@ def get_credentials():
     Get Google API credentials using OAuth 2.0 flow.
 
     First time: Opens browser for authorization and saves tokens.
-    Subsequent times: Reuses saved tokens.
+    Subsequent times: Reuses saved tokens and refreshes if expired.
 
     Returns:
         google.oauth2.credentials.Credentials
@@ -43,33 +43,49 @@ def get_credentials():
     Raises:
         FileNotFoundError: If OAuth client secret file doesn't exist
     """
-    if not os.path.exists(OAUTH_CLIENT_SECRET_FILE):
-        raise FileNotFoundError(
-            f"OAuth client secret file not found at {OAUTH_CLIENT_SECRET_FILE}"
-        )
-
     creds = None
 
     # Load saved tokens if they exist
     if os.path.exists(TOKEN_FILE):
-        creds = Credentials.from_authorized_user_file(TOKEN_FILE, SCOPES)
+        try:
+            creds = Credentials.from_authorized_user_file(TOKEN_FILE, SCOPES)
+        except Exception as e:
+            print(f"Warning: Failed to load saved tokens: {e}")
+            creds = None
 
     # If no valid credentials, get new ones
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
             # Refresh expired tokens
-            creds.refresh(Request())
-        else:
+            try:
+                creds.refresh(Request())
+            except Exception as e:
+                print(f"Warning: Failed to refresh token: {e}")
+                creds = None
+
+        if not creds:
             # Run OAuth flow (opens browser for first-time authorization)
-            flow = InstalledAppFlow.from_client_secrets_file(
-                OAUTH_CLIENT_SECRET_FILE,
-                SCOPES
-            )
-            creds = flow.run_local_server(port=0)
+            if not os.path.exists(OAUTH_CLIENT_SECRET_FILE):
+                raise FileNotFoundError(
+                    f"OAuth client secret file not found at {OAUTH_CLIENT_SECRET_FILE}"
+                )
+
+            try:
+                flow = InstalledAppFlow.from_client_secrets_file(
+                    OAUTH_CLIENT_SECRET_FILE,
+                    SCOPES
+                )
+                creds = flow.run_local_server(port=0)
+            except Exception as e:
+                print(f"Error during OAuth flow: {e}")
+                raise
 
         # Save tokens for next time
-        with open(TOKEN_FILE, 'w') as token:
-            token.write(creds.to_json())
+        try:
+            with open(TOKEN_FILE, 'w') as token:
+                token.write(creds.to_json())
+        except Exception as e:
+            print(f"Warning: Failed to save tokens: {e}")
 
     return creds
 
@@ -136,11 +152,9 @@ def create_subscriber_folder(subscriber_request):
 
     except FileNotFoundError as e:
         print(f"Service account file not found: {e}")
-        # TODO: Log this error properly
         return None
     except Exception as e:
         print(f"Error creating Google Drive folder: {e}")
-        # TODO: Log this error properly
         return None
 
 
@@ -230,9 +244,7 @@ def log_to_spreadsheet(subscriber_request, folder_url):
 
     except FileNotFoundError as e:
         print(f"Service account file not found: {e}")
-        # TODO: Log this error properly
         return False
     except Exception as e:
         print(f"Error logging to Google Sheet: {e}")
-        # TODO: Log this error properly
         return False

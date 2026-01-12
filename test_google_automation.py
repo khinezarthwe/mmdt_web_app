@@ -46,10 +46,13 @@ def test_folder_creation():
     print("\n=== Testing Google Drive Folder Creation ===")
 
     # Create a mock subscriber request
+    # NOTE: Must use a real Gmail address for testing Drive folder permissions.
+    # Google Drive API rejects sharing with non-existent accounts.
+    # Using znot3st@gmail.com - a test account without root folder access.
     class MockSubscriber:
         def __init__(self):
             self.name = "Test User"
-            self.email = "test@example.com"
+            self.email = "znot3st@gmail.com"
             self.plan = "6month"
             self.cohort = None
 
@@ -77,7 +80,7 @@ def test_sheets_logging(folder_url):
     class MockSubscriber:
         def __init__(self):
             self.name = "Test User"
-            self.email = "test@example.com"
+            self.email = "znot3st@gmail.com"
             self.telegram_username = "@testuser"
             self.country = "Myanmar"
             self.plan = "6month"

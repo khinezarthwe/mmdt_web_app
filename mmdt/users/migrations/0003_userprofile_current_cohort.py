@@ -6,7 +6,7 @@ import django.db.models.deletion
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("blog", "0012_cohort_subscriberrequest_cohort_cohortmembership"),
+        ("blog", "0012_cohort_subscriberrequest_cohort"),
         ("users", "0002_create_profiles_for_existing_users"),
     ]
 

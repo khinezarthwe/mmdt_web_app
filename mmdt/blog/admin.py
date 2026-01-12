@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django_summernote.admin import SummernoteModelAdmin
 
-from .models import Post, Comment, SubscriberRequest, Cohort, CohortMembership
+from .models import Post, Comment, SubscriberRequest, Cohort
 
 
 class PostAdmin(SummernoteModelAdmin):
@@ -111,42 +111,3 @@ class CohortAdmin(admin.ModelAdmin):
         queryset.update(is_active=False)
         self.message_user(request, f'{queryset.count()} cohort(s) closed for registration.')
     close_registration.short_description = "Close registration for selected cohorts"
-
-
-@admin.register(CohortMembership)
-class CohortMembershipAdmin(admin.ModelAdmin):
-    list_display = [
-        'user', 'cohort', 'plan', 'expiry_date', 'is_active',
-        'joined_at', 'expired_status'
-    ]
-    list_filter = ['is_active', 'plan', 'cohort', 'joined_at', 'expiry_date']
-    search_fields = ['user__username', 'user__email', 'cohort__cohort_id']
-    date_hierarchy = 'joined_at'
-    readonly_fields = ['joined_at']
-    raw_id_fields = ['user', 'subscriber_request']
-
-    fieldsets = (
-        ('Membership Information', {
-            'fields': ('user', 'cohort', 'plan', 'expiry_date', 'is_active')
-        }),
-        ('Tracking', {
-            'fields': ('subscriber_request', 'joined_at', 'notes')
-        }),
-    )
-
-    def expired_status(self, obj):
-        return obj.is_expired()
-    expired_status.boolean = True
-    expired_status.short_description = 'Expired'
-
-    actions = ['deactivate_memberships', 'activate_memberships']
-
-    def deactivate_memberships(self, request, queryset):
-        queryset.update(is_active=False)
-        self.message_user(request, f'{queryset.count()} membership(s) deactivated.')
-    deactivate_memberships.short_description = "Deactivate selected memberships"
-
-    def activate_memberships(self, request, queryset):
-        queryset.update(is_active=True)
-        self.message_user(request, f'{queryset.count()} membership(s) activated.')
-    activate_memberships.short_description = "Activate selected memberships"

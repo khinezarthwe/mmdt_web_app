@@ -81,57 +81,14 @@ class Cohort(models.Model):
         ).first()
 
 
-class CohortMembership(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='cohort_memberships')
-    cohort = models.ForeignKey(Cohort, on_delete=models.PROTECT, related_name='memberships')
-    plan = models.CharField(max_length=10, choices=[
-        ('6month', '6-Month Plan'),
-        ('annual', 'Annual Plan'),
-    ])
-    expiry_date = models.DateTimeField()
-    joined_at = models.DateTimeField(auto_now_add=True)
-    subscriber_request = models.ForeignKey(
-        'SubscriberRequest',
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='cohort_memberships'
-    )
-    is_active = models.BooleanField(default=True)
-    notes = models.TextField(blank=True, help_text="Optional notes about this membership")
-
-    class Meta:
-        ordering = ['-joined_at']
-        verbose_name = 'Cohort Membership'
-        verbose_name_plural = 'Cohort Memberships'
-        indexes = [
-            models.Index(fields=['user', 'is_active']),
-            models.Index(fields=['cohort', 'is_active']),
-        ]
-
-    def __str__(self):
-        return f"{self.user.username} - {self.cohort.cohort_id} ({self.plan})"
-
-    def is_expired(self):
-        return timezone.now() >= self.expiry_date
-
-
 class SubscriberRequest(models.Model):
     PLAN_CHOICES = [
         ('6month', '6-Month Plan'),
         ('annual', 'Annual Plan'),
     ]
 
-    class Meta:
-        constraints = [
-            models.UniqueConstraint(
-                fields=['email'],
-                condition=models.Q(status='pending'),
-                name='unique_pending_subscriber_email'
-            )
-        ]
     name = models.CharField(max_length=200)
-    email = models.EmailField()
+    email = models.EmailField(unique=True)
     mmdt_email = models.EmailField(blank=True, null=True)
     country = models.CharField(max_length=100)
     city = models.CharField(max_length=100)

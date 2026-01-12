@@ -28,29 +28,13 @@ class UserProfile(models.Model):
             return True
         return False
 
-    def get_active_membership(self):
-        """Get the user's active cohort membership."""
-        from blog.models import CohortMembership
-        return CohortMembership.objects.filter(
-            user=self.user,
-            is_active=True,
-            expiry_date__gt=timezone.now()
-        ).order_by('-expiry_date').first()
-
     def save(self, *args, **kwargs):
         """Override save to automatically handle expiration."""
-        active_membership = self.get_active_membership()
-
-        if active_membership:
-            self.expiry_date = active_membership.expiry_date
-            self.current_cohort = active_membership.cohort
-            self.expired = False
-        else:
-            if self.expiry_date:
-                if timezone.now() >= self.expiry_date:
-                    self.expired = True
-                elif timezone.now() < self.expiry_date and self.expired:
-                    self.expired = False
+        if self.expiry_date:
+            if timezone.now() >= self.expiry_date:
+                self.expired = True
+            elif timezone.now() < self.expiry_date and self.expired:
+                self.expired = False
 
         super().save(*args, **kwargs)
 

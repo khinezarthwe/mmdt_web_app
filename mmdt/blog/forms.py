@@ -2,8 +2,7 @@ from django import forms
 from django.core.exceptions import ValidationError
 from django.forms import ModelForm
 
-from .models import Comment
-from .models import SubscriberRequest
+from .models import Comment, SubscriberRequest, Cohort
 
 
 class CommentForm(ModelForm):
@@ -37,15 +36,8 @@ class SubscriberRequestForm(forms.ModelForm):
             'If you are applying for a fee waiver, please write your message here.'
         self.fields['plan'].widget.attrs['class'] = 'form-control'
 
-    def clean_email(self):
-        email = self.cleaned_data['email']
-        if SubscriberRequest.objects.filter(email__iexact=email, status='pending').exists():
-            raise ValidationError("You already have a pending subscription request with this email. Please wait for it to be processed.")
-        return email
-
     def clean(self):
         cleaned_data = super().clean()
-        from .models import Cohort
         active_cohort = Cohort.get_active_cohort()
         if not active_cohort:
             raise ValidationError(

@@ -13,9 +13,8 @@ from django.utils.html import strip_tags
 from django.views import generic
 from django.views.generic import TemplateView
 
-from .forms import CommentForm, FeedbackAnalyzerForm
-from .forms import SubscriberRequestForm
-from .models import Post
+from .forms import CommentForm, FeedbackAnalyzerForm, SubscriberRequestForm
+from .models import Post, Cohort
 
 
 class Home(TemplateView):
@@ -136,7 +135,6 @@ def subscriber_request(request):
     if request.user.is_authenticated:
         return redirect('home')
 
-    from .models import Cohort
     active_cohort = Cohort.get_active_cohort()
 
     if not active_cohort:

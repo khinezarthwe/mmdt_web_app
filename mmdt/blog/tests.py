@@ -7,7 +7,7 @@ from django.core import mail
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.conf import settings
 
-from .models import Post, Comment, SubscriberRequest, Cohort, CohortMembership
+from .models import Post, Comment, SubscriberRequest, Cohort
 from .forms import CommentForm, SubscriberRequestForm, FeedbackAnalyzerForm
 
 
@@ -202,32 +202,16 @@ class SubscriberRequestModelTest(TestCase):
         )
         self.assertIsNotNone(subscriber.expiry_date)
     
-    def test_unique_email_constraint_for_pending(self):
-        """Test that only pending requests must have unique emails."""
+    def test_unique_email_constraint(self):
+        """Test that emails must be unique across all subscriber requests."""
         with self.assertRaises(Exception):  # IntegrityError
             SubscriberRequest.objects.create(
                 name='Duplicate Email',
                 email='subscriber@example.com',  # Same email as setUp
                 country='Myanmar',
-                city='Yangon',
-                status='pending'
+                city='Yangon'
             )
 
-    def test_allows_duplicate_email_for_approved(self):
-        """Test that approved requests allow same email (for renewals)."""
-        self.subscriber.status = 'approved'
-        self.subscriber.save()
-
-        renewed = SubscriberRequest.objects.create(
-            name='Renewed Subscriber',
-            email='subscriber@example.com',
-            country='Myanmar',
-            city='Yangon',
-            plan='annual'
-        )
-        self.assertIsNotNone(renewed)
-        self.assertEqual(renewed.email, self.subscriber.email)
-    
     def test_telegram_username_optional(self):
         """Test that telegram_username is optional."""
         subscriber = SubscriberRequest.objects.create(

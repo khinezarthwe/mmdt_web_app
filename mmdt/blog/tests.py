@@ -234,6 +234,21 @@ class SubscriberRequestModelTest(TestCase):
             plan='6month'
         )
         self.assertEqual(subscriber.telegram_username, 'myusername')
+    
+    def test_subscriber_request_ordering(self):
+        """Test that SubscriberRequest is ordered by created_at descending (newest first)."""
+        subscriber2 = SubscriberRequest.objects.create(
+            name='Second Subscriber',
+            email='second@example.com',
+            country='Myanmar',
+            city='Yangon',
+            plan='6month'
+        )
+        
+        subscribers = SubscriberRequest.objects.all()
+        # Should be ordered by -created_at (newest first)
+        self.assertEqual(subscribers[0], subscriber2)
+        self.assertEqual(subscribers[1], self.subscriber)
 
 
 class CommentFormTest(TestCase):

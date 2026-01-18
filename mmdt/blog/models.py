@@ -141,5 +141,10 @@ class SubscriberRequest(models.Model):
 
         super().save(*args, **kwargs)
 
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'Subscriber Request'
+        verbose_name_plural = 'Subscriber Requests'
+
     def __str__(self):
         return f"{self.name} - {self.email}"

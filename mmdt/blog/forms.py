@@ -2,8 +2,7 @@ from django import forms
 from django.core.exceptions import ValidationError
 from django.forms import ModelForm
 
-from .models import Comment
-from .models import SubscriberRequest
+from .models import Comment, SubscriberRequest, Cohort
 
 
 class CommentForm(ModelForm):
@@ -37,11 +36,15 @@ class SubscriberRequestForm(forms.ModelForm):
             'If you are applying for a fee waiver, please write your message here.'
         self.fields['plan'].widget.attrs['class'] = 'form-control'
 
-    def clean_email(self):
-        email = self.cleaned_data['email']
-        if SubscriberRequest.objects.filter(email__iexact=email).exists():
-            raise ValidationError("A subscription request with this email already exists.")
-        return email
+    def clean(self):
+        cleaned_data = super().clean()
+        active_cohort = Cohort.get_active_cohort()
+        if not active_cohort:
+            raise ValidationError(
+                "Registration is currently closed. No active cohort registration window is open. "
+                "Please check back later or contact support."
+            )
+        return cleaned_data
 
     class Meta:
         model = SubscriberRequest

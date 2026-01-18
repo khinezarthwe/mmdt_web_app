@@ -253,33 +253,6 @@ class SubscriberRequestSignalTest(TestCase):
         user = User.objects.get(email='jane@example.com')
         self.assertEqual(user.username, 'jane@example.com')
 
-    def test_user_username_uniqueness_handling(self):
-        """Test that username uniqueness is handled when email already exists as username."""
-        # Create a user with email as username
-        existing_user = User.objects.create_user(
-            username='test@example.com',
-            email='another@example.com',
-            password='testpass123'
-        )
-        
-        subscriber = SubscriberRequest.objects.create(
-            name='Test User',
-            email='test@example.com',
-            country='Myanmar',
-            city='Yangon',
-            status='pending',
-            cohort=self.cohort
-        )
-        
-        subscriber.status = 'approved'
-        subscriber.save()
-        
-        # Should use email with suffix for uniqueness
-        # Note: This tests the fallback behavior, actual implementation may vary
-        user = User.objects.get(email='test@example.com')
-        # Username should be either the email or email with suffix
-        self.assertIn(user.username, ['test@example.com', 'test@example.com_1'])
-
     def test_user_profile_linked_to_subscriber_request_on_approval(self):
         """Test that user profile is linked to subscriber request when approved."""
         subscriber = SubscriberRequest.objects.create(

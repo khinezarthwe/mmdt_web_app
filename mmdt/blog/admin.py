@@ -58,11 +58,31 @@ class SubscriberRequestAdmin(admin.ModelAdmin):
     )
 
     def approve_requests(self, request, queryset):
-        queryset.update(status='approved')
+        """Approve selected requests by calling save() on each to trigger signals."""
+        count = 0
+        for subscriber_request in queryset:
+            subscriber_request.status = 'approved'
+            subscriber_request.save()
+            count += 1
+        self.message_user(
+            request,
+            f'Successfully approved {count} subscriber request(s). Users have been created where applicable.',
+            level='success'
+        )
     approve_requests.short_description = "Approve selected requests"
 
     def reject_requests(self, request, queryset):
-        queryset.update(status='rejected')
+        """Reject selected requests by calling save() on each to trigger signals."""
+        count = 0
+        for subscriber_request in queryset:
+            subscriber_request.status = 'rejected'
+            subscriber_request.save()
+            count += 1
+        self.message_user(
+            request,
+            f'Successfully rejected {count} subscriber request(s).',
+            level='success'
+        )
     reject_requests.short_description = "Reject selected requests"
 
 

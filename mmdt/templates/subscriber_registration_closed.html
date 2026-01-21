@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+{% include 'subscriber_common.html' %}
+<section>
+    <header class="major">
+        <h2>Current Registration Window is Closed</h2>
+    </header>
+
+    <div class="box">
+        {% if next_cohort %}
+        <h3>Next Registration Window</h3>
+        <p>The next registration window will open on <strong>{{ next_cohort.reg_start_date|date:"F j, Y" }}</strong> and close on <strong>{{ next_cohort.reg_end_date|date:"F j, Y" }}</strong>.</p>
+        <p>Cohort: <strong>{{ next_cohort.name }}</strong></p>
+        {% else %}
+        <p>The next registration window has not been scheduled yet. Please check back later for updates.</p>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

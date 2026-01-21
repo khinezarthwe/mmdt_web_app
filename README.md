@@ -17,8 +17,9 @@ This Django-based web application provides content management for the Myanmar Da
 - **Subscription Management**: Handle subscription requests with Telegram username support
 
 ### 👥 User Management
+- **Cohort-Based Membership**: Organize subscribers into cohorts with fixed registration windows and expiry dates
 - **User Expiration System**: Automatically expire and deactivate users based on expiry dates
-- **Profile Management**: Extended user profiles with expiration tracking
+- **Profile Management**: Extended user profiles with expiration tracking and cohort assignment
 - **Bulk Actions**: Mark multiple users as expired or active
 - **Automatic Deactivation**: Users are automatically deactivated when expired
 - **Email-based Authentication**: Django Allauth integration with Google OAuth
@@ -246,12 +247,12 @@ class YourModelTest(TestCase):
 This application includes an automatic user expiration system. For complete documentation, see [USER_EXPIRATION_FEATURE.md](USER_EXPIRATION_FEATURE.md).
 
 ### Key Features:
-- ✅ **Automatic Expiration**: Users are automatically expired when `expiry_date` is reached
-- ✅ **Automatic Deactivation**: Expired users are automatically deactivated (`is_active=False`)
-- ✅ **Automatic Reactivation**: Extending expiry date automatically reactivates users
-- ✅ **Admin Integration**: Manage expiration status directly in Django admin
-- ✅ **Bulk Actions**: Mark multiple users as expired or active at once
-- ✅ **Management Command**: `python manage.py check_expired_users` for batch processing
+- **Automatic Expiration**: Users are automatically expired when `expiry_date` is reached
+- **Automatic Deactivation**: Expired users are automatically deactivated (`is_active=False`)
+- **Automatic Reactivation**: Extending expiry date automatically reactivates users
+- **Admin Integration**: Manage expiration status directly in Django admin
+- **Bulk Actions**: Mark multiple users as expired or active at once
+- **Management Command**: `python manage.py check_expired_users` for batch processing
 
 ### Quick Example:
 ```python
@@ -261,6 +262,41 @@ user.profile.save()
 # If date is in past: expired=True, is_active=False (automatic)
 # If date is in future: expired=False, is_active=True (automatic)
 ```
+
+## Cohort-Based Membership System
+
+The application uses a cohort-based system to manage subscriber memberships with fixed expiry dates.
+
+### How It Works:
+
+1. **Cohorts**: Groups of subscribers who register during the same period
+   - Each cohort has a registration window (start and end dates)
+   - Fixed expiry dates for 6-month and annual plans
+   - Can be opened/closed for registration via admin
+
+2. **Auto-Assignment**: When users submit subscription requests
+   - System checks for active cohort with current date in registration window
+   - Automatically assigns the user to that cohort
+   - Blocks registration when no active cohort exists
+
+3. **Simplified Workflow**: `Cohort → SubscriberRequest → User`
+   - cohort_id stored in SubscriberRequest table
+   - current_cohort stored in UserProfile table
+   - No renewal system (to be added separately later)
+
+### Setup:
+
+Create cohorts manually via Django Admin:
+- Navigate to **Admin → Cohorts**
+- Add new cohort with registration window and expiry dates
+- Mark as active to accept registrations
+
+### Key Features:
+- ✅ Fixed expiry dates per cohort (not based on individual registration date)
+- ✅ Registration window control (open/close periods)
+- ✅ Automatic cohort assignment on submission
+- ✅ Unique email enforcement across all requests
+- ✅ Registration closed page with next cohort information
 
 ## Database Schema
 
@@ -274,16 +310,22 @@ The application uses the following main models:
 - `UserProfile` - Extended user profiles with expiration tracking
   - `expired` - Boolean flag for user expiration status
   - `expiry_date` - Automatic expiration date checking
+  - `current_cohort` - Reference to user's cohort
   - Automatic `is_active` status management
   - Auto-created for all users via Django signals
 
 **Blog App**:
 - `Post` - Blog posts with rich content
 - `Comment` - Comments on posts
-- `SubscriberRequest` - Subscription requests with Telegram username support
+- `Cohort` - Membership cohorts with registration windows
+  - cohort_id (PK), registration dates, expiry dates
+  - Controls registration window availability
+- `SubscriberRequest` - Subscription requests with cohort assignment
   - Plans: 6-month ($12) or Annual ($24)
-  - Automatic expiry date calculation
+  - Auto-assigned to active cohort on submission
+  - Expiry date from cohort (not registration date)
   - Status tracking (pending, approved, rejected, expired)
+  - Unique email enforcement
 
 **Polls App**:
 - `ActiveGroup` - Poll groups

@@ -7,7 +7,7 @@ from django.core import mail
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.conf import settings
 
-from .models import Post, Comment, SubscriberRequest
+from .models import Post, Comment, SubscriberRequest, Cohort
 from .forms import CommentForm, SubscriberRequestForm, FeedbackAnalyzerForm
 
 
@@ -134,9 +134,19 @@ class CommentModelTest(TestCase):
 
 class SubscriberRequestModelTest(TestCase):
     """Test cases for SubscriberRequest model."""
-    
+
     def setUp(self):
         """Set up test data."""
+        now = timezone.now()
+        self.cohort = Cohort.objects.create(
+            cohort_id='TEST_2024',
+            name='Test Cohort',
+            reg_start_date=now - timedelta(days=1),
+            reg_end_date=now + timedelta(days=30),
+            exp_date_6=now + timedelta(days=180),
+            exp_date_12=now + timedelta(days=365),
+            is_active=True
+        )
         self.subscriber = SubscriberRequest.objects.create(
             name='Test Subscriber',
             email='subscriber@example.com',
@@ -165,15 +175,12 @@ class SubscriberRequestModelTest(TestCase):
         self.assertEqual(str(self.subscriber), expected)
     
     def test_calculate_expiry_date_6month(self):
-        """Test expiry date calculation for 6-month plan."""
-        now = timezone.now()
+        """Test expiry date calculation for 6-month plan uses cohort date."""
         expiry = self.subscriber.calculate_expiry_date()
-        expected = now + timedelta(days=180)
-        # Allow for small time differences
-        self.assertAlmostEqual(expiry.timestamp(), expected.timestamp(), delta=1)
-    
+        self.assertEqual(expiry, self.cohort.exp_date_6)
+
     def test_calculate_expiry_date_annual(self):
-        """Test expiry date calculation for annual plan."""
+        """Test expiry date calculation for annual plan uses cohort date."""
         subscriber = SubscriberRequest.objects.create(
             name='Annual Subscriber',
             email='annual@example.com',
@@ -181,11 +188,8 @@ class SubscriberRequestModelTest(TestCase):
             city='Yangon',
             plan='annual'
         )
-        now = timezone.now()
         expiry = subscriber.calculate_expiry_date()
-        expected = now + timedelta(days=365)
-        # Allow for small time differences
-        self.assertAlmostEqual(expiry.timestamp(), expected.timestamp(), delta=1)
+        self.assertEqual(expiry, self.cohort.exp_date_12)
     
     def test_automatic_expiry_date_setting(self):
         """Test that expiry date is automatically set on save."""
@@ -199,7 +203,7 @@ class SubscriberRequestModelTest(TestCase):
         self.assertIsNotNone(subscriber.expiry_date)
     
     def test_unique_email_constraint(self):
-        """Test that email must be unique."""
+        """Test that emails must be unique across all subscriber requests."""
         with self.assertRaises(Exception):  # IntegrityError
             SubscriberRequest.objects.create(
                 name='Duplicate Email',
@@ -207,7 +211,7 @@ class SubscriberRequestModelTest(TestCase):
                 country='Myanmar',
                 city='Yangon'
             )
-    
+
     def test_telegram_username_optional(self):
         """Test that telegram_username is optional."""
         subscriber = SubscriberRequest.objects.create(
@@ -230,6 +234,21 @@ class SubscriberRequestModelTest(TestCase):
             plan='6month'
         )
         self.assertEqual(subscriber.telegram_username, 'myusername')
+    
+    def test_subscriber_request_ordering(self):
+        """Test that SubscriberRequest is ordered by created_at descending (newest first)."""
+        subscriber2 = SubscriberRequest.objects.create(
+            name='Second Subscriber',
+            email='second@example.com',
+            country='Myanmar',
+            city='Yangon',
+            plan='6month'
+        )
+        
+        subscribers = SubscriberRequest.objects.all()
+        # Should be ordered by -created_at (newest first)
+        self.assertEqual(subscribers[0], subscriber2)
+        self.assertEqual(subscribers[1], self.subscriber)
 
 
 class CommentFormTest(TestCase):
@@ -270,7 +289,20 @@ class CommentFormTest(TestCase):
 
 class SubscriberRequestFormTest(TestCase):
     """Test cases for SubscriberRequestForm."""
-    
+
+    def setUp(self):
+        """Set up test data."""
+        now = timezone.now()
+        self.cohort = Cohort.objects.create(
+            cohort_id='TEST_FORM',
+            name='Test Form Cohort',
+            reg_start_date=now - timedelta(days=1),
+            reg_end_date=now + timedelta(days=30),
+            exp_date_6=now + timedelta(days=180),
+            exp_date_12=now + timedelta(days=365),
+            is_active=True
+        )
+
     def test_subscriber_request_form_valid_data(self):
         """Test subscriber request form with valid data."""
         form_data = {
@@ -481,7 +513,7 @@ class PostDetailViewTest(TestCase):
 
 class SubscriberRequestViewTest(TestCase):
     """Test cases for subscriber_request view."""
-    
+
     def setUp(self):
         """Set up test data."""
         self.client = Client()
@@ -489,6 +521,16 @@ class SubscriberRequestViewTest(TestCase):
             username='testuser',
             email='test@example.com',
             password='testpass123'
+        )
+        now = timezone.now()
+        self.cohort = Cohort.objects.create(
+            cohort_id='TEST_VIEW',
+            name='Test View Cohort',
+            reg_start_date=now - timedelta(days=1),
+            reg_end_date=now + timedelta(days=30),
+            exp_date_6=now + timedelta(days=180),
+            exp_date_12=now + timedelta(days=365),
+            is_active=True
         )
     
     def test_subscriber_request_view_get(self):
@@ -599,7 +641,7 @@ class URLPatternsTest(TestCase):
 
 class IntegrationTest(TestCase):
     """Integration tests for complete workflows."""
-    
+
     def setUp(self):
         """Set up test data."""
         self.client = Client()
@@ -615,6 +657,16 @@ class IntegrationTest(TestCase):
             content='Integration test content.',
             status=1,
             subscribers_only=False
+        )
+        now = timezone.now()
+        self.cohort = Cohort.objects.create(
+            cohort_id='TEST_INTEGRATION',
+            name='Test Integration Cohort',
+            reg_start_date=now - timedelta(days=1),
+            reg_end_date=now + timedelta(days=30),
+            exp_date_6=now + timedelta(days=180),
+            exp_date_12=now + timedelta(days=365),
+            is_active=True
         )
     
     def test_complete_comment_workflow(self):

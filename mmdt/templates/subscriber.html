@@ -1,78 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 {% block content %}
-<blockquote class="text-justify mt-4 ">
-    By subscribing to Myanmar Data Tech, members unlock a wealth of knowledge, opportunities, and connections tailored
-    to foster their growth as students, researchers, and professionals in Myanmar and beyond.
-</blockquote>
-
-<section>
-    <header class="major">
-        <h2>Our Subscriber Benefits</h2>
-    </header>
-    <!-- Content -->
-    <h2 id="content-1">Join a Thriving Community</h2>
-    <ul>
-        <li>Be part of a network of like-minded students, researchers, and professionals striving for
-            success and
-            making an impact.
-        </li>
-        <li>Exchange ideas, collaborate on projects, and gain inspiration from peers and experts alike.</li>
-        <li>Stay informed with regular updates on learning opportunities, career resources, and industry
-            news, empowering you to make informed decisions and stay ahead in your field.
-        </li>
-    </ul>
-    <div class="features">
-        <article>
-            <span class="icon solid fa-paper-plane"></span>
-            <div class="content">
-                <h3>Access to Exclusive Member-Only Events</h3>
-                <b>Interactive Sessions:</b> Opportunities to interact with professionals, mentors, and thought leaders
-                across
-                diverse industries, offering inspiration and guidance.
-                <b>Monthly Webinars:</b> Engaging and carefully curated topics
-            </div>
-        </article>
-        <article>
-            <span class="icon solid fa-paper-plane"></span>
-            <div class="content">
-                <h3>Involvement in Research Projects</h3>
-                <p>Exclusive Invitations: Participate in impactful, real-world research projects initiated by Myanmar
-                    Data Tech.
-                    Showcase your expertise while gaining hands-on experience and contributing to meaningful
-                    outcomes.</p>
-            </div>
-        </article>
-        <article>
-            <span class="icon solid fa-rocket"></span>
-            <div class="content">
-                <h3>Priority Access to Training Tracks and Workshops</h3>
-                <p>Subscribers are prioritized for selection in training programs and workshops</p>
-            </div>
-        </article>
-        <article>
-            <span class="icon solid fa-video"></span>
-            <div class="content">
-                <h3>On-Demand Recording Access</h3>
-                <p>Missed a session? Subscribers can enjoy unlimited access to a growing library of webinar recordings,
-                    training materials, and curated resources.</p>
-            </div>
-        </article>
-    </div>
-</section>
-<h3>Subscription Plans</h3>
-<div class="row">
-    <div class="col-6 col-12-small">
-        <ul class="actions fit">
-            <li><p class="button primary fit">6-Month Plan: $12 total</p></li>
-        </ul>
-    </div>
-    <div class="col-6 col-12-small">
-        <ul class="actions fit">
-            <li><p class="button primary fit">Annual Plan: $24 total</p></li>
-        </ul>
-    </div>
-</div>
+{% include 'subscriber_common.html' %}
 {% if not user.is_authenticated %}
 <section>
 <h3>Subscriber Request Form</h3>

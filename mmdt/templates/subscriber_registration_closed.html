@@ -1,15 +1,13 @@
 {% extends 'base.html' %}
 {% load static %}
 {% block content %}
+{% include 'subscriber_common.html' %}
 <section>
     <header class="major">
-        <h2>Registration Currently Closed</h2>
+        <h2>Current Registration Window is Closed</h2>
     </header>
 
     <div class="box">
-        <p>Thank you for your interest in joining Myanmar Data Tech!</p>
-        <p>Registration for our membership program is currently closed. We operate on a cohort-based system with specific registration windows throughout the year.</p>
-
         {% if next_cohort %}
         <h3>Next Registration Window</h3>
         <p>The next registration window will open on <strong>{{ next_cohort.reg_start_date|date:"F j, Y" }}</strong> and close on <strong>{{ next_cohort.reg_end_date|date:"F j, Y" }}</strong>.</p>
@@ -18,19 +16,5 @@
         <p>The next registration window has not been scheduled yet. Please check back later for updates.</p>
         {% endif %}
     </div>
-
-    <h3>What to Do Next?</h3>
-    <ul>
-        <li>Bookmark this page and check back during the next registration window</li>
-        <li>Follow our social media channels for announcements about upcoming cohorts</li>
-        <li>Contact us if you have any questions at <a href="mailto:contact@myanmardatatech.org">contact@myanmardatatech.org</a></li>
-    </ul>
-
-    <h3>About Our Cohort-Based System</h3>
-    <p>We organize our membership program into cohorts to ensure all members have synchronized access to exclusive content, events, and workshops. This approach creates a more engaging and collaborative learning environment for all our subscribers.</p>
-
-    <ul class="actions">
-        <li><a href="{% url 'home' %}" class="button primary">Return to Home</a></li>
-    </ul>
 </section>
 {% endblock %}

@@ -22,7 +22,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.schemas import get_schema_view
 from rest_framework.schemas.openapi import SchemaGenerator
 
-from api.views import AdminTokenView, SwaggerUIView, UserDetailByEmailView
+from api.views import AdminTokenView, SwaggerUIView, UserDetailByEmailView, UserRenewalRequestView
 
 
 class CustomSchemaGenerator(SchemaGenerator):
@@ -216,6 +216,7 @@ urlpatterns = [
     path('summernote/', include('django_summernote.urls')),
     path('auth/token', AdminTokenView.as_view(), name='auth-token'),
     path('api/users', UserDetailByEmailView.as_view(), name='api-user-by-email'),
+    path('api/user/request_renew', UserRenewalRequestView.as_view(), name='api-user-renewal'),
     path('api/docs/', SwaggerUIView.as_view(), name='swagger-ui'),
     path(
         'api/schema/',

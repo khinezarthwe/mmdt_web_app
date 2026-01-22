@@ -1,4 +1,5 @@
 from datetime import timedelta
+from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
 from django.test import TestCase
@@ -217,6 +218,12 @@ class UserRenewalRequestAPITests(TestCase):
             status='approved',
             cohort=self.cohort
         )
+
+        # Mock Google Drive for all tests
+        patcher = patch('api.views.get_folder_upload_url')
+        self.mock_get_url = patcher.start()
+        self.mock_get_url.return_value = 'https://drive.google.com/test-folder'
+        self.addCleanup(patcher.stop)
 
     def test_renewal_request_with_email(self):
         response = self.client.post(

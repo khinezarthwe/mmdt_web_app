@@ -7,8 +7,6 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import AccessToken
 
 from users.models import UserProfile
-from blog.models import SubscriberRequest
-from blog.google_api_utils import get_folder_upload_url
 
 
 User = get_user_model()
@@ -130,97 +128,6 @@ class UserDetailByEmailView(APIView):
                 "email": user.email,
                 "enddate": enddate,
             }
-        )
-
-
-class UserRenewalRequestView(APIView):
-    """
-    Request membership renewal for an existing subscriber.
-
-    POST /api/user/request_renew
-
-    Request body (one of):
-        {
-            "email": "user@example.com",
-            "plan": "6month"
-        }
-        OR
-        {
-            "telegram_name": "username123",
-            "plan": "6month"
-        }
-
-    Response (success):
-        {
-            "status": "success",
-            "message": "Renewal request received",
-            "upload_url": "https://drive.google.com/..."
-        }
-
-    Response (error):
-        {
-            "status": "error",
-            "message": "User not found"
-        }
-    """
-
-    authentication_classes = []
-    permission_classes = []
-
-    def post(self, request):
-        email = request.data.get("email")
-        telegram_name = request.data.get("telegram_name")
-        plan = request.data.get("plan")
-
-        if not plan:
-            return Response(
-                {"status": "error", "message": "Plan is required."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        if plan not in ['6month', 'annual']:
-            return Response(
-                {"status": "error", "message": "Invalid plan. Must be '6month' or 'annual'."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        if not email and not telegram_name:
-            return Response(
-                {"status": "error", "message": "Either email or telegram_name is required."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        try:
-            if email:
-                subscriber = SubscriberRequest.objects.get(email=email)
-            else:
-                subscriber = SubscriberRequest.objects.get(telegram_username=telegram_name)
-        except SubscriberRequest.DoesNotExist:
-            return Response(
-                {"status": "error", "message": "User not found."},
-                status=status.HTTP_404_NOT_FOUND,
-            )
-        except SubscriberRequest.MultipleObjectsReturned:
-            return Response(
-                {"status": "error", "message": "Multiple users found. Please contact support."},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
-
-        upload_url = get_folder_upload_url(subscriber)
-
-        if not upload_url:
-            return Response(
-                {"status": "error", "message": "Failed to generate upload URL. Please try again later."},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
-
-        return Response(
-            {
-                "status": "success",
-                "message": "Renewal request received",
-                "upload_url": upload_url,
-            },
-            status=status.HTTP_200_OK,
         )
 
 

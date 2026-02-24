@@ -11,17 +11,17 @@ import gspread
 from django.conf import settings
 
 
-# Configuration
-PARENT_FOLDER_ID = '1Oa6fhtegbjpk29msrnQkYksANPhodqbw'
-SPREADSHEET_ID = '17CeX0Q1Bf1tkK-IrKEHeym6BnMsUSdB0mXW8RFX3NlA'
-MMDT_ADMIN_EMAIL = 'mmdt@istarvz.com'
+PARENT_FOLDER_ID = getattr(settings, "GOOGLE_PARENT_FOLDER_ID", "")
+SPREADSHEET_ID = getattr(settings, "GOOGLE_SPREADSHEET_ID", "")
+MMDT_ADMIN_EMAIL = getattr(
+    settings,
+    "GOOGLE_ADMIN_EMAIL",
+    getattr(settings, "EMAIL_HOST_USER", ""),
+)
 
 # OAuth credentials files
-OAUTH_CLIENT_SECRET_FILE = os.path.join(
-    settings.BASE_DIR,
-    'client_secret_476736580933-kfntrcjaerj90raof7oaqgdj6s0d5utk.apps.googleusercontent.com.json'
-)
-TOKEN_FILE = os.path.join(settings.BASE_DIR, 'google_token.json')
+OAUTH_CLIENT_SECRET_FILE = getattr(settings, "GOOGLE_OAUTH_CLIENT_SECRET_FILE", "")
+TOKEN_FILE = getattr(settings, "GOOGLE_TOKEN_FILE", "")
 
 # Scopes for Google APIs
 SCOPES = [

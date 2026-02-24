@@ -45,19 +45,26 @@ Let's set up the project step by step:
 4. **Install Project Dependencies**: Run the command `pip install -r requirements.txt` to install the necessary libraries. Install setuptools by running the command `pip install setuptools`.
    
 5. **Environment Configuration**: Create a `.env` file under `mmdt-web-app/mmdt/.env` and add the following key:value pairs:
-    ```
-    # Django Configuration
-    SECRET_KEY = 'your-secret-key-here'
-    DEBUG = True  # Set to False for production
-    
-    # AWS S3 Configuration (Optional - for file storage)
-    AWS_ACCESS_KEY_ID = 'your-aws-access-key'
-    AWS_SECRET_ACCESS_KEY = 'your-aws-secret-key'
-    AWS_STORAGE_BUCKET_NAME = 'your-s3-bucket-name'
-    
-    # Email Configuration (Required for user registration)
-    EMAIL_HOST_PASSWORD = 'your-email-password'
-    ```
+   ```
+   # Django Configuration
+   SECRET_KEY = 'your-secret-key-here'
+   DEBUG = True  # Set to False for production
+   
+   # AWS S3 Configuration (Optional - for file storage)
+   AWS_ACCESS_KEY_ID = 'your-aws-access-key'
+   AWS_SECRET_ACCESS_KEY = 'your-aws-secret-key'
+   AWS_STORAGE_BUCKET_NAME = 'your-s3-bucket-name'
+   
+   # Email Configuration (Required for user registration)
+   EMAIL_HOST_PASSWORD = 'your-email-password'
+
+   # Google API configuration (Drive / Sheets integration)
+   GOOGLE_PARENT_FOLDER_ID = 'your-google-drive-parent-folder-id'
+   GOOGLE_SPREADSHEET_ID = 'your-google-spreadsheet-id'
+   GOOGLE_ADMIN_EMAIL = 'mmdt@istarvz.com'  # or another admin email
+   GOOGLE_OAUTH_CLIENT_SECRET_FILENAME = 'client_secret_xxx.apps.googleusercontent.com.json'
+   GOOGLE_TOKEN_FILENAME = 'google_token.json'
+   ```
    
 
 6. **Database Setup**:

@@ -7,6 +7,8 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import AccessToken
 
 from users.models import UserProfile
+from django.db.models import Q
+
 from blog.models import SubscriberRequest
 from blog.google_api_utils import get_folder_upload_url
 
@@ -194,7 +196,17 @@ class UserRenewalRequestView(APIView):
             if email:
                 subscriber = SubscriberRequest.objects.get(email=email)
             else:
-                subscriber = SubscriberRequest.objects.get(telegram_username=telegram_name)
+                # Normalize: handle both '@username' and 'username' since
+                # the DB may store either format depending on how admin entered it
+                name_clean = telegram_name.lstrip('@')
+                qs = SubscriberRequest.objects.filter(
+                    Q(telegram_username=name_clean) | Q(telegram_username=f'@{name_clean}')
+                )
+                if not qs.exists():
+                    raise SubscriberRequest.DoesNotExist
+                if qs.count() > 1:
+                    raise SubscriberRequest.MultipleObjectsReturned
+                subscriber = qs.first()
         except SubscriberRequest.DoesNotExist:
             return Response(
                 {"status": "error", "message": "User not found."},

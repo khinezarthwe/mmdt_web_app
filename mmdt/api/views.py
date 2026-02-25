@@ -218,6 +218,15 @@ class UserRenewalRequestView(APIView):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
+        if subscriber.renewal_requested:
+            return Response(
+                {
+                    "status": "pending",
+                    "message": "Renewal request already submitted. Please wait for admin approval.",
+                },
+                status=status.HTTP_409_CONFLICT,
+            )
+
         upload_url = get_folder_upload_url(subscriber)
 
         if not upload_url:
@@ -225,6 +234,9 @@ class UserRenewalRequestView(APIView):
                 {"status": "error", "message": "Failed to generate upload URL. Please try again later."},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
+
+        subscriber.renewal_requested = True
+        subscriber.save(update_fields=['renewal_requested'])
 
         return Response(
             {

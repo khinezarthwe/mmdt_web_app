@@ -281,6 +281,33 @@ class UserRenewalRequestAPITests(TestCase):
         self.assertEqual(response.status_code, 404)
         self.assertEqual(response.data['status'], 'error')
 
+    def test_renewal_request_duplicate_blocked(self):
+        # First request should succeed
+        self.client.post(
+            '/api/user/request_renew',
+            {'email': 'testuser@example.com', 'plan': '6month'},
+            format='json'
+        )
+        # Second request should be blocked
+        response = self.client.post(
+            '/api/user/request_renew',
+            {'email': 'testuser@example.com', 'plan': '6month'},
+            format='json'
+        )
+        self.assertEqual(response.status_code, 409)
+        self.assertEqual(response.data['status'], 'pending')
+
+    def test_renewal_request_with_telegram_name_at_prefix(self):
+        # DB stores '@testuser_tg' — bot sends 'testuser_tg' after stripping @
+        # The API should find it either way
+        response = self.client.post(
+            '/api/user/request_renew',
+            {'telegram_name': '@testuser_tg', 'plan': '6month'},
+            format='json'
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['status'], 'success')
+
 
 class SubscriberRequestSignalTest(TestCase):
     """Test cases for SubscriberRequest signals that create users."""

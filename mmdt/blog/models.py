@@ -95,6 +95,7 @@ class SubscriberRequest(models.Model):
     job_title = models.CharField(max_length=200, blank=True, null=True)
     telegram_username = models.CharField(max_length=100, blank=True, null=True)
     free_waiver = models.BooleanField(default=False)
+    renewal_requested = models.BooleanField(default=False)
     message = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

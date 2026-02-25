@@ -1,14 +1,13 @@
 from django.conf import settings
 from django.contrib.auth import authenticate, get_user_model
 from django.views.generic import TemplateView
+from django.db.models import Q
 from rest_framework import permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import AccessToken
 
 from users.models import UserProfile
-from django.db.models import Q
-
 from blog.models import SubscriberRequest
 from blog.google_api_utils import get_folder_upload_url
 
@@ -236,7 +235,8 @@ class UserRenewalRequestView(APIView):
             )
 
         subscriber.renewal_requested = True
-        subscriber.save(update_fields=['renewal_requested'])
+        subscriber.renewal_plan = plan
+        subscriber.save(update_fields=['renewal_requested', 'renewal_plan'])
 
         return Response(
             {

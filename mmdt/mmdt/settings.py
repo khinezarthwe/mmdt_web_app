@@ -196,6 +196,22 @@ else:
     MEDIA_URL = '/media/'
     MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
+# Google API configuration (moved from code into environment)
+GOOGLE_PARENT_FOLDER_ID = config('GOOGLE_PARENT_FOLDER_ID', default='')
+GOOGLE_SPREADSHEET_ID = config('GOOGLE_SPREADSHEET_ID', default='')
+GOOGLE_ADMIN_EMAIL = config('GOOGLE_ADMIN_EMAIL', default='')
+GOOGLE_OAUTH_CLIENT_SECRET_FILE = os.path.join(
+    BASE_DIR,
+    config(
+        'GOOGLE_OAUTH_CLIENT_SECRET_FILENAME',
+        default='',
+    ),
+)
+GOOGLE_TOKEN_FILE = os.path.join(
+    BASE_DIR,
+    config('GOOGLE_TOKEN_FILENAME', default='google_token.json'),
+)
+
 log_dir = os.path.join(BASE_DIR, 'logs')
 if not os.path.exists(log_dir):
     os.makedirs(log_dir)

@@ -238,10 +238,24 @@ class UserRenewalRequestView(APIView):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
-        subscriber.renewal_requested = True
-        subscriber.renewal_plan = plan
-        subscriber.save(update_fields=['renewal_requested', 'renewal_plan'])
+        # Atomically mark renewal as requested only if it was not already set.
+        updated = SubscriberRequest.objects.filter(
+            pk=subscriber.pk,
+            renewal_requested=False,
+        ).update(
+            renewal_requested=True,
+            renewal_plan=plan,
+        )
 
+        if updated == 0:
+            # Another concurrent request has already marked renewal as requested.
+            return Response(
+                {
+                    "status": "pending",
+                    "message": "Renewal request already submitted. Please wait for admin approval.",
+                },
+                status=status.HTTP_409_CONFLICT,
+            )
         return Response(
             {
                 "status": "success",

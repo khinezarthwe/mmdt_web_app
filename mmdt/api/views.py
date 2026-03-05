@@ -179,9 +179,13 @@ class UserRenewalRequestView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        if plan not in ['6month', 'annual']:
+        valid_plans = dict(SubscriberRequest.PLAN_CHOICES).keys()
+        if plan not in valid_plans:
             return Response(
-                {"status": "error", "message": "Invalid plan. Must be '6month' or 'annual'."},
+                {
+                    "status": "error",
+                    "message": "Invalid plan. Must be one of: {}.".format(", ".join(valid_plans)),
+                },
                 status=status.HTTP_400_BAD_REQUEST,
             )
 

@@ -302,3 +302,123 @@ def get_folder_upload_url(subscriber_request):
     except Exception as e:
         print(f"Error getting folder upload URL: {e}")
         return None
+
+
+def find_url_in_spreadsheet(email, update_status=False, plan=None):
+    """
+    Search for an existing entry in the Google Sheet by email.
+
+    Args:
+        email: User's email address to search for
+        update_status: If True, update the status and plan columns
+        plan: Renewal plan to update (e.g., '6month', '12month')
+
+    Returns:
+        str: Folder URL if found, None otherwise
+    """
+    try:
+        credentials = get_credentials()
+        gc = gspread.authorize(credentials)
+
+        spreadsheet = gc.open_by_key(SPREADSHEET_ID)
+        worksheet = spreadsheet.get_worksheet(0)
+
+        # Find cell with matching email (column B = email)
+        cell = worksheet.find(email)
+        if cell:
+            # Get the folder URL from the same row (column H = payment_url)
+            row_values = worksheet.row_values(cell.row)
+            if len(row_values) >= 8 and row_values[7]:
+                if update_status:
+                    # Update plan column (column E = index 5) and status column (column F = index 6)
+                    if plan:
+                        worksheet.update_cell(cell.row, 5, plan)
+                    worksheet.update_cell(cell.row, 6, 'Renewal Requested')
+                return row_values[7]
+
+        return None
+
+    except gspread.exceptions.CellNotFound:
+        return None
+    except Exception as e:
+        print(f"Error searching spreadsheet: {e}")
+        return None
+
+
+def log_renewal_to_spreadsheet(subscriber_request, folder_url, plan):
+    """
+    Log renewal request data to Google Sheet.
+
+    Args:
+        subscriber_request: SubscriberRequest instance
+        folder_url: URL of the Google Drive folder
+        plan: Renewal plan selected
+
+    Returns:
+        bool: True if successful, False otherwise
+    """
+    try:
+        credentials = get_credentials()
+        gc = gspread.authorize(credentials)
+
+        spreadsheet = gc.open_by_key(SPREADSHEET_ID)
+        worksheet = spreadsheet.get_worksheet(0)
+
+        from django.utils import timezone
+
+        # Prepare row data:
+        # name, email, tele_name, country, plan, status, created_at, payment_url
+        row_data = [
+            subscriber_request.name,
+            subscriber_request.email,
+            subscriber_request.telegram_username or '',
+            subscriber_request.country,
+            plan,
+            'Renewal Requested',
+            timezone.now().strftime('%b. %-d, %Y, %-I:%M %p'),
+            folder_url or ''
+        ]
+
+        worksheet.append_row(row_data)
+
+        return True
+
+    except Exception as e:
+        print(f"Error logging renewal to Google Sheet: {e}")
+        return False
+
+
+def get_or_create_renewal_url(subscriber_request, plan):
+    """
+    Get existing URL from spreadsheet or create new folder and log to sheet.
+
+    For renewal requests:
+    1. First checks if user already has an entry in the spreadsheet
+    2. If found, updates status to 'Renewal Requested' and returns the existing folder URL
+    3. If not found, creates folder, logs to spreadsheet, and returns URL
+
+    Args:
+        subscriber_request: SubscriberRequest instance
+        plan: Renewal plan selected
+
+    Returns:
+        tuple: (folder_url, is_existing) where is_existing indicates if URL was from sheet
+               Returns (None, False) if operation fails
+    """
+    try:
+        # First, check if URL exists in spreadsheet and update status/plan if found
+        existing_url = find_url_in_spreadsheet(subscriber_request.email, update_status=True, plan=plan)
+        if existing_url:
+            return (existing_url, True)
+
+        # No existing entry, create folder and log to sheet
+        folder_url = get_folder_upload_url(subscriber_request)
+        if folder_url:
+            log_renewal_to_spreadsheet(subscriber_request, folder_url, plan)
+            return (folder_url, False)
+
+        return (None, False)
+
+    except Exception as e:
+        print(f"Error in get_or_create_renewal_url: {e}")
+        return (None, False)

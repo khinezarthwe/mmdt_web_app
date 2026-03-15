@@ -23,12 +23,30 @@ erDiagram
         int id PK
         boolean expired
         datetime expiry_date
+        boolean renewal_requested
+        string renewal_plan
+        boolean renewal_approved
+        datetime renewal_approved_at
         datetime created_at
         datetime updated_at
         int user_id FK
+        string current_cohort_id FK
+        int subscriber_request_id FK
     }
 
     %% Blog App Models
+    Cohort {
+        string cohort_id PK
+        string name
+        datetime reg_start_date
+        datetime reg_end_date
+        datetime exp_date_6
+        datetime exp_date_12
+        boolean is_active
+        datetime created_at
+        datetime updated_at
+    }
+
     Post {
         int id PK
         string title UK
@@ -69,6 +87,7 @@ erDiagram
         datetime expiry_date
         datetime created_at
         datetime updated_at
+        string cohort_id FK
     }
 
     %% Polls App Models
@@ -151,8 +170,13 @@ erDiagram
 
     %% Relationships
     User ||--|| UserProfile : "has"
+    UserProfile }o--|| Cohort : "current_cohort"
+    UserProfile }o--|| SubscriberRequest : "linked_to"
+    
     User ||--o{ Post : "authors"
     Post ||--o{ Comment : "has"
+    
+    Cohort ||--o{ SubscriberRequest : "contains"
     
     ActiveGroup ||--o{ PollQuestion : "contains"
     PollQuestion ||--o{ PollChoice : "has"
@@ -171,7 +195,44 @@ erDiagram
 
 ## Model Descriptions
 
+### Users App
+
+#### **UserProfile**
+- Extended user profile linked to Django User model
+- Tracks subscription expiry with `expiry_date` and `expired` flag
+- `current_cohort`: The cohort the user registered with (not changed on renewal)
+- `subscriber_request`: Link to the original SubscriberRequest
+
+**Renewal Fields:**
+| Field | Type | Description |
+|-------|------|-------------|
+| `renewal_requested` | boolean | User has requested membership renewal via API |
+| `renewal_plan` | string | Selected plan: '6month' or 'annual' |
+| `renewal_approved` | boolean | Admin has approved the renewal |
+| `renewal_approved_at` | datetime | When the renewal was approved |
+
+**Renewal Logic:**
+- When `renewal_approved` is set to True, `expiry_date` is automatically updated
+- New expiry dates are always April 30 or October 31
+- 6-month plan: Adds ~6 months (April → October, October → April next year)
+- Annual plan: Adds ~12 months (April → April next year, October → October next year)
+
 ### Blog App
+
+#### **Cohort**
+- Represents a registration cohort/batch of subscribers
+- Format: `YYYY_MM` (e.g., '2025_01' for January 2025)
+- Controls registration windows and expiry dates
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `cohort_id` | string (PK) | Format: YYYY_MM |
+| `name` | string | Display name (e.g., 'January 2025 Cohort') |
+| `reg_start_date` | datetime | Registration window start |
+| `reg_end_date` | datetime | Registration window end |
+| `exp_date_6` | datetime | Expiry date for 6-month plan |
+| `exp_date_12` | datetime | Expiry date for 12-month plan |
+| `is_active` | boolean | Is accepting registrations |
 
 #### **Post**
 - Blog posts with rich text content
@@ -187,9 +248,20 @@ erDiagram
 #### **SubscriberRequest**
 - Subscription requests from users
 - Includes contact information and Telegram username
-- Plans: 6-month ($12) or Annual ($24)
-- Status: pending, approved, rejected, or expired
-- Automatic expiry date calculation
+- Automatically assigned to active cohort on creation
+- Google Drive folder created for payment receipts
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `name` | string | Full name |
+| `email` | string (unique) | Email address |
+| `mmdt_email` | string | Previous MMDT email (if returning) |
+| `telegram_username` | string | Telegram handle |
+| `plan` | string | '6month' or 'annual' |
+| `status` | string | 'pending', 'approved', 'rejected', 'expired' |
+| `cohort` | FK | Auto-assigned cohort |
+| `free_waiver` | boolean | Fee waiver request |
+| `expiry_date` | datetime | Calculated from cohort |
 
 ### Polls App
 
@@ -238,12 +310,37 @@ erDiagram
 - Junction table for many-to-many relationship
 - Links responses to selected choices
 
+## API Endpoints
+
+### Authentication
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/auth/token` | POST | Get JWT token (admin only) |
+
+### User Management
+| Endpoint | Method | Auth | Description |
+|----------|--------|------|-------------|
+| `/api/user/by_email` | GET | JWT | Get user details by email |
+| `/api/user/request_renew` | POST | JWT | Submit renewal request |
+
+### Renewal Request Flow
+1. Admin calls `/api/user/request_renew` with user's email/telegram and plan
+2. System checks if user exists and is active
+3. Checks Google Sheet for existing entry (returns URL if found, updates status)
+4. If no entry, creates Google Drive folder and logs to sheet
+5. Sets `UserProfile.renewal_requested = True` and `renewal_plan`
+6. Admin approves via Django admin → `expiry_date` auto-updates
+
 ## Key Features
 
-- **Authentication**: Django's built-in User model with Allauth integration
+- **Authentication**: Django's built-in User model with Allauth integration, JWT for API
 - **Content Management**: Blog posts with comments
-- **Subscription System**: Tracks subscriber requests with expiry dates
+- **Subscription System**: 
+  - Cohort-based registration with automatic expiry calculation
+  - Renewal system with Google Drive/Sheets integration
+  - Expiry dates restricted to April 30 or October 31
 - **Polling System**: Create and manage polls with groups
 - **Survey System**: Comprehensive survey creation with multiple question types
 - **Guest Support**: Surveys can be taken by anonymous users
 - **Draft System**: Save responses as drafts before submission
+- **Google Integration**: Automatic Drive folder creation and Sheets logging

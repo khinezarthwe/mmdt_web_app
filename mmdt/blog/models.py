@@ -80,6 +80,24 @@ class Cohort(models.Model):
             reg_end_date__gte=submission_date
         ).first()
 
+    def get_next_cohort(self, skip=1):
+        """
+        Get the next cohort(s) after this one.
+        
+        Args:
+            skip: Number of cohorts to skip (1 = next cohort, 2 = cohort after next)
+        
+        Returns:
+            Cohort instance or None if not found
+        """
+        next_cohorts = Cohort.objects.filter(
+            reg_start_date__gt=self.reg_start_date
+        ).order_by('reg_start_date')[:skip]
+        
+        if next_cohorts.count() >= skip:
+            return list(next_cohorts)[-1]
+        return None
+
 
 class SubscriberRequest(models.Model):
     PLAN_CHOICES = [
@@ -95,8 +113,6 @@ class SubscriberRequest(models.Model):
     job_title = models.CharField(max_length=200, blank=True, null=True)
     telegram_username = models.CharField(max_length=100, blank=True, null=True)
     free_waiver = models.BooleanField(default=False)
-    renewal_requested = models.BooleanField(default=False)
-    renewal_plan = models.CharField(max_length=10, choices=PLAN_CHOICES, null=True, blank=True)
     message = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

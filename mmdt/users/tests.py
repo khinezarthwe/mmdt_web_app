@@ -200,6 +200,18 @@ class UserRenewalRequestAPITests(TestCase):
     def setUp(self):
         self.client = APIClient()
         now = timezone.now()
+        
+        # Create admin user for authentication
+        self.admin_user = User.objects.create_superuser(
+            username='admin',
+            email='admin@example.com',
+            password='admin-pass-123'
+        )
+        
+        # Authenticate as admin
+        access_token = AccessToken.for_user(self.admin_user)
+        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {access_token}')
+        
         self.cohort = Cohort.objects.create(
             cohort_id='TEST_2024',
             name='Test Cohort',
@@ -218,11 +230,18 @@ class UserRenewalRequestAPITests(TestCase):
             status='approved',
             cohort=self.cohort
         )
+        
+        # Create User and link profile to subscriber request
+        # (Signal creates user when subscriber request is approved)
+        self.test_user = User.objects.get(email='testuser@example.com')
+        self.test_user.profile.subscriber_request = self.subscriber
+        self.test_user.profile.current_cohort = self.cohort
+        self.test_user.profile.save()
 
-        # Mock Google Drive for all tests
-        patcher = patch('api.views.get_folder_upload_url')
+        # Mock Google API for all tests
+        patcher = patch('api.views.get_or_create_renewal_url')
         self.mock_get_url = patcher.start()
-        self.mock_get_url.return_value = 'https://drive.google.com/test-folder'
+        self.mock_get_url.return_value = ('https://drive.google.com/test-folder', False)
         self.addCleanup(patcher.stop)
 
     def test_renewal_request_with_email(self):
@@ -288,7 +307,7 @@ class UserRenewalRequestAPITests(TestCase):
             {'email': 'testuser@example.com', 'plan': '6month'},
             format='json'
         )
-        # Second request should be blocked
+        # Second request should be blocked (renewal_requested is now True)
         response = self.client.post(
             '/api/user/request_renew',
             {'email': 'testuser@example.com', 'plan': '6month'},
@@ -298,7 +317,7 @@ class UserRenewalRequestAPITests(TestCase):
         self.assertEqual(response.data['status'], 'pending')
 
     def test_renewal_request_with_telegram_name_at_prefix(self):
-        # DB stores '@testuser_tg' — bot sends 'testuser_tg' after stripping @
+        # DB stores 'testuser_tg' — bot sends '@testuser_tg' with @
         # The API should find it either way
         response = self.client.post(
             '/api/user/request_renew',
@@ -307,6 +326,28 @@ class UserRenewalRequestAPITests(TestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data['status'], 'success')
+    
+    def test_renewal_request_without_auth_returns_401(self):
+        # Remove authentication
+        self.client.credentials()
+        response = self.client.post(
+            '/api/user/request_renew',
+            {'email': 'testuser@example.com', 'plan': '6month'},
+            format='json'
+        )
+        self.assertEqual(response.status_code, 401)
+    
+    def test_renewal_request_inactive_user_returns_403(self):
+        # Deactivate user using update() to avoid triggering signals
+        User.objects.filter(pk=self.test_user.pk).update(is_active=False)
+        
+        response = self.client.post(
+            '/api/user/request_renew',
+            {'email': 'testuser@example.com', 'plan': '6month'},
+            format='json'
+        )
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.data['status'], 'error')
 
 
 class SubscriberRequestSignalTest(TestCase):

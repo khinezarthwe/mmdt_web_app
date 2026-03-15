@@ -32,8 +32,8 @@ admin.site.register(Post, PostAdmin)
 
 @admin.register(SubscriberRequest)
 class SubscriberRequestAdmin(admin.ModelAdmin):
-    list_display = ['name', 'email', 'telegram_username', 'country', 'plan', 'cohort', 'status', 'renewal_requested', 'renewal_plan', 'created_at', 'updated_at', 'expiry_date', 'mmdt_email']
-    list_filter = ['status', 'renewal_requested', 'renewal_plan', 'free_waiver', 'plan', 'cohort', 'created_at', 'updated_at', 'expiry_date']
+    list_display = ['name', 'email', 'telegram_username', 'country', 'plan', 'cohort', 'status', 'created_at', 'updated_at', 'expiry_date', 'mmdt_email']
+    list_filter = ['status', 'free_waiver', 'plan', 'cohort', 'created_at', 'updated_at', 'expiry_date']
     search_fields = ['name', 'email', 'telegram_username', 'country', 'status', 'cohort__cohort_id']
     readonly_fields = ['cohort', 'created_at', 'updated_at', 'expiry_date']
     actions = ['approve_requests', 'reject_requests']
@@ -50,10 +50,6 @@ class SubscriberRequestAdmin(admin.ModelAdmin):
         }),
         ('Status', {
             'fields': ('status', 'message')
-        }),
-        ('Renewal Request', {
-            'fields': ('renewal_requested', 'renewal_plan'),
-            'description': 'Uncheck renewal_requested once the renewal has been processed.'
         }),
         ('Metadata', {
             'fields': ('created_at', 'updated_at'),

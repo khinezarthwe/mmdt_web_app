@@ -35,6 +35,9 @@ class SubscriberRequestForm(forms.ModelForm):
         self.fields['message'].widget.attrs['placeholder'] = \
             'If you are applying for a fee waiver, please write your message here.'
         self.fields['plan'].widget.attrs['class'] = 'form-control'
+        # Add empty option and make plan required
+        self.fields['plan'].choices = [('', '- Select Plan -')] + list(SubscriberRequest.PLAN_CHOICES)
+        self.fields['plan'].required = True
 
     def clean(self):
         cleaned_data = super().clean()

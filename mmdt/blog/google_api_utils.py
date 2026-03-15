@@ -110,8 +110,8 @@ def create_subscriber_folder(subscriber_request):
             subscriber_request.cohort.cohort_id if hasattr(subscriber_request, 'cohort') and subscriber_request.cohort else 'NO_COHORT'
         )
 
-        # Create user folder: fullname-email
-        folder_name = f"{subscriber_request.name}-{subscriber_request.email}"
+        # Create user folder: fullname|email
+        folder_name = f"{subscriber_request.name}|{subscriber_request.email}"
 
         folder_metadata = {
             'name': folder_name,
@@ -220,7 +220,7 @@ def log_to_spreadsheet(subscriber_request, folder_url):
 
         # Open the spreadsheet
         spreadsheet = gc.open_by_key(SPREADSHEET_ID)
-        worksheet = spreadsheet.get_worksheet(0)  # First sheet
+        worksheet = spreadsheet.worksheet('raw_registration')
 
         # Prepare row data based on sheet columns:
         # name, email, tele_name, country, plan, status, created_at, payment_url
@@ -271,8 +271,8 @@ def get_folder_upload_url(subscriber_request):
             subscriber_request.cohort.cohort_id if hasattr(subscriber_request, 'cohort') and subscriber_request.cohort else 'NO_COHORT'
         )
 
-        # Search for existing user folder: fullname-email
-        folder_name = f"{subscriber_request.name}-{subscriber_request.email}"
+        # Search for existing user folder: fullname|email
+        folder_name = f"{subscriber_request.name}|{subscriber_request.email}"
 
         query = (
             f"name='{folder_name}' and "
@@ -321,7 +321,7 @@ def find_url_in_spreadsheet(email, update_status=False, plan=None):
         gc = gspread.authorize(credentials)
 
         spreadsheet = gc.open_by_key(SPREADSHEET_ID)
-        worksheet = spreadsheet.get_worksheet(0)
+        worksheet = spreadsheet.worksheet('raw_registration')
 
         # Find cell with matching email (column B = email)
         cell = worksheet.find(email)
@@ -362,7 +362,7 @@ def log_renewal_to_spreadsheet(subscriber_request, folder_url, plan):
         gc = gspread.authorize(credentials)
 
         spreadsheet = gc.open_by_key(SPREADSHEET_ID)
-        worksheet = spreadsheet.get_worksheet(0)
+        worksheet = spreadsheet.worksheet('raw_registration')
 
         from django.utils import timezone
 

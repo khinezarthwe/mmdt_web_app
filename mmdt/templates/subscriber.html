@@ -42,11 +42,7 @@
             {{ form.telegram_username }}
         </div>
         <div class="col-6 col-12-xsmall">
-            <select name="plan" id="plan" required>
-                <option value="">- Select Plan -</option>
-                <option value="6month">6-Month Plan</option>
-                <option value="annual">Annual Plan</option>
-            </select>
+            {{ form.plan }}
         </div>
         <div class="col-6 col-12-small">
             <div class="checkbox">

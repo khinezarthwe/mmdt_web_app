@@ -1,4 +1,4 @@
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
 from django.contrib.auth.models import User
 from django.utils import timezone
@@ -93,4 +93,77 @@ def sync_subscriber_request_to_user_profile(sender, instance, **kwargs):
             profile.expiry_date = instance.expiry_date
         
         profile.save()
+
+
+@receiver(pre_save, sender=UserProfile)
+def track_renewal_approval_change(sender, instance, **kwargs):
+    """Track if renewal_approved is changing from False to True."""
+    if instance.pk:
+        try:
+            old_instance = UserProfile.objects.get(pk=instance.pk)
+            instance._renewal_was_approved = old_instance.renewal_approved
+        except UserProfile.DoesNotExist:
+            instance._renewal_was_approved = False
+    else:
+        instance._renewal_was_approved = False
+
+
+@receiver(post_save, sender=UserProfile)
+def handle_renewal_approval(sender, instance, **kwargs):
+    """
+    When renewal_approved changes from False to True:
+    1. Calculate new expiry_date based on current expiry and renewal_plan
+       - 6month: next April 30 or October 31 (6 months out)
+       - annual: next April 30 or October 31 (12 months out)
+    2. Update expiry_date (only April 30 or October 31 allowed)
+    3. Set expired=False
+    4. Reset renewal_requested=False
+    5. Reactivate user if needed
+    
+    Note: current_cohort is NOT updated - it represents the user's registration cohort.
+    """
+    import logging
+    
+    logger = logging.getLogger(__name__)
+    was_approved = getattr(instance, '_renewal_was_approved', False)
+    
+    # Only process if renewal_approved just changed to True
+    if instance.renewal_approved and not was_approved:
+        # Always reset renewal_requested when approved
+        update_fields = {
+            'renewal_requested': False,
+            'renewal_approved_at': timezone.now(),
+        }
+        
+        if instance.renewal_plan:
+            # Calculate new expiry date based on current expiry
+            new_expiry = instance.calculate_renewal_expiry_date()
+            
+            if new_expiry:
+                update_fields.update({
+                    'expiry_date': new_expiry,
+                    'expired': False,
+                })
+                logger.info(
+                    "Renewal approved for user_id=%s: new_expiry=%s, plan=%s",
+                    instance.user.pk, new_expiry.strftime('%Y-%m-%d'), instance.renewal_plan
+                )
+            else:
+                # No expiry date - log error (admin validation should prevent this)
+                logger.error(
+                    "Cannot approve renewal: No current expiry_date for user_id=%s, plan=%s. "
+                    "Please set expiry date first.",
+                    instance.user.pk, instance.renewal_plan
+                )
+        
+        # Use update() to avoid triggering signals again
+        UserProfile.objects.filter(pk=instance.pk).update(**update_fields)
+        
+        # Refresh instance from DB
+        instance.refresh_from_db()
+        
+        # Reactivate user if needed (only if expiry was updated)
+        if 'expired' in update_fields and not instance.user.is_active:
+            instance.user.is_active = True
+            instance.user.save(update_fields=['is_active'])
 

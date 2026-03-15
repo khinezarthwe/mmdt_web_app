@@ -6,17 +6,46 @@ from .models import UserProfile
 
 class UserProfileAdmin(admin.ModelAdmin):
     """Standalone admin for UserProfile."""
-    list_display = ('user', 'current_cohort', 'subscriber_request', 'get_telegram_username', 'expired', 'expiry_date', 'created_at', 'updated_at')
-    list_filter = ('expired', 'current_cohort', 'subscriber_request', 'created_at', 'updated_at')
+    list_display = ('user', 'current_cohort', 'subscriber_request', 'get_telegram_username', 'expired', 'expiry_date', 'renewal_requested', 'renewal_plan', 'renewal_approved', 'created_at', 'updated_at')
+    list_filter = ('expired', 'renewal_requested', 'renewal_approved', 'renewal_plan', 'current_cohort', 'subscriber_request', 'created_at', 'updated_at')
     search_fields = ('user__username', 'user__email', 'user__first_name', 'user__last_name', 'current_cohort__name', 'current_cohort__cohort_id', 'subscriber_request__email', 'subscriber_request__name', 'subscriber_request__telegram_username')
-    readonly_fields = ('created_at', 'updated_at', 'get_telegram_username')
-    fields = ('user', 'expired', 'expiry_date', 'current_cohort', 'subscriber_request', 'get_telegram_username', 'created_at', 'updated_at')
+    readonly_fields = ('created_at', 'updated_at', 'get_telegram_username', 'renewal_approved_at')
     autocomplete_fields = ['current_cohort', 'subscriber_request']
+    actions = ['approve_renewal_requests']
+    
+    fieldsets = (
+        ('User', {
+            'fields': ('user', 'get_telegram_username')
+        }),
+        ('Subscription Status', {
+            'fields': ('expired', 'expiry_date', 'current_cohort', 'subscriber_request')
+        }),
+        ('Renewal Request', {
+            'fields': ('renewal_requested', 'renewal_plan', 'renewal_approved', 'renewal_approved_at'),
+            'description': 'Check renewal_approved to approve the renewal request. This will automatically update expiry_date.'
+        }),
+        ('Metadata', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
     
     def get_telegram_username(self, obj):
         """Display telegram username from subscriber request."""
         return obj.telegram_username or '-'
     get_telegram_username.short_description = 'Telegram Username'
+    
+    def approve_renewal_requests(self, request, queryset):
+        """Approve selected renewal requests. Signal handles expiry update automatically."""
+        count = 0
+        for profile in queryset.filter(renewal_requested=True, renewal_approved=False):
+            if profile.renewal_plan:
+                profile.renewal_approved = True
+                profile.save()  # Signal handles expiry_date, cohort, etc.
+                count += 1
+        
+        self.message_user(request, f'{count} renewal request(s) approved and expiry dates updated.')
+    approve_renewal_requests.short_description = "Approve selected renewal requests"
 
 
 class UserProfileInline(admin.StackedInline):
@@ -24,8 +53,8 @@ class UserProfileInline(admin.StackedInline):
     model = UserProfile
     can_delete = False
     verbose_name_plural = 'Profile'
-    fields = ('expired', 'expiry_date', 'current_cohort', 'subscriber_request', 'get_telegram_username', 'created_at', 'updated_at')
-    readonly_fields = ('created_at', 'updated_at', 'get_telegram_username')
+    fields = ('expired', 'expiry_date', 'current_cohort', 'subscriber_request', 'get_telegram_username', 'renewal_requested', 'renewal_plan', 'renewal_approved', 'renewal_approved_at', 'created_at', 'updated_at')
+    readonly_fields = ('created_at', 'updated_at', 'get_telegram_username', 'renewal_approved_at')
     autocomplete_fields = ['current_cohort', 'subscriber_request']
     
     def get_telegram_username(self, obj):
@@ -39,9 +68,9 @@ class UserProfileInline(admin.StackedInline):
 class CustomUserAdmin(UserAdmin):
     """Custom User admin with UserProfile inline."""
     inlines = (UserProfileInline,)
-    list_display = ('username', 'email', 'first_name', 'last_name', 'is_staff', 'is_active', 'get_expired_status', 'get_current_cohort', 'get_telegram_username')
-    list_filter = ('is_staff', 'is_superuser', 'is_active', 'date_joined', 'profile__expired', 'profile__current_cohort', 'profile__subscriber_request')
-    actions = ['mark_users_as_expired', 'mark_users_as_active']
+    list_display = ('username', 'email', 'first_name', 'last_name', 'is_staff', 'is_active', 'get_expired_status', 'get_renewal_status', 'get_current_cohort', 'get_telegram_username')
+    list_filter = ('is_staff', 'is_superuser', 'is_active', 'date_joined', 'profile__expired', 'profile__renewal_requested', 'profile__renewal_approved', 'profile__current_cohort', 'profile__subscriber_request')
+    actions = ['mark_users_as_expired', 'mark_users_as_active', 'approve_renewal_requests']
     
     def get_expired_status(self, obj):
         """Display expired status from profile."""
@@ -86,6 +115,29 @@ class CustomUserAdmin(UserAdmin):
                 count += 1
         self.message_user(request, f'{count} user(s) marked as active.')
     mark_users_as_active.short_description = "Mark selected users as active (not expired)"
+    
+    def get_renewal_status(self, obj):
+        """Display renewal request status from profile."""
+        if hasattr(obj, 'profile'):
+            if obj.profile.renewal_requested:
+                return "Pending"
+            elif obj.profile.renewal_approved:
+                return "Approved"
+        return "-"
+    get_renewal_status.short_description = 'Renewal'
+    
+    def approve_renewal_requests(self, request, queryset):
+        """Approve renewal requests for selected users. Signal handles expiry update automatically."""
+        count = 0
+        for user in queryset:
+            if hasattr(user, 'profile') and user.profile.renewal_requested and not user.profile.renewal_approved:
+                if user.profile.renewal_plan:
+                    user.profile.renewal_approved = True
+                    user.profile.save()  # Signal handles expiry_date, cohort, etc.
+                    count += 1
+        
+        self.message_user(request, f'{count} renewal request(s) approved and expiry dates updated.')
+    approve_renewal_requests.short_description = "Approve renewal requests for selected users"
 
 
 # Register UserProfile admin

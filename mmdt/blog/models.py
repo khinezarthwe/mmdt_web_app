@@ -80,6 +80,24 @@ class Cohort(models.Model):
             reg_end_date__gte=submission_date
         ).first()
 
+    def get_next_cohort(self, skip=1):
+        """
+        Get the next cohort(s) after this one.
+        
+        Args:
+            skip: Number of cohorts to skip (1 = next cohort, 2 = cohort after next)
+        
+        Returns:
+            Cohort instance or None if not found
+        """
+        next_cohorts = Cohort.objects.filter(
+            reg_start_date__gt=self.reg_start_date
+        ).order_by('reg_start_date')[:skip]
+        
+        if next_cohorts.count() >= skip:
+            return list(next_cohorts)[-1]
+        return None
+
 
 class SubscriberRequest(models.Model):
     PLAN_CHOICES = [

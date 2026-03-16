@@ -1,4 +1,6 @@
 from datetime import timedelta
+from unittest.mock import patch
+
 from django.test import TestCase, Client
 from django.contrib.auth.models import User
 from django.urls import reverse
@@ -132,10 +134,12 @@ class CommentModelTest(TestCase):
         self.assertFalse(comment.active)  # Default is False
 
 
+@patch('blog.signals.log_to_spreadsheet', return_value=True)
+@patch('blog.signals.create_subscriber_folder', return_value='https://drive.google.com/mock-folder')
 class SubscriberRequestModelTest(TestCase):
     """Test cases for SubscriberRequest model."""
 
-    def setUp(self):
+    def setUp(self, *args):
         """Set up test data."""
         now = timezone.now()
         self.cohort = Cohort.objects.create(
@@ -287,10 +291,12 @@ class CommentFormTest(TestCase):
         self.assertIn('body', form.errors)
 
 
+@patch('blog.signals.log_to_spreadsheet', return_value=True)
+@patch('blog.signals.create_subscriber_folder', return_value='https://drive.google.com/mock-folder')
 class SubscriberRequestFormTest(TestCase):
     """Test cases for SubscriberRequestForm."""
 
-    def setUp(self):
+    def setUp(self, *args):
         """Set up test data."""
         now = timezone.now()
         self.cohort = Cohort.objects.create(
@@ -511,10 +517,12 @@ class PostDetailViewTest(TestCase):
         self.assertEqual(response.context['post'], self.subscriber_post)
 
 
+@patch('blog.signals.log_to_spreadsheet', return_value=True)
+@patch('blog.signals.create_subscriber_folder', return_value='https://drive.google.com/mock-folder')
 class SubscriberRequestViewTest(TestCase):
     """Test cases for subscriber_request view."""
 
-    def setUp(self):
+    def setUp(self, *args):
         """Set up test data."""
         self.client = Client()
         self.user = User.objects.create_user(
@@ -639,10 +647,12 @@ class URLPatternsTest(TestCase):
         self.assertEqual(response.status_code, 200)
 
 
+@patch('blog.signals.log_to_spreadsheet', return_value=True)
+@patch('blog.signals.create_subscriber_folder', return_value='https://drive.google.com/mock-folder')
 class IntegrationTest(TestCase):
     """Integration tests for complete workflows."""
 
-    def setUp(self):
+    def setUp(self, *args):
         """Set up test data."""
         self.client = Client()
         self.user = User.objects.create_user(

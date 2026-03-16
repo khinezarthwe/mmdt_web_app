@@ -415,10 +415,12 @@ class UserRenewalRequestView(APIView):
 
         if profile.renewal_requested:
             logger.info("Renewal request already pending for user_id=%s", user.pk)
+            existing_url, _ = get_or_create_renewal_url(subscriber, plan)
             return Response(
                 {
                     "status": "pending",
                     "message": "Renewal request already submitted. Please wait for admin approval.",
+                    "upload_url": existing_url or "",
                 },
                 status=status.HTTP_409_CONFLICT,
             )

@@ -54,8 +54,8 @@ When first paid subscriber request is submitted, browser will open automatically
 ### 2. Email Template
 
 Payment amounts and bank details are already configured in `templates/emails/paid_user_confirmation.html`:
-- 6-month plan: USD $12 / MMK 54,000 / BAHT 400
-- Annual plan: USD $24 / MMK 108,000 / BAHT 800
+- 6-month plan: MMK 54,000 / BAHT 480
+- Annual plan: MMK 108,000 / BAHT 960
 - Bank: Bangkok Bank (Account: 860-0-290269, Name: Myo Thida)
 - KPay: 09402741691 (Nuam Man Cing)
 

@@ -161,7 +161,7 @@ class SubscriberRequestModelTest(TestCase):
             plan='6month'
         )
     
-    def test_subscriber_request_creation(self):
+    def test_subscriber_request_creation(self, *args):
         """Test subscriber request creation with required fields."""
         self.assertEqual(self.subscriber.name, 'Test Subscriber')
         self.assertEqual(self.subscriber.email, 'subscriber@example.com')
@@ -173,17 +173,17 @@ class SubscriberRequestModelTest(TestCase):
         self.assertEqual(self.subscriber.status, 'pending')
         self.assertFalse(self.subscriber.free_waiver)
     
-    def test_subscriber_request_str_representation(self):
+    def test_subscriber_request_str_representation(self, *args):
         """Test string representation of SubscriberRequest."""
         expected = 'Test Subscriber - subscriber@example.com'
         self.assertEqual(str(self.subscriber), expected)
     
-    def test_calculate_expiry_date_6month(self):
+    def test_calculate_expiry_date_6month(self, *args):
         """Test expiry date calculation for 6-month plan uses cohort date."""
         expiry = self.subscriber.calculate_expiry_date()
         self.assertEqual(expiry, self.cohort.exp_date_6)
 
-    def test_calculate_expiry_date_annual(self):
+    def test_calculate_expiry_date_annual(self, *args):
         """Test expiry date calculation for annual plan uses cohort date."""
         subscriber = SubscriberRequest.objects.create(
             name='Annual Subscriber',
@@ -195,7 +195,7 @@ class SubscriberRequestModelTest(TestCase):
         expiry = subscriber.calculate_expiry_date()
         self.assertEqual(expiry, self.cohort.exp_date_12)
     
-    def test_automatic_expiry_date_setting(self):
+    def test_automatic_expiry_date_setting(self, *args):
         """Test that expiry date is automatically set on save."""
         subscriber = SubscriberRequest.objects.create(
             name='Auto Expiry',
@@ -206,7 +206,7 @@ class SubscriberRequestModelTest(TestCase):
         )
         self.assertIsNotNone(subscriber.expiry_date)
     
-    def test_unique_email_constraint(self):
+    def test_unique_email_constraint(self, *args):
         """Test that emails must be unique across all subscriber requests."""
         with self.assertRaises(Exception):  # IntegrityError
             SubscriberRequest.objects.create(
@@ -216,7 +216,7 @@ class SubscriberRequestModelTest(TestCase):
                 city='Yangon'
             )
 
-    def test_telegram_username_optional(self):
+    def test_telegram_username_optional(self, *args):
         """Test that telegram_username is optional."""
         subscriber = SubscriberRequest.objects.create(
             name='No Telegram',
@@ -227,7 +227,7 @@ class SubscriberRequestModelTest(TestCase):
         )
         self.assertIsNone(subscriber.telegram_username)
     
-    def test_telegram_username_saved(self):
+    def test_telegram_username_saved(self, *args):
         """Test that telegram_username is saved correctly."""
         subscriber = SubscriberRequest.objects.create(
             name='With Telegram',
@@ -239,7 +239,7 @@ class SubscriberRequestModelTest(TestCase):
         )
         self.assertEqual(subscriber.telegram_username, 'myusername')
     
-    def test_subscriber_request_ordering(self):
+    def test_subscriber_request_ordering(self, *args):
         """Test that SubscriberRequest is ordered by created_at descending (newest first)."""
         subscriber2 = SubscriberRequest.objects.create(
             name='Second Subscriber',
@@ -309,7 +309,7 @@ class SubscriberRequestFormTest(TestCase):
             is_active=True
         )
 
-    def test_subscriber_request_form_valid_data(self):
+    def test_subscriber_request_form_valid_data(self, *args):
         """Test subscriber request form with valid data."""
         form_data = {
             'name': 'Test Subscriber',
@@ -325,7 +325,7 @@ class SubscriberRequestFormTest(TestCase):
         form = SubscriberRequestForm(data=form_data)
         self.assertTrue(form.is_valid())
     
-    def test_subscriber_request_form_duplicate_email(self):
+    def test_subscriber_request_form_duplicate_email(self, *args):
         """Test subscriber request form with duplicate email."""
         # Create existing subscriber
         SubscriberRequest.objects.create(
@@ -346,7 +346,7 @@ class SubscriberRequestFormTest(TestCase):
         self.assertFalse(form.is_valid())
         self.assertIn('email', form.errors)
     
-    def test_subscriber_request_form_missing_required_fields(self):
+    def test_subscriber_request_form_missing_required_fields(self, *args):
         """Test subscriber request form with missing required fields."""
         form_data = {
             'name': 'Test Subscriber',
@@ -541,20 +541,20 @@ class SubscriberRequestViewTest(TestCase):
             is_active=True
         )
     
-    def test_subscriber_request_view_get(self):
+    def test_subscriber_request_view_get(self, *args):
         """Test GET request to subscriber_request view."""
         response = self.client.get(reverse('subscriber_request'))
         self.assertEqual(response.status_code, 200)
         self.assertIn('form', response.context)
         self.assertIsInstance(response.context['form'], SubscriberRequestForm)
     
-    def test_subscriber_request_view_redirects_authenticated_user(self):
+    def test_subscriber_request_view_redirects_authenticated_user(self, *args):
         """Test that authenticated users are redirected from subscriber_request."""
         self.client.login(username='testuser', password='testpass123')
         response = self.client.get(reverse('subscriber_request'))
         self.assertRedirects(response, reverse('home'))
     
-    def test_subscriber_request_view_post_valid_data(self):
+    def test_subscriber_request_view_post_valid_data(self, *args):
         """Test POST request with valid data to subscriber_request view."""
         form_data = {
             'name': 'Test Subscriber',
@@ -570,7 +570,7 @@ class SubscriberRequestViewTest(TestCase):
         # Check that SubscriberRequest was created
         self.assertTrue(SubscriberRequest.objects.filter(email='subscriber@example.com').exists())
     
-    def test_subscriber_request_view_sends_email(self):
+    def test_subscriber_request_view_sends_email(self, *args):
         """Test that subscriber_request view sends confirmation email."""
         form_data = {
             'name': 'Test Subscriber',
@@ -679,7 +679,7 @@ class IntegrationTest(TestCase):
             is_active=True
         )
     
-    def test_complete_comment_workflow(self):
+    def test_complete_comment_workflow(self, *args):
         """Test complete workflow of viewing post and adding comment."""
         # View post
         response = self.client.get(reverse('post_detail', kwargs={'slug': self.post.slug}))
@@ -706,7 +706,7 @@ class IntegrationTest(TestCase):
         self.assertEqual(comment.body, 'This is an integration test comment.')
         self.assertEqual(comment.post, self.post)
     
-    def test_complete_subscriber_request_workflow(self):
+    def test_complete_subscriber_request_workflow(self, *args):
         """Test complete workflow of subscriber request."""
         # Access subscriber request page
         response = self.client.get(reverse('subscriber_request'))

@@ -220,7 +220,7 @@ def log_to_spreadsheet(subscriber_request, folder_url):
 
         # Open the spreadsheet
         spreadsheet = gc.open_by_key(SPREADSHEET_ID)
-        worksheet = spreadsheet.worksheet('raw_registration')
+        worksheet = spreadsheet.worksheet('Sheet1')
 
         # Prepare row data based on sheet columns:
         # name, email, tele_name, country, plan, status, created_at, payment_url
@@ -321,7 +321,7 @@ def find_url_in_spreadsheet(email, update_status=False, plan=None):
         gc = gspread.authorize(credentials)
 
         spreadsheet = gc.open_by_key(SPREADSHEET_ID)
-        worksheet = spreadsheet.worksheet('raw_registration')
+        worksheet = spreadsheet.worksheet('Sheet1')
 
         # Find cell with matching email (column B = email)
         cell = worksheet.find(email)
@@ -338,7 +338,7 @@ def find_url_in_spreadsheet(email, update_status=False, plan=None):
 
         return None
 
-    except gspread.exceptions.CellNotFound:
+    except gspread.exceptions.GSpreadException:
         return None
     except Exception as e:
         print(f"Error searching spreadsheet: {e}")
@@ -362,7 +362,7 @@ def log_renewal_to_spreadsheet(subscriber_request, folder_url, plan):
         gc = gspread.authorize(credentials)
 
         spreadsheet = gc.open_by_key(SPREADSHEET_ID)
-        worksheet = spreadsheet.worksheet('raw_registration')
+        worksheet = spreadsheet.worksheet('Sheet1')
 
         from django.utils import timezone
 

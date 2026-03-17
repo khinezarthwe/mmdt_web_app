@@ -189,12 +189,14 @@ class UserDetailByEmailView(APIView):
             profile = None
 
         enddate = profile.expiry_date if profile else None
+        telegram_username = profile.telegram_username if profile else None
 
         logger.info("User detail returned for email=%s, enddate=%s", email, enddate)
         return Response(
             {
                 "email": user.email,
                 "enddate": enddate,
+                "telegram_username": telegram_username,
             }
         )
 
@@ -415,10 +417,12 @@ class UserRenewalRequestView(APIView):
 
         if profile.renewal_requested:
             logger.info("Renewal request already pending for user_id=%s", user.pk)
+            existing_url, _ = get_or_create_renewal_url(subscriber, plan)
             return Response(
                 {
                     "status": "pending",
                     "message": "Renewal request already submitted. Please wait for admin approval.",
+                    "upload_url": existing_url or "",
                 },
                 status=status.HTTP_409_CONFLICT,
             )

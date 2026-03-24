@@ -357,6 +357,21 @@ class UserRenewalRequestAPITests(TestCase):
         self.assertEqual(response.status_code, 404)
         self.assertEqual(response.data['status'], 'error')
 
+    def test_renewal_request_email_telegram_mismatch(self):
+        """Test renewal request fails when email and telegram_name don't match."""
+        response = self.client.post(
+            '/api/user/request_renew',
+            {
+                'email': 'testuser@example.com',
+                'telegram_name': 'wrong_telegram_name',
+                'plan': '6month'
+            },
+            format='json'
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.data['status'], 'error')
+        self.assertIn('do not match', response.data['message'])
+
     def test_renewal_request_duplicate_blocked(self):
         """Test that duplicate renewal requests are blocked."""
         # First request should succeed

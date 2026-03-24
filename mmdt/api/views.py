@@ -217,9 +217,9 @@ class UserRenewalRequestView(APIView):
         )
 
     def _get_user(self, email, telegram_name):
-        """Look up user by email."""
+        """Look up user by email and verify telegram_name matches."""
         try:
-            return User.objects.get(email=email)
+            user = User.objects.get(email=email)
         except User.DoesNotExist:
             logger.info(
                 "Renewal request failed: user not found (email=%s, telegram=%s)",
@@ -235,6 +235,29 @@ class UserRenewalRequestView(APIView):
                 {"status": "error", "message": "Multiple users found. Please contact support."},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
+
+        # Verify telegram_name matches for consistency
+        try:
+            profile = user.profile
+            subscriber = profile.subscriber_request
+            if subscriber:
+                stored_telegram = subscriber.telegram_username or ''
+                provided_telegram = telegram_name.lstrip('@')
+                stored_telegram_clean = stored_telegram.lstrip('@')
+
+                if stored_telegram_clean.lower() != provided_telegram.lower():
+                    logger.warning(
+                        "Telegram name mismatch: stored=%s, provided=%s (email=%s)",
+                        stored_telegram, telegram_name, email
+                    )
+                    return Response(
+                        {"status": "error", "message": "Email and telegram_name do not match."},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+        except (AttributeError, Exception) as e:
+            logger.debug("Could not verify telegram_name: %s", e)
+
+        return user
 
     def _get_profile_and_subscriber(self, user):
         """Get user profile and linked subscriber request."""

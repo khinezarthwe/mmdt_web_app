@@ -201,7 +201,7 @@ class CustomSchemaGenerator(SchemaGenerator):
         post_op["summary"] = "Request membership renewal"
         post_op["description"] = (
             "Submit a renewal request for an existing active user. "
-            "Both email and telegram_name are required. "
+            "Both email and telegram_name are required and must match the user's stored records. "
             "Returns a Google Drive folder URL for payment proof upload."
         )
 
@@ -264,14 +264,17 @@ class CustomSchemaGenerator(SchemaGenerator):
             },
         }
         responses["400"] = {
-            "description": "Bad request - missing or invalid parameters",
+            "description": "Bad request - missing/invalid parameters or email/telegram mismatch",
             "content": {
                 "application/json": {
                     "schema": {
                         "type": "object",
                         "properties": {
                             "status": {"type": "string", "example": "error"},
-                            "message": {"type": "string", "example": "This field is required."},
+                            "message": {
+                                "type": "string",
+                                "example": "Email and telegram_name do not match.",
+                            },
                         },
                     },
                 }

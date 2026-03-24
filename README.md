@@ -23,6 +23,13 @@ This Django-based web application provides content management for the Myanmar Da
 - **Bulk Actions**: Mark multiple users as expired or active
 - **Automatic Deactivation**: Users are automatically deactivated when expired
 - **Email-based Authentication**: Django Allauth integration with Google OAuth
+- **Renewal System**: Users can request membership renewal with plan selection
+
+### 🔌 REST API
+- **JWT Authentication**: Secure token-based authentication for API access
+- **User Lookup**: Query user details by email
+- **Renewal Requests**: Submit renewal requests via API (for Telegram bot integration)
+- **OpenAPI Documentation**: Interactive Swagger UI at `/api/docs/`
 
 
 ## Prerequisites for project setup
@@ -94,18 +101,80 @@ You can now access the following URLs in your web browser:
 - [http://127.0.0.1:8000/](http://127.0.0.1:8000/): Home Page/Blog Page 
 - [http://127.0.0.1:8000/admin](http://127.0.0.1:8000/admin): Admin Panel
 - [http://127.0.0.1:8000/our_playground/](http://127.0.0.1:8000/our_playground/): AI Feedback Analyzer
+- [http://127.0.0.1:8000/api/docs/](http://127.0.0.1:8000/api/docs/): API Documentation (Swagger UI)
 
 - [http://127.0.0.1:8000/polls/](http://127.0.0.1:8000/polls/): Polls System [draft]
 - [http://127.0.0.1:8000/survey/](http://127.0.0.1:8000/survey/): Survey System [draft]
 - [http://127.0.0.1:8000/surveys/](http://127.0.0.1:8000/surveys/): Advanced Survey Forms [draft]
 
+## REST API
+
+The application provides a REST API for external integrations (e.g., Telegram bot).
+
+### API Documentation
+
+Interactive API documentation is available at `/api/docs/` (Swagger UI).
+
+### Authentication
+
+All API endpoints (except token generation) require JWT authentication:
+
+```bash
+# 1. Obtain access token (admin users only)
+curl -X POST http://127.0.0.1:8000/api/auth/token \
+  -H "Content-Type: application/json" \
+  -d '{"username": "admin", "password": "your-password"}'
+
+# Response:
+# {"access_token": "eyJ0eX...", "expires_in": 900, "token_type": "Bearer"}
+
+# 2. Use token in subsequent requests
+curl -X GET "http://127.0.0.1:8000/api/users?email=user@example.com" \
+  -H "Authorization: Bearer eyJ0eX..."
+```
+
+### Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/auth/token` | Get JWT access token (admin only) |
+| GET | `/api/users?email=` | Get user details by email |
+| POST | `/api/user/request_renew` | Submit renewal request |
+| GET | `/api/docs/` | Swagger UI documentation |
+| GET | `/api/schema/` | OpenAPI schema (JSON) |
+
+### Renewal Request
+
+Submit a membership renewal request:
+
+```bash
+curl -X POST http://127.0.0.1:8000/api/user/request_renew \
+  -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "user@example.com",
+    "telegram_name": "username",
+    "plan": "6month"
+  }'
+
+# Response:
+# {"status": "success", "message": "Renewal request received", "upload_url": "https://drive.google.com/..."}
+```
+
+**Required fields:**
+- `email` - User's email address
+- `telegram_name` - User's Telegram username
+- `plan` - Either `6month` or `annual`
+
 ## Technology Stack
 
 - **Backend**: Django 4.2.4
+- **REST API**: Django REST Framework with JWT authentication
 - **Database**: SQLite (development)
 - **Frontend**: Bootstrap 4, HTML5, CSS3, JavaScript
-- **Authentication**: Django Allauth
+- **Authentication**: Django Allauth, SimpleJWT
 - **File Storage**: Local (development), AWS S3 (production)
+- **Google Integration**: Drive API, Sheets API (gspread)
 - **AI/ML**: Scikit-learn, NumPy
 - **Forms**: Django Crispy Forms
 - **Icons**: Bootstrap Icons
@@ -113,9 +182,13 @@ You can now access the following URLs in your web browser:
 ## Key Dependencies
 
 - `Django==4.2.4` - Web framework
+- `djangorestframework` - REST API framework
+- `djangorestframework-simplejwt` - JWT authentication
 - `django-allauth==0.63.6` - Authentication system
 - `django-summernote==0.8.20.0` - Rich text editor
 - `django-form-surveys==2.4.0` - Advanced survey forms
+- `gspread` - Google Sheets integration
+- `google-api-python-client` - Google Drive API
 - `scikit-learn==1.2.2` - Machine learning library
 - `boto3==1.28.44` - AWS SDK
 - `Pillow==10.0.0` - Image processing

@@ -23,7 +23,7 @@
     <script>
       window.onload = function () {
         const ui = SwaggerUIBundle({
-          url: "{% url 'openapi-schema' %}",
+          url: "{% url 'api:openapi-schema' %}",
           dom_id: "#swagger-ui",
           presets: [SwaggerUIBundle.presets.apis],
           layout: "BaseLayout",

@@ -101,6 +101,93 @@ class UserDetailByEmailAPITests(TestCase):
         self.assertEqual(response.status_code, 404)
 
 
+class UserDetailByTelegramAPITests(TestCase):
+    """Test cases for the user detail by telegram endpoint."""
+
+    def setUp(self):
+        # Mock Google API functions to prevent actual API calls during tests
+        patcher1 = patch('blog.signals.create_subscriber_folder', return_value='https://drive.google.com/mock-folder')
+        patcher2 = patch('blog.signals.log_to_spreadsheet', return_value=True)
+        self.mock_create_folder = patcher1.start()
+        self.mock_log_sheet = patcher2.start()
+        self.addCleanup(patcher1.stop)
+        self.addCleanup(patcher2.stop)
+
+        self.client = APIClient()
+        self.admin_user = User.objects.create_superuser(
+            username="admin",
+            email="admin@example.com",
+            password="admin-pass-123",
+        )
+
+        # Create cohort for subscriber request
+        now = timezone.now()
+        self.cohort = Cohort.objects.create(
+            cohort_id='TEST_TG_2024',
+            name='Test Telegram Cohort',
+            reg_start_date=now - timedelta(days=1),
+            reg_end_date=now + timedelta(days=30),
+            exp_date_6=now + timedelta(days=180),
+            exp_date_12=now + timedelta(days=365),
+            is_active=True
+        )
+
+        # Create subscriber request with telegram username
+        self.subscriber = SubscriberRequest.objects.create(
+            name='Telegram Test User',
+            email='telegramuser@example.com',
+            country='Myanmar',
+            city='Yangon',
+            telegram_username='test_telegram',
+            status='approved',
+            cohort=self.cohort
+        )
+
+        # Get the user created by the signal
+        self.user = User.objects.get(email='telegramuser@example.com')
+        expiry_date = now + timedelta(days=30)
+        self.user.profile.expiry_date = expiry_date
+        self.user.profile.save()
+
+        # Authenticate as admin
+        access_token = AccessToken.for_user(self.admin_user)
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {access_token}")
+
+    def test_get_user_by_telegram_returns_email_and_enddate(self):
+        """Test successful lookup by telegram username."""
+        response = self.client.get("/api/users/telegram", {"telegram_name": "test_telegram"})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["email"], "telegramuser@example.com")
+        self.assertIsNotNone(response.data["enddate"])
+
+    def test_get_user_by_telegram_with_at_prefix(self):
+        """Test lookup works with @ prefix."""
+        response = self.client.get("/api/users/telegram", {"telegram_name": "@test_telegram"})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["email"], "telegramuser@example.com")
+
+    def test_missing_telegram_query_param_returns_400(self):
+        """Test that missing telegram_name returns 400."""
+        response = self.client.get("/api/users/telegram")
+
+        self.assertEqual(response.status_code, 400)
+
+    def test_unknown_telegram_returns_404(self):
+        """Test that unknown telegram username returns 404."""
+        response = self.client.get("/api/users/telegram", {"telegram_name": "unknown_user"})
+
+        self.assertEqual(response.status_code, 404)
+
+    def test_telegram_lookup_without_auth_returns_401(self):
+        """Test that unauthenticated requests return 401."""
+        self.client.credentials()
+        response = self.client.get("/api/users/telegram", {"telegram_name": "test_telegram"})
+
+        self.assertEqual(response.status_code, 401)
+
+
 class UserProfileModelTest(TestCase):
     """Test cases for UserProfile model."""
 

@@ -134,12 +134,17 @@ class CommentModelTest(TestCase):
         self.assertFalse(comment.active)  # Default is False
 
 
-@patch('blog.signals.log_to_spreadsheet', return_value=True)
-@patch('blog.signals.create_subscriber_folder', return_value='https://drive.google.com/mock-folder')
 class SubscriberRequestModelTest(TestCase):
     """Test cases for SubscriberRequest model."""
 
-    def setUp(self, *args):
+    def setUp(self):
+        # Mock Google API functions to prevent actual API calls during tests
+        patcher1 = patch('blog.signals.create_subscriber_folder', return_value='https://drive.google.com/mock-folder')
+        patcher2 = patch('blog.signals.log_to_spreadsheet', return_value=True)
+        self.mock_create_folder = patcher1.start()
+        self.mock_log_sheet = patcher2.start()
+        self.addCleanup(patcher1.stop)
+        self.addCleanup(patcher2.stop)
         """Set up test data."""
         now = timezone.now()
         self.cohort = Cohort.objects.create(
@@ -291,12 +296,17 @@ class CommentFormTest(TestCase):
         self.assertIn('body', form.errors)
 
 
-@patch('blog.signals.log_to_spreadsheet', return_value=True)
-@patch('blog.signals.create_subscriber_folder', return_value='https://drive.google.com/mock-folder')
 class SubscriberRequestFormTest(TestCase):
     """Test cases for SubscriberRequestForm."""
 
-    def setUp(self, *args):
+    def setUp(self):
+        # Mock Google API functions to prevent actual API calls during tests
+        patcher1 = patch('blog.signals.create_subscriber_folder', return_value='https://drive.google.com/mock-folder')
+        patcher2 = patch('blog.signals.log_to_spreadsheet', return_value=True)
+        self.mock_create_folder = patcher1.start()
+        self.mock_log_sheet = patcher2.start()
+        self.addCleanup(patcher1.stop)
+        self.addCleanup(patcher2.stop)
         """Set up test data."""
         now = timezone.now()
         self.cohort = Cohort.objects.create(
@@ -517,12 +527,17 @@ class PostDetailViewTest(TestCase):
         self.assertEqual(response.context['post'], self.subscriber_post)
 
 
-@patch('blog.signals.log_to_spreadsheet', return_value=True)
-@patch('blog.signals.create_subscriber_folder', return_value='https://drive.google.com/mock-folder')
 class SubscriberRequestViewTest(TestCase):
     """Test cases for subscriber_request view."""
 
-    def setUp(self, *args):
+    def setUp(self):
+        # Mock Google API functions to prevent actual API calls during tests
+        patcher1 = patch('blog.signals.create_subscriber_folder', return_value='https://drive.google.com/mock-folder')
+        patcher2 = patch('blog.signals.log_to_spreadsheet', return_value=True)
+        self.mock_create_folder = patcher1.start()
+        self.mock_log_sheet = patcher2.start()
+        self.addCleanup(patcher1.stop)
+        self.addCleanup(patcher2.stop)
         """Set up test data."""
         self.client = Client()
         self.user = User.objects.create_user(
@@ -647,12 +662,17 @@ class URLPatternsTest(TestCase):
         self.assertEqual(response.status_code, 200)
 
 
-@patch('blog.signals.log_to_spreadsheet', return_value=True)
-@patch('blog.signals.create_subscriber_folder', return_value='https://drive.google.com/mock-folder')
 class IntegrationTest(TestCase):
     """Integration tests for complete workflows."""
 
-    def setUp(self, *args):
+    def setUp(self):
+        # Mock Google API functions to prevent actual API calls during tests
+        patcher1 = patch('blog.signals.create_subscriber_folder', return_value='https://drive.google.com/mock-folder')
+        patcher2 = patch('blog.signals.log_to_spreadsheet', return_value=True)
+        self.mock_create_folder = patcher1.start()
+        self.mock_log_sheet = patcher2.start()
+        self.addCleanup(patcher1.stop)
+        self.addCleanup(patcher2.stop)
         """Set up test data."""
         self.client = Client()
         self.user = User.objects.create_user(

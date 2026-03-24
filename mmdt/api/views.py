@@ -10,7 +10,7 @@ from rest_framework import permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import AccessToken
-
+from blog.models import SubscriberRequest 
 from blog.google_api_utils import get_or_create_renewal_url
 from users.models import UserProfile
 
@@ -113,6 +113,72 @@ class UserDetailByEmailView(APIView):
             enddate = None
 
         logger.info("User detail returned for email=%s, enddate=%s", email, enddate)
+        return Response({
+            "email": user.email,
+            "enddate": enddate,
+        })
+
+
+class UserDetailByTelegramView(APIView):
+    """
+    Get user details by telegram username.
+
+    GET /api/users/telegram?telegram_name=username
+
+    Requires JWT authentication with admin privileges.
+    """
+    permission_classes = [permissions.IsAdminUser]
+
+    def get(self, request):
+        telegram_name = request.query_params.get("telegram_name")
+        if not telegram_name:
+            logger.warning("User detail request failed: missing telegram_name parameter")
+            return Response(
+                {"detail": "Query parameter 'telegram_name' is required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Clean telegram name (remove @ prefix if present)
+        name_clean = telegram_name.lstrip('@')
+        logger.debug("User detail lookup for telegram_name=%s", name_clean)
+
+        try:
+            subscriber = SubscriberRequest.objects.filter(
+                telegram_username__iexact=name_clean
+            ).first() or SubscriberRequest.objects.filter(
+                telegram_username__iexact=f'@{name_clean}'
+            ).first()
+
+            if not subscriber:
+                logger.info("User detail lookup failed: subscriber not found for telegram=%s", telegram_name)
+                return Response(
+                    {"detail": "User not found."},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+
+            # Find the user associated with this subscriber
+            user = User.objects.filter(email=subscriber.email).first()
+            if not user:
+                logger.info("User detail lookup failed: user not found for telegram=%s", telegram_name)
+                return Response(
+                    {"detail": "User not found."},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+
+        except Exception as e:
+            logger.error("Error looking up user by telegram: %s", e)
+            return Response(
+                {"detail": "An error occurred while looking up the user."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+        try:
+            profile = user.profile
+            enddate = profile.expiry_date
+        except UserProfile.DoesNotExist:
+            enddate = None
+
+        logger.info("User detail returned for telegram=%s, email=%s, enddate=%s", telegram_name, user.email, enddate)
         return Response({
             "email": user.email,
             "enddate": enddate,

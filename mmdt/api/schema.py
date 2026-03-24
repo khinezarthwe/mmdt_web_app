@@ -26,6 +26,7 @@ class CustomSchemaGenerator(SchemaGenerator):
 
         self._enhance_token_endpoint(paths)
         self._enhance_users_endpoint(paths)
+        self._enhance_users_telegram_endpoint(paths)
         self._enhance_renewal_endpoint(paths)
 
         return schema
@@ -189,6 +190,77 @@ class CustomSchemaGenerator(SchemaGenerator):
         }
         responses["404"] = {
             "description": "Not found - user with given email does not exist",
+        }
+
+    def _enhance_users_telegram_endpoint(self, paths):
+        """Ensure the GET /api/users/telegram operation has a telegram_name query parameter."""
+        user_path_item = paths.get("/api/users/telegram")
+        if not user_path_item or "get" not in user_path_item:
+            return
+
+        get_op = user_path_item["get"]
+        get_op["summary"] = "Get user details by telegram username"
+        get_op["description"] = (
+            "Retrieve user information by their Telegram username. "
+            "Returns the same response format as the email lookup endpoint."
+        )
+
+        params = get_op.setdefault("parameters", [])
+        has_telegram_param = any(
+            p.get("name") == "telegram_name" and p.get("in") == "query" for p in params
+        )
+        if not has_telegram_param:
+            params.append(
+                {
+                    "name": "telegram_name",
+                    "in": "query",
+                    "required": True,
+                    "schema": {"type": "string"},
+                    "description": "Telegram username of the user to look up (with or without @ prefix).",
+                    "example": "username123",
+                }
+            )
+
+        responses = get_op.setdefault("responses", {})
+        responses["200"] = {
+            "description": "Successfully retrieved user information",
+            "content": {
+                "application/json": {
+                    "schema": {
+                        "type": "object",
+                        "properties": {
+                            "email": {
+                                "type": "string",
+                                "format": "email",
+                                "description": "User's email address",
+                                "example": "user@example.com",
+                            },
+                            "enddate": {
+                                "type": "string",
+                                "format": "date-time",
+                                "nullable": True,
+                                "description": "User subscription expiry date (ISO 8601 format) or null",
+                                "example": "2025-12-31T23:59:59Z",
+                            },
+                        },
+                    },
+                }
+            },
+        }
+        responses["400"] = {
+            "description": "Bad request - missing telegram_name parameter",
+        }
+        responses["401"] = {
+            "description": "Unauthorized - missing or invalid JWT token",
+        }
+        responses["403"] = {
+            "description": "Forbidden - authenticated user is not an admin",
+        }
+        responses["404"] = {
+            "description": "Not found - user with given telegram username does not exist",
+        }
+        responses["500"] = {
+            "description": "Server error - error occurred while looking up user",
         }
 
     def _enhance_renewal_endpoint(self, paths):

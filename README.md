@@ -139,6 +139,7 @@ curl -X GET "http://127.0.0.1:8000/api/users?email=user@example.com" \
 |--------|----------|-------------|
 | POST | `/api/auth/token` | Get JWT access token (admin only) |
 | GET | `/api/users?email=` | Get user details by email |
+| GET | `/api/users/telegram?telegram_name=` | Get user details by telegram username |
 | POST | `/api/user/request_renew` | Submit renewal request |
 | GET | `/api/docs/` | Swagger UI documentation |
 | GET | `/api/schema/` | OpenAPI schema (JSON) |

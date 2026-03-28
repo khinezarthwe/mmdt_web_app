@@ -1,15 +1,11 @@
 import pickle
 
 import numpy as np
-from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.core.mail import send_mail
 from django.shortcuts import redirect
 from django.shortcuts import render
-from django.template.loader import render_to_string
 from django.utils import timezone
-from django.utils.html import strip_tags
 from django.views import generic
 from django.views.generic import TemplateView
 
@@ -148,25 +144,9 @@ def subscriber_request(request):
         form = SubscriberRequestForm(request.POST)
         if form.is_valid():
 
-            subscriber = form.save()
-
-            # Only send confirmation email for free waiver users
-            # Paid users receive payment instructions from the signal
-            if subscriber.free_waiver:
-                user_subject = 'Thank you for your subscription request'
-                html_message = render_to_string('emails/user_confirmation.html', {
-                    'name': subscriber.name,
-                    'plan': subscriber.get_plan_display(),
-                })
-                plain_message = strip_tags(html_message)
-                send_mail(
-                    subject=user_subject,
-                    message=plain_message,
-                    from_email=settings.EMAIL_HOST_USER,
-                    recipient_list=[subscriber.email],
-                    html_message=html_message,
-                    fail_silently=False,
-                )
+            form.save()
+            # Google Drive, Sheets, and email (with folder URL) are handled by
+            # blog.signals.handle_subscriber_request_automation for all new requests.
 
             messages.success(request, 'Your subscriber request has been submitted successfully.')
             return redirect('subscriber_request_success')

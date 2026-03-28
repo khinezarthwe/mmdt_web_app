@@ -10,21 +10,17 @@ from django.utils.html import strip_tags
 from datetime import timedelta
 
 from .models import SubscriberRequest
-from .google_api_utils import (
-    create_subscriber_folder,
-    log_to_spreadsheet
-)
+from .google_api_utils import get_or_create_subscriber_folder_url
 
 
 @receiver(post_save, sender=SubscriberRequest)
-def handle_paid_subscriber_request(sender, instance, created, **kwargs):
+def handle_subscriber_request_automation(sender, instance, created, **kwargs):
     """
-    Automate Google Drive folder creation and payment email for paid subscribers.
-
-    Triggered when a SubscriberRequest is created with free_waiver=False.
+    Automate Google Drive folder, spreadsheet row, and confirmation email for
+    all new subscriber requests (paid and fee waiver). Fee waiver applicants
+    use the same folder link to upload supporting evidence (see email template).
     """
-    # Only trigger for new requests with paid subscription
-    if not created or instance.free_waiver:
+    if not created:
         return
 
     # Prevent duplicate triggers
@@ -33,20 +29,13 @@ def handle_paid_subscriber_request(sender, instance, created, **kwargs):
 
     instance._automation_done = True
 
-    # Step 1: Create Google Drive folder
-    folder_url = create_subscriber_folder(instance)
+    # Step 1–2: Reuse folder URL from sheet if email already exists; else create folder + upsert sheet
+    folder_url = get_or_create_subscriber_folder_url(instance)
 
     if not folder_url:
-        print(f"Warning: Failed to create Google Drive folder for {instance.email}")
+        print(f"Warning: No folder URL for {instance.email} (sheet lookup and folder creation both failed or empty)")
         # TODO: Send notification to admin about failure
-        # For now, we'll continue with email even if folder creation fails
-
-    # Step 2: Log to Google Sheets
-    log_success = log_to_spreadsheet(instance, folder_url)
-
-    if not log_success:
-        print(f"Warning: Failed to log to Google Sheets for {instance.email}")
-        # TODO: Send notification to admin about failure
+        # Continue with email using placeholder link
 
     # Step 3: Send payment instructions email
     send_payment_instructions_email(instance, folder_url)
@@ -73,6 +62,7 @@ def send_payment_instructions_email(subscriber_request, folder_url):
         'plan': subscriber_request.get_plan_display(),
         'folder_url': folder_url or '#',
         'deadline': deadline_str,
+        'free_waiver': subscriber_request.free_waiver,
     }
 
     try:

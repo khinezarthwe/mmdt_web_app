@@ -250,6 +250,104 @@ def log_to_spreadsheet(subscriber_request, folder_url):
         return False
 
 
+def _find_row_number_by_email_column_b(worksheet, email):
+    """Return 1-based row number where column B matches email (case-insensitive), or None."""
+    try:
+        rows = worksheet.get_all_values()
+    except Exception as e:
+        print(f"Error reading sheet rows: {e}")
+        return None
+    target = (email or '').strip().lower()
+    for i, row in enumerate(rows, start=1):
+        if len(row) >= 2 and row[1].strip().lower() == target:
+            return i
+    return None
+
+
+def upsert_log_to_spreadsheet(subscriber_request, folder_url):
+    """
+    Insert or update a row in raw_registration for this subscriber.
+    If column B already has this email, update that row; otherwise append.
+
+    Args:
+        subscriber_request: SubscriberRequest instance
+        folder_url: Google Drive folder URL (may be empty string)
+
+    Returns:
+        bool: True if successful, False otherwise
+    """
+    try:
+        credentials = get_credentials()
+        gc = gspread.authorize(credentials)
+
+        spreadsheet = gc.open_by_key(SPREADSHEET_ID)
+        worksheet = spreadsheet.worksheet('raw_registration')
+
+        plan_display = subscriber_request.get_plan_display()
+        row_data = [
+            subscriber_request.name,
+            subscriber_request.email,
+            subscriber_request.telegram_username or '',
+            subscriber_request.country,
+            plan_display,
+            subscriber_request.get_status_display(),
+            subscriber_request.created_at.strftime('%b. %-d, %Y, %-I:%M %p'),
+            folder_url or '',
+        ]
+
+        row_num = _find_row_number_by_email_column_b(worksheet, subscriber_request.email)
+        if row_num:
+            worksheet.update(
+                f'A{row_num}:H{row_num}',
+                [row_data],
+                value_input_option='USER_ENTERED',
+            )
+        else:
+            worksheet.append_row(row_data)
+
+        return True
+
+    except FileNotFoundError as e:
+        print(f"Service account file not found: {e}")
+        return False
+    except Exception as e:
+        print(f"Error upserting to Google Sheet: {e}")
+        return False
+
+
+def get_or_create_subscriber_folder_url(subscriber_request):
+    """
+    For new subscriber requests:
+    1. If raw_registration already has this email with a folder URL (column H), reuse it
+       (``find_url_in_spreadsheet``).
+    2. Otherwise get or create the folder under the cohort (``get_folder_upload_url``:
+       searches Drive by ``fullname|email``, then creates if missing).
+    3. Upsert the spreadsheet row (update existing row or append).
+
+    Args:
+        subscriber_request: SubscriberRequest instance
+
+    Returns:
+        str: Folder URL, or None if folder creation failed and no existing URL in sheet.
+    """
+    try:
+        existing_url = find_url_in_spreadsheet(
+            subscriber_request.email, update_status=False
+        )
+        if existing_url:
+            upsert_log_to_spreadsheet(subscriber_request, existing_url)
+            return existing_url
+
+        # Same as renewal path: prefer an existing Drive folder (name|email) before creating
+        folder_url = get_folder_upload_url(subscriber_request)
+        upsert_log_to_spreadsheet(subscriber_request, folder_url or '')
+        return folder_url
+
+    except Exception as e:
+        print(f"Error in get_or_create_subscriber_folder_url: {e}")
+        return None
+
+
 def get_folder_upload_url(subscriber_request):
     """
     Get the upload URL for an existing subscriber's folder.

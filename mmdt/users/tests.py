@@ -106,12 +106,12 @@ class UserDetailByTelegramAPITests(TestCase):
 
     def setUp(self):
         # Mock Google API functions to prevent actual API calls during tests
-        patcher1 = patch('blog.signals.create_subscriber_folder', return_value='https://drive.google.com/mock-folder')
-        patcher2 = patch('blog.signals.log_to_spreadsheet', return_value=True)
-        self.mock_create_folder = patcher1.start()
-        self.mock_log_sheet = patcher2.start()
-        self.addCleanup(patcher1.stop)
-        self.addCleanup(patcher2.stop)
+        patcher = patch(
+            'blog.signals.get_or_create_subscriber_folder_url',
+            return_value='https://drive.google.com/mock-folder',
+        )
+        self.mock_get_folder_url = patcher.start()
+        self.addCleanup(patcher.stop)
 
         self.client = APIClient()
         self.admin_user = User.objects.create_superuser(
@@ -194,12 +194,12 @@ class UserProfileModelTest(TestCase):
     def setUp(self):
         """Set up test data."""
         # Mock Google API functions to prevent actual API calls during tests
-        patcher1 = patch('blog.signals.create_subscriber_folder', return_value='https://drive.google.com/mock-folder')
-        patcher2 = patch('blog.signals.log_to_spreadsheet', return_value=True)
-        self.mock_create_folder = patcher1.start()
-        self.mock_log_sheet = patcher2.start()
-        self.addCleanup(patcher1.stop)
-        self.addCleanup(patcher2.stop)
+        patcher = patch(
+            'blog.signals.get_or_create_subscriber_folder_url',
+            return_value='https://drive.google.com/mock-folder',
+        )
+        self.mock_get_folder_url = patcher.start()
+        self.addCleanup(patcher.stop)
 
         self.user = User.objects.create_user(
             username='testuser',
@@ -294,12 +294,12 @@ class UserRenewalRequestAPITests(TestCase):
 
     def setUp(self):
         # Mock Google API functions to prevent actual API calls during tests
-        patcher1 = patch('blog.signals.create_subscriber_folder', return_value='https://drive.google.com/mock-folder')
-        patcher2 = patch('blog.signals.log_to_spreadsheet', return_value=True)
-        self.mock_create_folder = patcher1.start()
-        self.mock_log_sheet = patcher2.start()
-        self.addCleanup(patcher1.stop)
-        self.addCleanup(patcher2.stop)
+        patcher = patch(
+            'blog.signals.get_or_create_subscriber_folder_url',
+            return_value='https://drive.google.com/mock-folder',
+        )
+        self.mock_get_folder_url = patcher.start()
+        self.addCleanup(patcher.stop)
 
         self.client = APIClient()
         now = timezone.now()
@@ -521,12 +521,12 @@ class SubscriberRequestSignalTest(TestCase):
     def setUp(self):
         """Set up test data."""
         # Mock Google API functions to prevent actual API calls during tests
-        patcher1 = patch('blog.signals.create_subscriber_folder', return_value='https://drive.google.com/mock-folder')
-        patcher2 = patch('blog.signals.log_to_spreadsheet', return_value=True)
-        self.mock_create_folder = patcher1.start()
-        self.mock_log_sheet = patcher2.start()
-        self.addCleanup(patcher1.stop)
-        self.addCleanup(patcher2.stop)
+        patcher = patch(
+            'blog.signals.get_or_create_subscriber_folder_url',
+            return_value='https://drive.google.com/mock-folder',
+        )
+        self.mock_get_folder_url = patcher.start()
+        self.addCleanup(patcher.stop)
 
         now = timezone.now()
         self.cohort = Cohort.objects.create(

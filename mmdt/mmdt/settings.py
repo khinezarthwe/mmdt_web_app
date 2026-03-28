@@ -216,6 +216,10 @@ log_dir = os.path.join(BASE_DIR, 'logs')
 if not os.path.exists(log_dir):
     os.makedirs(log_dir)
 
+_google_api_utils_handlers = ['timed_rotate_file']
+if DEBUG:
+    _google_api_utils_handlers.append('console')
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -226,6 +230,10 @@ LOGGING = {
             'when': 'midnight',  # Rotate log file at midnight, effectively once a day
             'interval': 1,  # Interval set to 1, combined with 'midnight' means once a day
             'backupCount': 30,  # Keep last 5 files
+            'formatter': 'verbose',
+        },
+        'console': {
+            'class': 'logging.StreamHandler',
             'formatter': 'verbose',
         },
     },
@@ -240,6 +248,11 @@ LOGGING = {
             'handlers': ['timed_rotate_file'],
             'level': 'INFO',
             'propagate': True,
+        },
+        'blog.google_api_utils': {
+            'handlers': _google_api_utils_handlers,
+            'level': 'INFO',
+            'propagate': False,
         },
     },
 }

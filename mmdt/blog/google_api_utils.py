@@ -2,6 +2,7 @@
 Google Drive and Sheets API utilities for subscriber automation.
 Uses OAuth 2.0 flow with token caching.
 """
+import logging
 import os
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
@@ -10,6 +11,7 @@ from googleapiclient.discovery import build
 import gspread
 from django.conf import settings
 
+logger = logging.getLogger(__name__)
 
 PARENT_FOLDER_ID = getattr(settings, "GOOGLE_PARENT_FOLDER_ID", "")
 SPREADSHEET_ID = getattr(settings, "GOOGLE_SPREADSHEET_ID", "")
@@ -50,7 +52,7 @@ def get_credentials():
         try:
             creds = Credentials.from_authorized_user_file(TOKEN_FILE, SCOPES)
         except Exception as e:
-            print(f"Warning: Failed to load saved tokens: {e}")
+            logger.warning("Failed to load saved tokens: %s", e)
             creds = None
 
     # If no valid credentials, get new ones
@@ -60,7 +62,7 @@ def get_credentials():
             try:
                 creds.refresh(Request())
             except Exception as e:
-                print(f"Warning: Failed to refresh token: {e}")
+                logger.warning("Failed to refresh token: %s", e)
                 creds = None
 
         if not creds:
@@ -77,7 +79,7 @@ def get_credentials():
                 )
                 creds = flow.run_local_server(port=0)
             except Exception as e:
-                print(f"Error during OAuth flow: {e}")
+                logger.error("Error during OAuth flow: %s", e)
                 raise
 
         # Save tokens for next time
@@ -85,7 +87,7 @@ def get_credentials():
             with open(TOKEN_FILE, 'w') as token:
                 token.write(creds.to_json())
         except Exception as e:
-            print(f"Warning: Failed to save tokens: {e}")
+            logger.warning("Failed to save tokens: %s", e)
 
     return creds
 
@@ -148,13 +150,19 @@ def create_subscriber_folder(subscriber_request):
                 sendNotificationEmail=False
             ).execute()
 
+        logger.info(
+            "Drive folder created for subscriber email=%s spreadsheet_id=%s folder_id=%s",
+            subscriber_request.email,
+            SPREADSHEET_ID or "(unset)",
+            folder_id,
+        )
         return folder_url
 
     except FileNotFoundError as e:
-        print(f"Service account file not found: {e}")
+        logger.error("OAuth client secret not found while creating folder: %s", e)
         return None
     except Exception as e:
-        print(f"Error creating Google Drive folder: {e}")
+        logger.exception("Error creating Google Drive folder for email=%s", getattr(subscriber_request, "email", ""))
         return None
 
 
@@ -239,14 +247,24 @@ def log_to_spreadsheet(subscriber_request, folder_url):
 
         # Append row to sheet
         worksheet.append_row(row_data)
+        logger.info(
+            "Sheet append raw_registration email=%s spreadsheet_id=%s column_H_has_url=%s",
+            subscriber_request.email,
+            SPREADSHEET_ID or "(unset)",
+            bool(folder_url),
+        )
 
         return True
 
     except FileNotFoundError as e:
-        print(f"Service account file not found: {e}")
+        logger.error("OAuth credentials missing for log_to_spreadsheet: %s", e)
         return False
     except Exception as e:
-        print(f"Error logging to Google Sheet: {e}")
+        logger.exception(
+            "log_to_spreadsheet failed email=%s spreadsheet_id=%s",
+            getattr(subscriber_request, "email", ""),
+            SPREADSHEET_ID or "(unset)",
+        )
         return False
 
 
@@ -255,7 +273,7 @@ def _find_row_number_by_email_column_b(worksheet, email):
     try:
         rows = worksheet.get_all_values()
     except Exception as e:
-        print(f"Error reading sheet rows: {e}")
+        logger.warning("Error reading sheet rows for email lookup: %s", e)
         return None
     target = (email or '').strip().lower()
     for i, row in enumerate(rows, start=1):
@@ -302,16 +320,35 @@ def upsert_log_to_spreadsheet(subscriber_request, folder_url):
                 [row_data],
                 value_input_option='USER_ENTERED',
             )
+            logger.info(
+                "Sheet upsert UPDATE row=%s worksheet=raw_registration email=%s "
+                "spreadsheet_id=%s column_H_has_url=%s",
+                row_num,
+                subscriber_request.email,
+                SPREADSHEET_ID or "(unset)",
+                bool(folder_url),
+            )
         else:
             worksheet.append_row(row_data)
+            logger.info(
+                "Sheet upsert APPEND worksheet=raw_registration email=%s spreadsheet_id=%s "
+                "column_H_has_url=%s",
+                subscriber_request.email,
+                SPREADSHEET_ID or "(unset)",
+                bool(folder_url),
+            )
 
         return True
 
     except FileNotFoundError as e:
-        print(f"Service account file not found: {e}")
+        logger.error("OAuth credentials missing for upsert_log_to_spreadsheet: %s", e)
         return False
     except Exception as e:
-        print(f"Error upserting to Google Sheet: {e}")
+        logger.exception(
+            "upsert_log_to_spreadsheet failed email=%s spreadsheet_id=%s",
+            getattr(subscriber_request, "email", ""),
+            SPREADSHEET_ID or "(unset)",
+        )
         return False
 
 
@@ -335,16 +372,31 @@ def get_or_create_subscriber_folder_url(subscriber_request):
             subscriber_request.email, update_status=False
         )
         if existing_url:
+            logger.info(
+                "Subscriber folder: reused URL from sheet column H email=%s spreadsheet_id=%s",
+                subscriber_request.email,
+                SPREADSHEET_ID or "(unset)",
+            )
             upsert_log_to_spreadsheet(subscriber_request, existing_url)
             return existing_url
 
         # Same as renewal path: prefer an existing Drive folder (name|email) before creating
         folder_url = get_folder_upload_url(subscriber_request)
+        logger.info(
+            "Subscriber folder: resolved from Drive (existing or new) email=%s spreadsheet_id=%s "
+            "has_url=%s",
+            subscriber_request.email,
+            SPREADSHEET_ID or "(unset)",
+            bool(folder_url),
+        )
         upsert_log_to_spreadsheet(subscriber_request, folder_url or '')
         return folder_url
 
     except Exception as e:
-        print(f"Error in get_or_create_subscriber_folder_url: {e}")
+        logger.exception(
+            "get_or_create_subscriber_folder_url failed email=%s",
+            getattr(subscriber_request, "email", ""),
+        )
         return None
 
 
@@ -388,17 +440,28 @@ def get_folder_upload_url(subscriber_request):
         files = results.get('files', [])
 
         if files:
-            # Folder exists, return its URL
-            return files[0].get('webViewLink')
-        else:
-            # Folder doesn't exist, create it
-            return create_subscriber_folder(subscriber_request)
+            url = files[0].get('webViewLink')
+            logger.info(
+                "Drive folder found by name email=%s spreadsheet_id=%s",
+                subscriber_request.email,
+                SPREADSHEET_ID or "(unset)",
+            )
+            return url
+        logger.info(
+            "Drive folder not found; creating new email=%s spreadsheet_id=%s",
+            subscriber_request.email,
+            SPREADSHEET_ID or "(unset)",
+        )
+        return create_subscriber_folder(subscriber_request)
 
     except FileNotFoundError as e:
-        print(f"Service account file not found: {e}")
+        logger.error("OAuth credentials missing for get_folder_upload_url: %s", e)
         return None
     except Exception as e:
-        print(f"Error getting folder upload URL: {e}")
+        logger.exception(
+            "get_folder_upload_url failed email=%s",
+            getattr(subscriber_request, "email", ""),
+        )
         return None
 
 
@@ -432,14 +495,36 @@ def find_url_in_spreadsheet(email, update_status=False, plan=None):
                     if plan:
                         worksheet.update_cell(cell.row, 5, plan)
                     worksheet.update_cell(cell.row, 6, 'Renewal Requested')
+                logger.info(
+                    "Sheet lookup: folder URL in column H row=%s email=%s spreadsheet_id=%s "
+                    "update_status=%s",
+                    cell.row,
+                    email,
+                    SPREADSHEET_ID or "(unset)",
+                    update_status,
+                )
                 return row_values[7]
 
+        logger.info(
+            "Sheet lookup: no folder URL in column H for email=%s spreadsheet_id=%s",
+            email,
+            SPREADSHEET_ID or "(unset)",
+        )
         return None
 
     except gspread.exceptions.CellNotFound:
+        logger.info(
+            "Sheet lookup: email not found in column B email=%s spreadsheet_id=%s",
+            email,
+            SPREADSHEET_ID or "(unset)",
+        )
         return None
     except Exception as e:
-        print(f"Error searching spreadsheet: {e}")
+        logger.exception(
+            "find_url_in_spreadsheet failed email=%s spreadsheet_id=%s",
+            email,
+            SPREADSHEET_ID or "(unset)",
+        )
         return None
 
 
@@ -478,11 +563,23 @@ def log_renewal_to_spreadsheet(subscriber_request, folder_url, plan):
         ]
 
         worksheet.append_row(row_data)
+        logger.info(
+            "Renewal sheet APPEND worksheet=raw_registration email=%s spreadsheet_id=%s plan=%s "
+            "column_H_has_url=%s",
+            subscriber_request.email,
+            SPREADSHEET_ID or "(unset)",
+            plan,
+            bool(folder_url),
+        )
 
         return True
 
     except Exception as e:
-        print(f"Error logging renewal to Google Sheet: {e}")
+        logger.exception(
+            "log_renewal_to_spreadsheet failed email=%s spreadsheet_id=%s",
+            getattr(subscriber_request, "email", ""),
+            SPREADSHEET_ID or "(unset)",
+        )
         return False
 
 
@@ -507,16 +604,36 @@ def get_or_create_renewal_url(subscriber_request, plan):
         # First, check if URL exists in spreadsheet and update status/plan if found
         existing_url = find_url_in_spreadsheet(subscriber_request.email, update_status=True, plan=plan)
         if existing_url:
+            logger.info(
+                "Renewal: reused folder URL from sheet email=%s spreadsheet_id=%s plan=%s",
+                subscriber_request.email,
+                SPREADSHEET_ID or "(unset)",
+                plan,
+            )
             return (existing_url, True)
 
         # No existing entry, create folder and log to sheet
         folder_url = get_folder_upload_url(subscriber_request)
         if folder_url:
             log_renewal_to_spreadsheet(subscriber_request, folder_url, plan)
+            logger.info(
+                "Renewal: new Drive resolution + sheet append email=%s spreadsheet_id=%s plan=%s",
+                subscriber_request.email,
+                SPREADSHEET_ID or "(unset)",
+                plan,
+            )
             return (folder_url, False)
 
+        logger.error(
+            "Renewal: no folder URL from Drive email=%s spreadsheet_id=%s",
+            subscriber_request.email,
+            SPREADSHEET_ID or "(unset)",
+        )
         return (None, False)
 
     except Exception as e:
-        print(f"Error in get_or_create_renewal_url: {e}")
+        logger.exception(
+            "get_or_create_renewal_url failed email=%s",
+            getattr(subscriber_request, "email", ""),
+        )
         return (None, False)

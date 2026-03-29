@@ -1,6 +1,7 @@
 from datetime import timedelta
 from unittest.mock import patch
 
+from django.contrib.auth import get_user_model
 from django.test import TestCase, Client
 from django.contrib.auth.models import User
 from django.urls import reverse
@@ -8,6 +9,8 @@ from django.utils import timezone
 from django.core import mail
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.conf import settings
+from rest_framework.test import APIClient
+from rest_framework_simplejwt.tokens import AccessToken
 
 from .models import Post, Comment, SubscriberRequest, Cohort
 from .forms import CommentForm, SubscriberRequestForm, FeedbackAnalyzerForm
@@ -750,3 +753,91 @@ class IntegrationTest(TestCase):
         self.assertEqual(subscriber.name, 'Integration Subscriber')
         self.assertEqual(subscriber.plan, 'annual')
         self.assertIsNotNone(subscriber.expiry_date)
+
+
+class CohortAPITests(TestCase):
+    """Test cases for cohort-related API behavior."""
+
+    def setUp(self):
+        patcher = patch(
+            'blog.signals.get_or_create_subscriber_folder_url',
+            return_value='https://drive.google.com/mock-folder',
+        )
+        self.mock_get_folder_url = patcher.start()
+        self.addCleanup(patcher.stop)
+
+        self.client = APIClient()
+        self.admin_user = get_user_model().objects.create_superuser(
+            username="admin",
+            email="admin@example.com",
+            password="admin-pass-123",
+        )
+
+        now = timezone.now()
+        self.cohort = Cohort.objects.create(
+            cohort_id='TEST_COHORT_API',
+            name='Test Cohort API',
+            reg_start_date=now - timedelta(days=1),
+            reg_end_date=now + timedelta(days=30),
+            exp_date_6=now + timedelta(days=180),
+            exp_date_12=now + timedelta(days=365),
+            is_active=True,
+        )
+
+        self.subscriber = SubscriberRequest.objects.create(
+            name='Cohort API User',
+            email='cohortapi@example.com',
+            country='Myanmar',
+            city='Yangon',
+            telegram_username='cohort_tg',
+            status='approved',
+            cohort=self.cohort,
+        )
+
+        self.user = get_user_model().objects.get(email='cohortapi@example.com')
+        self.user.profile.expiry_date = now + timedelta(days=30)
+        self.user.profile.save()
+
+        access_token = AccessToken.for_user(self.admin_user)
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {access_token}")
+
+    def test_telegram_endpoint_registration_open(self):
+        """Telegram endpoint returns registration_open=True when an active cohort exists."""
+        response = self.client.get(
+            "/api/users/telegram", {"telegram_name": "cohort_tg"}
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.data["registration_open"])
+
+    def test_telegram_endpoint_registration_closed(self):
+        """Telegram endpoint returns registration_open=False when no active cohort exists."""
+        self.cohort.is_active = False
+        self.cohort.save()
+
+        response = self.client.get(
+            "/api/users/telegram", {"telegram_name": "cohort_tg"}
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(response.data["registration_open"])
+
+    @patch('api.views.get_or_create_renewal_url')
+    def test_renewal_rejected_when_no_active_cohort(self, mock_renewal_url):
+        """Renewal returns 403 when no active cohort registration window is open."""
+        self.cohort.is_active = False
+        self.cohort.save()
+
+        response = self.client.post(
+            "/api/user/request_renew",
+            {
+                "email": "cohortapi@example.com",
+                "telegram_name": "cohort_tg",
+                "plan": "6month",
+            },
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.data["status"], "error")
+        self.assertIn("Registration is currently closed", response.data["message"])

@@ -240,7 +240,9 @@ class UserRenewalRequestView(APIView):
                 status=status.HTTP_409_CONFLICT,
             )
 
-        upload_url, is_existing = get_or_create_renewal_url(subscriber, plan)
+        upload_url, is_existing = get_or_create_renewal_url(
+            subscriber, plan, user_profile=profile
+        )
 
         if not upload_url:
             logger.error("Failed to generate upload URL for user_id=%s", user.pk)
@@ -328,7 +330,11 @@ class UserRenewalRequestView(APIView):
     def _get_profile_and_subscriber(self, user):
         """Get user profile and linked subscriber request."""
         try:
-            profile = user.profile
+            profile = UserProfile.objects.select_related(
+                'current_cohort',
+                'subscriber_request',
+                'subscriber_request__cohort',
+            ).get(user_id=user.pk)
             subscriber = profile.subscriber_request
             if not subscriber:
                 raise UserProfile.DoesNotExist

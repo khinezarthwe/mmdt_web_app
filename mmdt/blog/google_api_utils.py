@@ -2,14 +2,21 @@
 Google Drive and Sheets API utilities for subscriber automation.
 Uses OAuth 2.0 flow with token caching.
 """
+from __future__ import annotations
+
 import logging
 import os
+from typing import TYPE_CHECKING, Optional
+
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 import gspread
 from django.conf import settings
+
+if TYPE_CHECKING:
+    from users.models import UserProfile
 
 logger = logging.getLogger(__name__)
 
@@ -30,6 +37,48 @@ SCOPES = [
     'https://www.googleapis.com/auth/drive',
     'https://www.googleapis.com/auth/spreadsheets',
 ]
+
+NO_COHORT_FOLDER_NAME = "NO_COHORT"
+
+
+def resolve_drive_cohort_id(
+    subscriber_request,
+    user_profile: Optional["UserProfile"] = None,
+) -> str:
+    """
+    Cohort folder name under PARENT_FOLDER_ID (same string used for Drive folder name).
+
+    Prefer ``SubscriberRequest.cohort`` (new signups). For renewals, the original
+    request may have no cohort while ``UserProfile.current_cohort`` is set — use that.
+    """
+    cohort = getattr(subscriber_request, "cohort", None)
+    if cohort is not None:
+        cid = cohort.cohort_id
+        logger.debug(
+            "resolve_drive_cohort_id: SubscriberRequest.cohort_id=%s email=%s",
+            cid,
+            subscriber_request.email,
+        )
+        return cid
+
+    if user_profile is not None:
+        current = getattr(user_profile, "current_cohort", None)
+        if current is not None:
+            cid = current.cohort_id
+            logger.info(
+                "resolve_drive_cohort_id: UserProfile.current_cohort=%s "
+                "(SubscriberRequest.cohort unset) email=%s",
+                cid,
+                subscriber_request.email,
+            )
+            return cid
+
+    logger.warning(
+        "resolve_drive_cohort_id: using %s (no cohort on SubscriberRequest or profile) email=%s",
+        NO_COHORT_FOLDER_NAME,
+        subscriber_request.email,
+    )
+    return NO_COHORT_FOLDER_NAME
 
 
 def get_credentials():
@@ -92,12 +141,13 @@ def get_credentials():
     return creds
 
 
-def create_subscriber_folder(subscriber_request):
+def create_subscriber_folder(subscriber_request, user_profile: Optional["UserProfile"] = None):
     """
     Create Google Drive folder for subscriber and set permissions.
 
     Args:
         subscriber_request: SubscriberRequest instance
+        user_profile: Optional UserProfile (pass for renewals when ``subscriber_request.cohort`` may be null)
 
     Returns:
         str: URL of the created folder, or None if creation fails
@@ -106,11 +156,8 @@ def create_subscriber_folder(subscriber_request):
         credentials = get_credentials()
         drive_service = build('drive', 'v3', credentials=credentials)
 
-        # Create cohort folder if it doesn't exist
-        cohort_folder_id = get_or_create_cohort_folder(
-            drive_service,
-            subscriber_request.cohort.cohort_id if hasattr(subscriber_request, 'cohort') and subscriber_request.cohort else 'NO_COHORT'
-        )
+        cohort_id = resolve_drive_cohort_id(subscriber_request, user_profile)
+        cohort_folder_id = get_or_create_cohort_folder(drive_service, cohort_id)
 
         # Create user folder: fullname|email
         folder_name = f"{subscriber_request.name}|{subscriber_request.email}"
@@ -400,13 +447,17 @@ def get_or_create_subscriber_folder_url(subscriber_request):
         return None
 
 
-def get_folder_upload_url(subscriber_request):
+def get_folder_upload_url(
+    subscriber_request,
+    user_profile: Optional["UserProfile"] = None,
+):
     """
     Get the upload URL for an existing subscriber's folder.
     If the folder doesn't exist, creates it.
 
     Args:
         subscriber_request: SubscriberRequest instance
+        user_profile: Optional UserProfile (renewals: supply so cohort matches profile when request has no cohort)
 
     Returns:
         str: URL of the folder for uploading, or None if operation fails
@@ -415,11 +466,8 @@ def get_folder_upload_url(subscriber_request):
         credentials = get_credentials()
         drive_service = build('drive', 'v3', credentials=credentials)
 
-        # Create cohort folder if it doesn't exist
-        cohort_folder_id = get_or_create_cohort_folder(
-            drive_service,
-            subscriber_request.cohort.cohort_id if hasattr(subscriber_request, 'cohort') and subscriber_request.cohort else 'NO_COHORT'
-        )
+        cohort_id = resolve_drive_cohort_id(subscriber_request, user_profile)
+        cohort_folder_id = get_or_create_cohort_folder(drive_service, cohort_id)
 
         # Search for existing user folder: fullname|email
         folder_name = f"{subscriber_request.name}|{subscriber_request.email}"
@@ -452,7 +500,7 @@ def get_folder_upload_url(subscriber_request):
             subscriber_request.email,
             SPREADSHEET_ID or "(unset)",
         )
-        return create_subscriber_folder(subscriber_request)
+        return create_subscriber_folder(subscriber_request, user_profile=user_profile)
 
     except FileNotFoundError as e:
         logger.error("OAuth credentials missing for get_folder_upload_url: %s", e)
@@ -583,7 +631,11 @@ def log_renewal_to_spreadsheet(subscriber_request, folder_url, plan):
         return False
 
 
-def get_or_create_renewal_url(subscriber_request, plan):
+def get_or_create_renewal_url(
+    subscriber_request,
+    plan,
+    user_profile: Optional["UserProfile"] = None,
+):
     """
     Get existing URL from spreadsheet or create new folder and log to sheet.
 
@@ -595,6 +647,7 @@ def get_or_create_renewal_url(subscriber_request, plan):
     Args:
         subscriber_request: SubscriberRequest instance
         plan: Renewal plan selected
+        user_profile: UserProfile for the renewing user (used for Drive cohort when request has no cohort)
 
     Returns:
         tuple: (folder_url, is_existing) where is_existing indicates if URL was from sheet
@@ -613,7 +666,7 @@ def get_or_create_renewal_url(subscriber_request, plan):
             return (existing_url, True)
 
         # No existing entry, create folder and log to sheet
-        folder_url = get_folder_upload_url(subscriber_request)
+        folder_url = get_folder_upload_url(subscriber_request, user_profile=user_profile)
         if folder_url:
             log_renewal_to_spreadsheet(subscriber_request, folder_url, plan)
             logger.info(

@@ -10,7 +10,7 @@ from rest_framework import permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import AccessToken
-from blog.models import SubscriberRequest 
+from blog.models import Cohort, SubscriberRequest
 from blog.google_api_utils import get_or_create_renewal_url
 from users.models import UserProfile
 
@@ -178,10 +178,13 @@ class UserDetailByTelegramView(APIView):
         except UserProfile.DoesNotExist:
             enddate = None
 
+        registration_open = Cohort.get_active_cohort() is not None
+
         logger.info("User detail returned for telegram=%s, email=%s, enddate=%s", telegram_name, user.email, enddate)
         return Response({
             "email": user.email,
             "enddate": enddate,
+            "registration_open": registration_open,
         })
 
 
@@ -204,6 +207,14 @@ class UserRenewalRequestView(APIView):
             return Response(
                 {"status": "error", "message": str(first_error)},
                 status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        active_cohort = Cohort.get_active_cohort()
+        if not active_cohort:
+            logger.info("Renewal request rejected: no active cohort registration window is open")
+            return Response(
+                {"status": "error", "message": "Registration is currently closed. No active cohort registration window is open."},
+                status=status.HTTP_403_FORBIDDEN,
             )
 
         email = serializer.validated_data.get("email")

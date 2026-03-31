@@ -202,7 +202,8 @@ class CustomSchemaGenerator(SchemaGenerator):
         get_op["summary"] = "Get user details by telegram username"
         get_op["description"] = (
             "Retrieve user information by their Telegram username. "
-            "Returns the same response format as the email lookup endpoint."
+            "Returns the same response format as the email lookup endpoint, "
+            "plus a registration_open flag indicating whether cohort registration is currently open."
         )
 
         params = get_op.setdefault("parameters", [])
@@ -241,6 +242,11 @@ class CustomSchemaGenerator(SchemaGenerator):
                                 "nullable": True,
                                 "description": "User subscription expiry date (ISO 8601 format) or null",
                                 "example": "2025-12-31T23:59:59Z",
+                            },
+                            "registration_open": {
+                                "type": "boolean",
+                                "description": "Whether cohort registration is currently open",
+                                "example": True,
                             },
                         },
                     },
@@ -356,14 +362,17 @@ class CustomSchemaGenerator(SchemaGenerator):
             "description": "Unauthorized - missing or invalid JWT token",
         }
         responses["403"] = {
-            "description": "Forbidden - user account is not active",
+            "description": "Forbidden - user account is not active or no active cohort registration window is open",
             "content": {
                 "application/json": {
                     "schema": {
                         "type": "object",
                         "properties": {
                             "status": {"type": "string", "example": "error"},
-                            "message": {"type": "string", "example": "User account is not active."},
+                            "message": {
+                                "type": "string",
+                                "description": "Either 'User account is not active.' or 'Registration is currently closed. No active cohort registration window is open.'",
+                            },
                         },
                     },
                 }

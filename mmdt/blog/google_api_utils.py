@@ -576,14 +576,16 @@ def find_url_in_spreadsheet(email, update_status=False, plan=None):
         return None
 
 
-def log_renewal_to_spreadsheet(subscriber_request, folder_url, plan):
+def upsert_renewal_to_spreadsheet(subscriber_request, folder_url, plan):
     """
-    Log renewal request data to Google Sheet.
+    Insert or update a renewal row in raw_registration (key: email in column B).
+
+    Always upserts so duplicate API calls or retries cannot create two rows for the same email.
 
     Args:
         subscriber_request: SubscriberRequest instance
         folder_url: URL of the Google Drive folder
-        plan: Renewal plan selected
+        plan: Renewal plan selected (e.g. '6month', 'annual')
 
     Returns:
         bool: True if successful, False otherwise
@@ -597,7 +599,6 @@ def log_renewal_to_spreadsheet(subscriber_request, folder_url, plan):
 
         from django.utils import timezone
 
-        # Prepare row data:
         # name, email, tele_name, country, plan, status, created_at, payment_url
         row_data = [
             subscriber_request.name,
@@ -607,24 +608,40 @@ def log_renewal_to_spreadsheet(subscriber_request, folder_url, plan):
             plan,
             'Renewal Requested',
             timezone.now().strftime('%b. %-d, %Y, %-I:%M %p'),
-            folder_url or ''
+            folder_url or '',
         ]
 
-        worksheet.append_row(row_data)
-        logger.info(
-            "Renewal sheet APPEND worksheet=raw_registration email=%s spreadsheet_id=%s plan=%s "
-            "column_H_has_url=%s",
-            subscriber_request.email,
-            SPREADSHEET_ID or "(unset)",
-            plan,
-            bool(folder_url),
-        )
+        row_num = _find_row_number_by_email_column_b(worksheet, subscriber_request.email)
+        if row_num:
+            worksheet.update(
+                f'A{row_num}:H{row_num}',
+                [row_data],
+                value_input_option='USER_ENTERED',
+            )
+            logger.info(
+                "Renewal sheet upsert UPDATE row=%s email=%s spreadsheet_id=%s plan=%s "
+                "column_H_has_url=%s",
+                row_num,
+                subscriber_request.email,
+                SPREADSHEET_ID or "(unset)",
+                plan,
+                bool(folder_url),
+            )
+        else:
+            worksheet.append_row(row_data)
+            logger.info(
+                "Renewal sheet upsert APPEND email=%s spreadsheet_id=%s plan=%s column_H_has_url=%s",
+                subscriber_request.email,
+                SPREADSHEET_ID or "(unset)",
+                plan,
+                bool(folder_url),
+            )
 
         return True
 
     except Exception as e:
         logger.exception(
-            "log_renewal_to_spreadsheet failed email=%s spreadsheet_id=%s",
+            "upsert_renewal_to_spreadsheet failed email=%s spreadsheet_id=%s",
             getattr(subscriber_request, "email", ""),
             SPREADSHEET_ID or "(unset)",
         )
@@ -642,7 +659,7 @@ def get_or_create_renewal_url(
     For renewal requests:
     1. First checks if user already has an entry in the spreadsheet
     2. If found, updates status to 'Renewal Requested' and returns the existing folder URL
-    3. If not found, creates folder, logs to spreadsheet, and returns URL
+    3. If not found, creates folder, upserts spreadsheet row (by email), and returns URL
 
     Args:
         subscriber_request: SubscriberRequest instance
@@ -668,9 +685,9 @@ def get_or_create_renewal_url(
         # No existing entry, create folder and log to sheet
         folder_url = get_folder_upload_url(subscriber_request, user_profile=user_profile)
         if folder_url:
-            log_renewal_to_spreadsheet(subscriber_request, folder_url, plan)
+            upsert_renewal_to_spreadsheet(subscriber_request, folder_url, plan)
             logger.info(
-                "Renewal: new Drive resolution + sheet append email=%s spreadsheet_id=%s plan=%s",
+                "Renewal: new Drive resolution + sheet upsert email=%s spreadsheet_id=%s plan=%s",
                 subscriber_request.email,
                 SPREADSHEET_ID or "(unset)",
                 plan,

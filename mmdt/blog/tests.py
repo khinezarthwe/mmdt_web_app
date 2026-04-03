@@ -353,6 +353,7 @@ class SubscriberRequestFormTest(TestCase):
             'email': 'existing@example.com',  # Duplicate email
             'country': 'Myanmar',
             'city': 'Yangon',
+            'telegram_username': 'someuser',
             'plan': '6month'
         }
         form = SubscriberRequestForm(data=form_data)
@@ -363,13 +364,14 @@ class SubscriberRequestFormTest(TestCase):
         """Test subscriber request form with missing required fields."""
         form_data = {
             'name': 'Test Subscriber',
-            # Missing email, country, city
+            # Missing email, country, city, telegram_username
         }
         form = SubscriberRequestForm(data=form_data)
         self.assertFalse(form.is_valid())
         self.assertIn('email', form.errors)
         self.assertIn('country', form.errors)
         self.assertIn('city', form.errors)
+        self.assertIn('telegram_username', form.errors)
 
 
 class FeedbackAnalyzerFormTest(TestCase):
@@ -579,6 +581,7 @@ class SubscriberRequestViewTest(TestCase):
             'email': 'subscriber@example.com',
             'country': 'Myanmar',
             'city': 'Yangon',
+            'telegram_username': 'testuser',
             'plan': '6month'
         }
         
@@ -595,6 +598,7 @@ class SubscriberRequestViewTest(TestCase):
             'email': 'subscriber@example.com',
             'country': 'Myanmar',
             'city': 'Yangon',
+            'telegram_username': 'testuser',
             'plan': '6month'
         }
 
@@ -741,6 +745,7 @@ class IntegrationTest(TestCase):
             'email': 'integration@example.com',
             'country': 'Myanmar',
             'city': 'Yangon',
+            'telegram_username': 'integration_user',
             'plan': 'annual'
         }
         

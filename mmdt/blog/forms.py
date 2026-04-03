@@ -32,12 +32,19 @@ class SubscriberRequestForm(forms.ModelForm):
         self.fields['city'].widget.attrs['placeholder'] = 'Current residing city'
         self.fields['job_title'].widget.attrs['placeholder'] = 'Job Title'
         self.fields['telegram_username'].widget.attrs['placeholder'] = 'Telegram Username (e.g., @username)'
+        self.fields['telegram_username'].required = True
         self.fields['message'].widget.attrs['placeholder'] = \
             'If you are applying for a fee waiver, please write your message here.'
         self.fields['plan'].widget.attrs['class'] = 'form-control'
         # Add empty option and make plan required
         self.fields['plan'].choices = [('', '- Select Plan -')] + list(SubscriberRequest.PLAN_CHOICES)
         self.fields['plan'].required = True
+
+    def clean_telegram_username(self):
+        value = (self.cleaned_data.get('telegram_username') or '').strip()
+        if not value:
+            raise ValidationError('Telegram username is required.')
+        return value
 
     def clean(self):
         cleaned_data = super().clean()

@@ -14,7 +14,7 @@ import os
 from datetime import timedelta
 from pathlib import Path
 import logging
-from decouple import config
+from decouple import Csv, config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -28,7 +28,19 @@ SECRET_KEY = config("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', cast=bool)
 
-ALLOWED_HOSTS = ['mmdt.istarvz.com', 'mmdt-dev.thingaha.org', '127.0.0.1', 'localhost', '35.154.6.243']
+# Comma-separated in .env: ALLOWED_HOSTS=host1,host2
+# Only list hostnames this deployment is meant to answer for (do not add unrelated domains).
+ALLOWED_HOSTS = config(
+    'ALLOWED_HOSTS',
+    default=(
+        'mmdt.istarvz.com,'
+        'mmdt-dev.thingaha.org,'
+        '127.0.0.1,'
+        'localhost,'
+        '35.154.6.243,'
+    ),
+    cast=Csv(),
+)
 
 # Application definition
 
@@ -186,11 +198,17 @@ AWS_STORAGE_BUCKET_NAME = config('AWS_STORAGE_BUCKET_NAME', default = '')
 if AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY and AWS_STORAGE_BUCKET_NAME:
     # AWS S3 settings
     AWS_S3_SIGNATURE_NAME = "s3v4"
-    AWS_S3_REGION_NAME = "us-west-1"
+    AWS_S3_REGION_NAME = config("AWS_S3_REGION_NAME", default="us-west-1")
     AWS_S3_FILE_OVERWRITE = False
     AWS_DEFAULT_ACL = None
     AWS_S3_VERIFY = True
-    DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+    AWS_S3_ENDPOINT_URL = f"https://s3.{AWS_S3_REGION_NAME}.amazonaws.com"
+    AWS_S3_CUSTOM_DOMAIN = (
+        f"{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com"
+    )
+    MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/"
+    AWS_QUERYSTRING_AUTH = config("AWS_S3_QUERYSTRING_AUTH", default=False, cast=bool)
+    DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
 else:
     # Local storage settings
     MEDIA_URL = '/media/'
@@ -248,6 +266,13 @@ LOGGING = {
             'handlers': ['timed_rotate_file'],
             'level': 'INFO',
             'propagate': True,
+        },
+        # Quiets routine client noise: Not Found (favicon, bots), 409 Conflict (e.g. duplicate renewal).
+        # Set to WARNING temporarily if you need to debug missing routes.
+        'django.request': {
+            'handlers': ['timed_rotate_file'],
+            'level': 'ERROR',
+            'propagate': False,
         },
         'blog.google_api_utils': {
             'handlers': _google_api_utils_handlers,

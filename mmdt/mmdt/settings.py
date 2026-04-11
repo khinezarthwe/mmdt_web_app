@@ -230,6 +230,16 @@ GOOGLE_TOKEN_FILE = os.path.join(
     config('GOOGLE_TOKEN_FILENAME', default='google_token.json'),
 )
 
+# Members roster sheet (expiry sync via ``sync_expiry_from_sheet`` management command)
+GOOGLE_MEMBERS_SPREADSHEET_ID = config(
+    'GOOGLE_MEMBERS_SPREADSHEET_ID',
+    default='',
+)
+GOOGLE_MEMBERS_WORKSHEET_NAME = config(
+    'GOOGLE_MEMBERS_WORKSHEET_NAME',
+    default='members',
+)
+
 log_dir = os.path.join(BASE_DIR, 'logs')
 if not os.path.exists(log_dir):
     os.makedirs(log_dir)

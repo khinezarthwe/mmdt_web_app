@@ -6,7 +6,8 @@ from __future__ import annotations
 
 import logging
 import os
-from typing import TYPE_CHECKING, Optional
+from datetime import date, datetime
+from typing import TYPE_CHECKING, List, Optional, Tuple
 
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
@@ -22,6 +23,8 @@ logger = logging.getLogger(__name__)
 
 PARENT_FOLDER_ID = getattr(settings, "GOOGLE_PARENT_FOLDER_ID", "")
 SPREADSHEET_ID = getattr(settings, "GOOGLE_SPREADSHEET_ID", "")
+MEMBERS_SPREADSHEET_ID = getattr(settings, "GOOGLE_MEMBERS_SPREADSHEET_ID", "")
+MEMBERS_WORKSHEET_NAME = getattr(settings, "GOOGLE_MEMBERS_WORKSHEET_NAME", "members")
 MMDT_ADMIN_EMAIL = getattr(
     settings,
     "GOOGLE_ADMIN_EMAIL",
@@ -707,3 +710,180 @@ def get_or_create_renewal_url(
             getattr(subscriber_request, "email", ""),
         )
         return (None, False)
+
+
+def _normalize_sheet_header(cell: str) -> str:
+    return cell.strip().lower().replace(" ", "_")
+
+
+def parse_members_expiry_cell(value: str) -> Optional[date]:
+    """Parse DD-Mon-YYYY (and single-digit day) as used in the members sheet."""
+    raw = (value or "").strip()
+    if not raw:
+        return None
+    for fmt in ("%d-%b-%Y", "%-d-%b-%Y"):
+        try:
+            return datetime.strptime(raw, fmt).date()
+        except ValueError:
+            continue
+    parts = raw.split("-")
+    if len(parts) == 3:
+        try:
+            day_s, mon, year_s = parts[0], parts[1], parts[2]
+            return datetime.strptime(
+                f"{int(day_s):02d}-{mon}-{year_s}", "%d-%b-%Y"
+            ).date()
+        except (ValueError, TypeError):
+            pass
+    raise ValueError(f"Unrecognized expiry date: {value!r}")
+
+
+def _members_sheet_column_indices(headers: List[str]) -> Tuple[int, int]:
+    """
+    Locate columns by header name (order-independent).
+
+    Expected roster headers::
+        id | full_name | email | cohort_id | first_joined_date |
+        latest_renew_date | expired_date | status
+
+    Only ``email`` and ``expired_date`` are used; other columns are ignored.
+    """
+    normalized = [_normalize_sheet_header(h) for h in headers]
+    try:
+        email_i = normalized.index("email")
+    except ValueError as exc:
+        raise ValueError(
+            "Members sheet header row must include an 'email' column "
+            "(expected: id, full_name, email, cohort_id, first_joined_date, "
+            "latest_renew_date, expired_date, status)"
+        ) from exc
+    expiry_i: Optional[int] = None
+    for name in ("expired_date", "expiry_date"):
+        try:
+            expiry_i = normalized.index(name)
+            break
+        except ValueError:
+            continue
+    if expiry_i is None:
+        raise ValueError(
+            "Members sheet header row must include 'expired_date' "
+            "(expected: id, full_name, email, cohort_id, first_joined_date, "
+            "latest_renew_date, expired_date, status)"
+        )
+    return email_i, expiry_i
+
+
+def fetch_members_expiry_rows() -> List[Tuple[str, date]]:
+    """
+    Read ``email`` and ``expired_date`` only from the configured worksheet.
+
+    Uses the same OAuth credentials and scopes as other Sheets automation.
+    Typical header row::
+
+        id | full_name | email | cohort_id | first_joined_date |
+        latest_renew_date | expired_date | status
+
+    Other columns are ignored. Rows with blank email or blank/unparseable
+    ``expired_date`` are skipped.
+
+    Returns:
+        List of (email, expiry_date) for each usable data row.
+    """
+    if not MEMBERS_SPREADSHEET_ID:
+        raise ValueError("GOOGLE_MEMBERS_SPREADSHEET_ID is not configured")
+
+    credentials = get_credentials()
+    gc = gspread.authorize(credentials)
+    spreadsheet = gc.open_by_key(MEMBERS_SPREADSHEET_ID)
+    worksheet = spreadsheet.worksheet(MEMBERS_WORKSHEET_NAME)
+    rows = worksheet.get_all_values()
+    if not rows:
+        return []
+
+    email_i, expiry_i = _members_sheet_column_indices(rows[0])
+    out: List[Tuple[str, date]] = []
+    for row in rows[1:]:
+        if expiry_i >= len(row):
+            continue
+        if email_i >= len(row):
+            continue
+        email = (row[email_i] or "").strip()
+        expiry_raw = row[expiry_i]
+        if not email:
+            continue
+        try:
+            expiry_d = parse_members_expiry_cell(expiry_raw)
+        except ValueError:
+            logger.warning(
+                "Members sheet skip row: bad expiry for email=%s value=%r",
+                email,
+                expiry_raw,
+            )
+            continue
+        if expiry_d is None:
+            continue
+        out.append((email, expiry_d))
+
+    logger.info(
+        "Members sheet loaded spreadsheet_id=%s worksheet=%s rows=%s",
+        MEMBERS_SPREADSHEET_ID,
+        MEMBERS_WORKSHEET_NAME,
+        len(out),
+    )
+    return out
+
+
+def _members_sheet_email_column_index(headers: List[str]) -> int:
+    """Index of the Email column (header may be ``Email`` or ``email``)."""
+    normalized = [_normalize_sheet_header(h) for h in headers]
+    try:
+        return normalized.index("email")
+    except ValueError as exc:
+        raise ValueError(
+            "Members sheet header row must include an 'Email' / 'email' column"
+        ) from exc
+
+
+def fetch_members_sheet_emails() -> List[str]:
+    """
+    Read unique non-empty values from the Email column of the members worksheet.
+
+    Uses the same spreadsheet, worksheet name, and OAuth credentials as
+    ``fetch_members_expiry_rows`` (not a separate service account in this project).
+
+    Returns:
+        De-duplicated list of emails in sheet order (first occurrence kept).
+    """
+    if not MEMBERS_SPREADSHEET_ID:
+        raise ValueError("GOOGLE_MEMBERS_SPREADSHEET_ID is not configured")
+
+    credentials = get_credentials()
+    gc = gspread.authorize(credentials)
+    spreadsheet = gc.open_by_key(MEMBERS_SPREADSHEET_ID)
+    worksheet = spreadsheet.worksheet(MEMBERS_WORKSHEET_NAME)
+    rows = worksheet.get_all_values()
+    if not rows:
+        return []
+
+    email_i = _members_sheet_email_column_index(rows[0])
+    seen_lower = set()
+    out: List[str] = []
+    for row in rows[1:]:
+        if email_i >= len(row):
+            continue
+        raw = (row[email_i] or "").strip()
+        if not raw:
+            continue
+        key = raw.lower()
+        if key in seen_lower:
+            continue
+        seen_lower.add(key)
+        out.append(raw)
+
+    logger.info(
+        "Members sheet emails spreadsheet_id=%s worksheet=%s count=%s",
+        MEMBERS_SPREADSHEET_ID,
+        MEMBERS_WORKSHEET_NAME,
+        len(out),
+    )
+    return out

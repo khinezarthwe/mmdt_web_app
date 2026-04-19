@@ -209,13 +209,13 @@ class UserRenewalRequestView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        active_cohort = Cohort.get_active_cohort()
-        if not active_cohort:
-            logger.info("Renewal request rejected: no active cohort registration window is open")
-            return Response(
-                {"status": "error", "message": "Registration is currently closed. No active cohort registration window is open."},
-                status=status.HTTP_403_FORBIDDEN,
-            )
+        # active_cohort = Cohort.get_active_cohort()
+        # if not active_cohort:
+        #     logger.info("Renewal request rejected: no active cohort registration window is open")
+        #     return Response(
+        #         {"status": "error", "message": "Registration is currently closed. No active cohort registration window is open."},
+        #         status=status.HTTP_403_FORBIDDEN,
+        #     )
 
         email = serializer.validated_data.get("email")
         telegram_name = serializer.validated_data.get("telegram_name")

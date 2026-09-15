@@ -191,17 +191,17 @@ class SubscriberRequestModelTest(TestCase):
         expiry = self.subscriber.calculate_expiry_date()
         self.assertEqual(expiry, self.cohort.exp_date_6)
 
-    def test_calculate_expiry_date_annual(self):
-        """Test expiry date calculation for annual plan uses cohort date."""
+    def test_calculate_expiry_date_six_month(self):
+        """Test expiry date calculation for 6-month plan uses cohort date."""
         subscriber = SubscriberRequest.objects.create(
-            name='Annual Subscriber',
-            email='annual@example.com',
+            name='Six Month Subscriber',
+            email='sixmonth@example.com',
             country='Myanmar',
             city='Yangon',
-            plan='annual'
+            plan='6month'
         )
         expiry = subscriber.calculate_expiry_date()
-        self.assertEqual(expiry, self.cohort.exp_date_12)
+        self.assertEqual(expiry, self.cohort.exp_date_6)
     
     def test_automatic_expiry_date_setting(self):
         """Test that expiry date is automatically set on save."""
@@ -738,7 +738,7 @@ class IntegrationTest(TestCase):
         # Access subscriber request page
         response = self.client.get(reverse('subscriber_request'))
         self.assertEqual(response.status_code, 200)
-        
+
         # Submit subscriber request
         form_data = {
             'name': 'Integration Subscriber',
@@ -746,17 +746,17 @@ class IntegrationTest(TestCase):
             'country': 'Myanmar',
             'city': 'Yangon',
             'telegram_username': 'integration_user',
-            'plan': 'annual'
+            'plan': '6month'
         }
-        
+
         response = self.client.post(reverse('subscriber_request'), data=form_data)
         self.assertRedirects(response, reverse('subscriber_request_success'))
-        
+
         # Check subscriber request was created
         subscriber = SubscriberRequest.objects.filter(email='integration@example.com').first()
         self.assertIsNotNone(subscriber)
         self.assertEqual(subscriber.name, 'Integration Subscriber')
-        self.assertEqual(subscriber.plan, 'annual')
+        self.assertEqual(subscriber.plan, '6month')
         self.assertIsNotNone(subscriber.expiry_date)
 
 

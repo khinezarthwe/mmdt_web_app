@@ -10,12 +10,12 @@ sqlparse==0.4.4
 typing_extensions==4.7.1
 webencodings==0.5.1
 django-bootstrap-icons==0.8.3
-Pillow==10.0.0
+Pillow==11.2.1
 boto3==1.28.44
 django-storages==1.14
 python-decouple==3.8
-numpy==1.26.1
-scikit-learn==1.2.2
+numpy==2.1.0
+scikit-learn==1.5.2
 django-nested-admin==4.0.2
 django-allauth==0.63.6
 pyjwt==2.8.0

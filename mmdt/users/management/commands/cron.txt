@@ -1,0 +1,3 @@
+python manage.py sync_discounts_from_sheets --sheet-name "members" --email-column "email" --discount-column "discount" --no-email
+0 6 * * * cd /home/ubuntu/mmdt_web_app/mmdt && /home/ubuntu/witse/bin/python manage.py sync_expiry_from_sheet >> /home/ubuntu/sync_expiry.log 2>&1
+0 7 * * * cd /home/ubuntu/mmdt_web_app/mmdt && /home/ubuntu/witse/bin/python manage.py sync_approvals >> /home/ubuntu/sync_approvals.log 2>&1

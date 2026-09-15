@@ -362,14 +362,14 @@ class UserRenewalRequestAPITests(TestCase):
         self.assertEqual(response.data['status'], 'success')
         self.assertIn('upload_url', response.data)
 
-    def test_renewal_request_annual_plan(self):
-        """Test renewal request with annual plan."""
+    def test_renewal_request_6month_plan(self):
+        """Test renewal request with 6-month plan."""
         response = self.client.post(
             '/api/user/request_renew',
             {
                 'email': 'testuser@example.com',
                 'telegram_name': 'testuser_tg',
-                'plan': 'annual'
+                'plan': '6month'
             },
             format='json'
         )

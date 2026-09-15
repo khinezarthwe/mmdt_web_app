@@ -6,10 +6,16 @@ from .models import Post, Comment, SubscriberRequest, Cohort
 
 class PostAdmin(SummernoteModelAdmin):
     summernote_fields = ('content',)
-    list_display = ('title', 'slug', 'status', 'created_on')
+    list_display = ('title', 'slug', 'status', 'created_on', 'has_image')
     list_filter = ("status",)
     search_fields = ['title', 'content']
     prepopulated_fields = {'slug': ('title',)}
+    fields = ('title', 'slug', 'author', 'content', 'status', 'image', 'subscribers_only', 'view_count')
+
+    def has_image(self, obj):
+        return bool(obj.image)
+    has_image.short_description = 'Has Image'
+    has_image.boolean = True
 
 
 @admin.register(Comment)

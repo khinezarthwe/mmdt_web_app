@@ -102,7 +102,6 @@ class Cohort(models.Model):
 class SubscriberRequest(models.Model):
     PLAN_CHOICES = [
         ('6month', '6-Month Plan'),
-        ('annual', 'Annual Plan'),
     ]
 
     name = models.CharField(max_length=200)

@@ -304,7 +304,7 @@ class CustomSchemaGenerator(SchemaGenerator):
                             },
                             "plan": {
                                 "type": "string",
-                                "enum": ["6month", "annual"],
+                                "enum": ["6month"],
                                 "description": "Subscription plan for renewal",
                                 "example": "6month",
                             },
@@ -335,6 +335,17 @@ class CustomSchemaGenerator(SchemaGenerator):
                                 "format": "uri",
                                 "description": "Google Drive folder URL for payment proof upload",
                                 "example": "https://drive.google.com/drive/folders/...",
+                            },
+                            "discount": {
+                                "type": "integer",
+                                "description": "Discount amount for this user (in currency units)",
+                                "example": 50,
+                            },
+                            "requested_at": {
+                                "type": "string",
+                                "format": "date-time",
+                                "description": "Timestamp when the renewal request was submitted (ISO 8601 format)",
+                                "example": "2026-09-07T19:30:45.123456+06:30",
                             },
                         },
                     },

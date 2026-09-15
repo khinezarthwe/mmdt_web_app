@@ -9,7 +9,7 @@ class UserProfile(models.Model):
     
     PLAN_CHOICES = [
         ('6month', '6-Month Plan'),
-        ('annual', 'Annual Plan'),
+        # ('annual', 'Annual Plan'),
     ]
     
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
@@ -34,10 +34,14 @@ class UserProfile(models.Model):
     
     # Renewal fields
     renewal_requested = models.BooleanField(default=False, help_text="User has requested membership renewal")
+    renewal_requested_at = models.DateTimeField(null=True, blank=True, help_text="When the renewal request was submitted")
     renewal_plan = models.CharField(max_length=10, choices=PLAN_CHOICES, null=True, blank=True, help_text="Selected plan for renewal")
     renewal_approved = models.BooleanField(default=False, help_text="Admin has approved the renewal")
     renewal_approved_at = models.DateTimeField(null=True, blank=True, help_text="When the renewal was approved")
-    
+
+    # Discount field
+    discount = models.IntegerField(default=0, help_text="Discount amount for renewal (in currency units)")
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -147,4 +151,37 @@ class UserProfile(models.Model):
     class Meta:
         verbose_name = 'User Profile'
         verbose_name_plural = 'User Profiles'
+
+
+class DiscountRecord(models.Model):
+    """Audit trail for discount changes."""
+
+    SOURCE_CHOICES = [
+        ('excel_sync', 'Excel Sync'),
+        ('manual', 'Manual Entry'),
+        ('referral', 'Referral'),
+        ('loyalty', 'Loyalty Program'),
+        ('other', 'Other'),
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='discount_records')
+    discount_value = models.IntegerField(help_text="Discount amount (in currency units)")
+    effective_from = models.DateField(help_text="Date when discount becomes effective")
+    source = models.CharField(
+        max_length=20,
+        choices=SOURCE_CHOICES,
+        default='manual',
+        help_text="Source of the discount"
+    )
+    notes = models.TextField(blank=True, help_text="Additional notes about this discount")
+    synced_at = models.DateTimeField(auto_now_add=True, help_text="When this record was created/synced")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'Discount Record'
+        verbose_name_plural = 'Discount Records'
+        ordering = ['-effective_from', '-created_at']
+
+    def __str__(self):
+        return f"{self.user.email} - {self.discount_value}% ({self.source})"
 

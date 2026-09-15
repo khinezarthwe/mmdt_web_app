@@ -516,7 +516,7 @@ def get_folder_upload_url(
         return None
 
 
-def find_url_in_spreadsheet(email, update_status=False, plan=None):
+def find_url_in_spreadsheet(email, update_status=False, plan=None, user_profile: Optional["UserProfile"] = None):
     """
     Search for an existing entry in the Google Sheet by email.
 
@@ -524,6 +524,7 @@ def find_url_in_spreadsheet(email, update_status=False, plan=None):
         email: User's email address to search for
         update_status: If True, update the status and plan columns
         plan: Renewal plan to update (e.g., '6month', '12month')
+        user_profile: Optional UserProfile to get renewal_requested_at timestamp
 
     Returns:
         str: Folder URL if found, None otherwise
@@ -542,10 +543,19 @@ def find_url_in_spreadsheet(email, update_status=False, plan=None):
             row_values = worksheet.row_values(cell.row)
             if len(row_values) >= 8 and row_values[7]:
                 if update_status:
+                    from django.utils import timezone
                     # Update plan column (column E = index 5) and status column (column F = index 6)
                     if plan:
                         worksheet.update_cell(cell.row, 5, plan)
                     worksheet.update_cell(cell.row, 6, 'Renewal Requested')
+
+                    # Update created_at column (column G = index 7) with renewal_requested_at if available
+                    if user_profile and user_profile.renewal_requested_at:
+                        created_at_str = user_profile.renewal_requested_at.strftime('%b. %-d, %Y, %-I:%M %p')
+                    else:
+                        created_at_str = timezone.now().strftime('%b. %-d, %Y, %-I:%M %p')
+                    worksheet.update_cell(cell.row, 7, created_at_str)
+
                 logger.info(
                     "Sheet lookup: folder URL in column H row=%s email=%s spreadsheet_id=%s "
                     "update_status=%s",
@@ -579,7 +589,7 @@ def find_url_in_spreadsheet(email, update_status=False, plan=None):
         return None
 
 
-def upsert_renewal_to_spreadsheet(subscriber_request, folder_url, plan):
+def upsert_renewal_to_spreadsheet(subscriber_request, folder_url, plan, user_profile: Optional["UserProfile"] = None):
     """
     Insert or update a renewal row in raw_registration (key: email in column B).
 
@@ -589,6 +599,7 @@ def upsert_renewal_to_spreadsheet(subscriber_request, folder_url, plan):
         subscriber_request: SubscriberRequest instance
         folder_url: URL of the Google Drive folder
         plan: Renewal plan selected (e.g. '6month', 'annual')
+        user_profile: Optional UserProfile to get renewal_requested_at timestamp
 
     Returns:
         bool: True if successful, False otherwise
@@ -602,6 +613,12 @@ def upsert_renewal_to_spreadsheet(subscriber_request, folder_url, plan):
 
         from django.utils import timezone
 
+        # Use renewal_requested_at from user_profile if available, otherwise use current time
+        if user_profile and user_profile.renewal_requested_at:
+            created_at_str = user_profile.renewal_requested_at.strftime('%b. %-d, %Y, %-I:%M %p')
+        else:
+            created_at_str = timezone.now().strftime('%b. %-d, %Y, %-I:%M %p')
+
         # name, email, tele_name, country, plan, status, created_at, payment_url
         row_data = [
             subscriber_request.name,
@@ -610,7 +627,7 @@ def upsert_renewal_to_spreadsheet(subscriber_request, folder_url, plan):
             subscriber_request.country,
             plan,
             'Renewal Requested',
-            timezone.now().strftime('%b. %-d, %Y, %-I:%M %p'),
+            created_at_str,
             folder_url or '',
         ]
 
@@ -675,7 +692,12 @@ def get_or_create_renewal_url(
     """
     try:
         # First, check if URL exists in spreadsheet and update status/plan if found
-        existing_url = find_url_in_spreadsheet(subscriber_request.email, update_status=True, plan=plan)
+        existing_url = find_url_in_spreadsheet(
+            subscriber_request.email,
+            update_status=True,
+            plan=plan,
+            user_profile=user_profile
+        )
         if existing_url:
             logger.info(
                 "Renewal: reused folder URL from sheet email=%s spreadsheet_id=%s plan=%s",
@@ -688,7 +710,7 @@ def get_or_create_renewal_url(
         # No existing entry, create folder and log to sheet
         folder_url = get_folder_upload_url(subscriber_request, user_profile=user_profile)
         if folder_url:
-            upsert_renewal_to_spreadsheet(subscriber_request, folder_url, plan)
+            upsert_renewal_to_spreadsheet(subscriber_request, folder_url, plan, user_profile=user_profile)
             logger.info(
                 "Renewal: new Drive resolution + sheet upsert email=%s spreadsheet_id=%s plan=%s",
                 subscriber_request.email,
@@ -884,6 +906,70 @@ def fetch_members_sheet_emails() -> List[str]:
         "Members sheet emails spreadsheet_id=%s worksheet=%s count=%s",
         MEMBERS_SPREADSHEET_ID,
         MEMBERS_WORKSHEET_NAME,
+        len(out),
+    )
+    return out
+
+
+def fetch_members_discount_rows(
+    spreadsheet_id: Optional[str] = None,
+    worksheet_name: Optional[str] = None,
+    email_column: str = "email",
+    discount_column: str = "discount",
+) -> List[Tuple[str, int]]:
+    """
+    Read ``email`` and ``discount`` from the members worksheet.
+
+    Uses the same OAuth credentials and spreadsheet as ``fetch_members_sheet_emails``.
+    """
+    sheet_id = spreadsheet_id or MEMBERS_SPREADSHEET_ID
+    tab_name = worksheet_name or MEMBERS_WORKSHEET_NAME
+    if not sheet_id:
+        raise ValueError("GOOGLE_MEMBERS_SPREADSHEET_ID is not configured")
+
+    credentials = get_credentials()
+    gc = gspread.authorize(credentials)
+    spreadsheet = gc.open_by_key(sheet_id)
+    worksheet = spreadsheet.worksheet(tab_name)
+    rows = worksheet.get_all_values()
+    if not rows:
+        return []
+
+    normalized = [_normalize_sheet_header(h) for h in rows[0]]
+    email_key = _normalize_sheet_header(email_column)
+    discount_key = _normalize_sheet_header(discount_column)
+    try:
+        email_i = normalized.index(email_key)
+        discount_i = normalized.index(discount_key)
+    except ValueError as exc:
+        raise ValueError(
+            f"Members sheet header row must include '{email_column}' and "
+            f"'{discount_column}'. Headers: {normalized}"
+        ) from exc
+
+    out: List[Tuple[str, int]] = []
+    for row in rows[1:]:
+        if email_i >= len(row) or discount_i >= len(row):
+            continue
+        email = (row[email_i] or "").strip().lower()
+        discount_raw = (row[discount_i] or "").strip()
+        if not email or not discount_raw:
+            continue
+        try:
+            discount = int(discount_raw)
+        except ValueError:
+            logger.warning(
+                "Members sheet skip row: bad discount for email=%s value=%r",
+                email,
+                discount_raw,
+            )
+            continue
+        out.append((email, discount))
+
+    logger.info(
+        "Members sheet discounts spreadsheet_id=%s worksheet=%s rows=%s",
+        sheet_id,
+        tab_name,
         len(out),
     )
     return out

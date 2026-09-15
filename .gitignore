@@ -171,3 +171,4 @@ mmdt/Scripts/
 !package.json
 !package-lock.json
 google_token.json
+mmdt/staticfiles/

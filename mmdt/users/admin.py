@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import User
-from .models import UserProfile
+from .models import UserProfile, DiscountRecord
 
 
 class UserProfileAdmin(admin.ModelAdmin):
@@ -21,8 +21,12 @@ class UserProfileAdmin(admin.ModelAdmin):
             'fields': ('expired', 'expiry_date', 'current_cohort', 'subscriber_request')
         }),
         ('Renewal Request', {
-            'fields': ('renewal_requested', 'renewal_plan', 'renewal_approved', 'renewal_approved_at'),
+            'fields': ('renewal_requested', 'renewal_requested_at', 'renewal_plan', 'renewal_approved', 'renewal_approved_at'),
             'description': 'Check renewal_approved to approve the renewal request. This will automatically update expiry_date.'
+        }),
+        ('Discount', {
+            'fields': ('discount',),
+            'description': 'Current discount amount. Updated via Excel sync or manually.'
         }),
         ('Metadata', {
             'fields': ('created_at', 'updated_at'),
@@ -53,8 +57,8 @@ class UserProfileInline(admin.StackedInline):
     model = UserProfile
     can_delete = False
     verbose_name_plural = 'Profile'
-    fields = ('expired', 'expiry_date', 'current_cohort', 'subscriber_request', 'get_telegram_username', 'renewal_requested', 'renewal_plan', 'renewal_approved', 'renewal_approved_at', 'created_at', 'updated_at')
-    readonly_fields = ('created_at', 'updated_at', 'get_telegram_username', 'renewal_approved_at')
+    fields = ('expired', 'expiry_date', 'current_cohort', 'subscriber_request', 'get_telegram_username', 'renewal_requested', 'renewal_requested_at', 'renewal_plan', 'renewal_approved', 'renewal_approved_at', 'discount', 'created_at', 'updated_at')
+    readonly_fields = ('created_at', 'updated_at', 'get_telegram_username', 'renewal_requested_at', 'renewal_approved_at')
     autocomplete_fields = ['current_cohort', 'subscriber_request']
     
     def get_telegram_username(self, obj):
@@ -71,6 +75,13 @@ class CustomUserAdmin(UserAdmin):
     list_display = ('username', 'email', 'first_name', 'last_name', 'is_staff', 'is_active', 'get_expired_status', 'get_renewal_status', 'get_current_cohort', 'get_telegram_username')
     list_filter = ('is_staff', 'is_superuser', 'is_active', 'date_joined', 'profile__expired', 'profile__renewal_requested', 'profile__renewal_approved', 'profile__current_cohort', 'profile__subscriber_request')
     actions = ['mark_users_as_expired', 'mark_users_as_active', 'approve_renewal_requests']
+
+    fieldsets = (
+        (None, {'fields': ('username', 'password')}),
+        ('Personal info', {'fields': ('first_name', 'last_name', 'email')}),
+        ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser')}),
+        ('Important dates', {'fields': ('last_login', 'date_joined')}),
+    )
     
     def get_expired_status(self, obj):
         """Display expired status from profile."""
@@ -140,8 +151,32 @@ class CustomUserAdmin(UserAdmin):
     approve_renewal_requests.short_description = "Approve renewal requests for selected users"
 
 
+class DiscountRecordAdmin(admin.ModelAdmin):
+    """Admin for DiscountRecord audit trail."""
+    list_display = ('user', 'discount_value', 'source', 'effective_from', 'synced_at')
+    list_filter = ('source', 'effective_from', 'synced_at')
+    search_fields = ('user__username', 'user__email')
+    readonly_fields = ('synced_at', 'created_at')
+
+    fieldsets = (
+        ('User', {
+            'fields': ('user',)
+        }),
+        ('Discount Details', {
+            'fields': ('discount_value', 'effective_from', 'source')
+        }),
+        ('Notes & Metadata', {
+            'fields': ('notes', 'synced_at', 'created_at'),
+            'classes': ('collapse',)
+        }),
+    )
+
+
 # Register UserProfile admin
 admin.site.register(UserProfile, UserProfileAdmin)
+
+# Register DiscountRecord admin
+admin.site.register(DiscountRecord, DiscountRecordAdmin)
 
 # Unregister the default UserAdmin and register our custom one
 admin.site.unregister(User)

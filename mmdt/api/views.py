@@ -5,6 +5,7 @@ import logging
 
 from django.conf import settings
 from django.contrib.auth import authenticate, get_user_model
+from django.utils import timezone
 from django.views.generic import TemplateView
 from rest_framework import permissions, status
 from rest_framework.response import Response
@@ -272,6 +273,7 @@ class UserRenewalRequestView(APIView):
             renewal_requested=False,
         ).update(
             renewal_requested=True,
+            renewal_requested_at=timezone.now(),
             renewal_plan=plan,
         )
 
@@ -286,11 +288,17 @@ class UserRenewalRequestView(APIView):
             )
 
         logger.info("Renewal request submitted: user_id=%s, plan=%s", user.pk, plan)
+
+        # Refresh profile to get updated renewal_requested_at
+        profile.refresh_from_db()
+
         return Response(
             {
                 "status": "success",
                 "message": "Renewal request received",
                 "upload_url": upload_url,
+                "discount": profile.discount,
+                "requested_at": profile.renewal_requested_at.isoformat() if profile.renewal_requested_at else None,
             },
             status=status.HTTP_200_OK,
         )

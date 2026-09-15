@@ -189,28 +189,38 @@ X_FRAME_OPTIONS = 'SAMEORIGIN'
 
 
 # Load AWS settings from .env file
-AWS_ACCESS_KEY_ID = config('AWS_ACCESS_KEY_ID', default = '')
-AWS_SECRET_ACCESS_KEY = config('AWS_SECRET_ACCESS_KEY', default = '')
-AWS_STORAGE_BUCKET_NAME = config('AWS_STORAGE_BUCKET_NAME', default = '')
+AWS_ACCESS_KEY_ID = config('AWS_ACCESS_KEY_ID', default='')
+AWS_SECRET_ACCESS_KEY = config('AWS_SECRET_ACCESS_KEY', default='')
+AWS_STORAGE_BUCKET_NAME = config('AWS_STORAGE_BUCKET_NAME', default='')
 
+_aws_configured = bool(
+    AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY and AWS_STORAGE_BUCKET_NAME
+)
+# Set USE_S3=False in .env to force local media/ on localhost.
+USE_S3 = config('USE_S3', default=str(_aws_configured), cast=bool)
 
 # Conditional S3 configuration
-if AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY and AWS_STORAGE_BUCKET_NAME:
-    # AWS S3 settings
+if USE_S3 and _aws_configured:
     AWS_S3_SIGNATURE_NAME = "s3v4"
     AWS_S3_REGION_NAME = config("AWS_S3_REGION_NAME", default="us-west-1")
     AWS_S3_FILE_OVERWRITE = False
     AWS_DEFAULT_ACL = None
     AWS_S3_VERIFY = True
-    AWS_S3_ENDPOINT_URL = f"https://s3.{AWS_S3_REGION_NAME}.amazonaws.com"
+    AWS_S3_ADDRESSING_STYLE = "virtual"
     AWS_S3_CUSTOM_DOMAIN = (
         f"{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com"
     )
     MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/"
     AWS_QUERYSTRING_AUTH = config("AWS_S3_QUERYSTRING_AUTH", default=False, cast=bool)
-    DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
+    STORAGES = {
+        "default": {
+            "BACKEND": "mmdt.storage.MediaS3Storage",
+        },
+        "staticfiles": {
+            "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+        },
+    }
 else:
-    # Local storage settings
     MEDIA_URL = '/media/'
     MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 

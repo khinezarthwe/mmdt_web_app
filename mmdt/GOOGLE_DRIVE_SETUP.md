@@ -57,7 +57,7 @@ Payment amounts and bank details are already configured in `templates/emails/pai
 - 6-month plan: USD $12 / MMK 54,000 / BAHT 400
 - Annual plan: USD $24 / MMK 108,000 / BAHT 800
 - Bank: Bangkok Bank (Account: 860-0-290269, Name: Myo Thida)
-- KPay: 09402741691 (Nuam Man Cing)
+- KPay: 09402585505(Daw Khin Lay Lwin)
 
 ## How It Works
 

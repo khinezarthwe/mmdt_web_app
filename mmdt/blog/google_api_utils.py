@@ -144,13 +144,18 @@ def get_credentials():
     return creds
 
 
-def create_subscriber_folder(subscriber_request, user_profile: Optional["UserProfile"] = None):
+def create_subscriber_folder(
+    subscriber_request,
+    user_profile: Optional["UserProfile"] = None,
+    cohort_id: Optional[str] = None,
+):
     """
     Create Google Drive folder for subscriber and set permissions.
 
     Args:
         subscriber_request: SubscriberRequest instance
         user_profile: Optional UserProfile (pass for renewals when ``subscriber_request.cohort`` may be null)
+        cohort_id: Optional cohort folder name; overrides ``resolve_drive_cohort_id``
 
     Returns:
         str: URL of the created folder, or None if creation fails
@@ -159,7 +164,7 @@ def create_subscriber_folder(subscriber_request, user_profile: Optional["UserPro
         credentials = get_credentials()
         drive_service = build('drive', 'v3', credentials=credentials)
 
-        cohort_id = resolve_drive_cohort_id(subscriber_request, user_profile)
+        cohort_id = cohort_id or resolve_drive_cohort_id(subscriber_request, user_profile)
         cohort_folder_id = get_or_create_cohort_folder(drive_service, cohort_id)
 
         # Create user folder: fullname|email
@@ -453,6 +458,7 @@ def get_or_create_subscriber_folder_url(subscriber_request):
 def get_folder_upload_url(
     subscriber_request,
     user_profile: Optional["UserProfile"] = None,
+    cohort_id: Optional[str] = None,
 ):
     """
     Get the upload URL for an existing subscriber's folder.
@@ -461,6 +467,7 @@ def get_folder_upload_url(
     Args:
         subscriber_request: SubscriberRequest instance
         user_profile: Optional UserProfile (renewals: supply so cohort matches profile when request has no cohort)
+        cohort_id: Optional cohort folder name; overrides ``resolve_drive_cohort_id``
 
     Returns:
         str: URL of the folder for uploading, or None if operation fails
@@ -469,7 +476,7 @@ def get_folder_upload_url(
         credentials = get_credentials()
         drive_service = build('drive', 'v3', credentials=credentials)
 
-        cohort_id = resolve_drive_cohort_id(subscriber_request, user_profile)
+        cohort_id = cohort_id or resolve_drive_cohort_id(subscriber_request, user_profile)
         cohort_folder_id = get_or_create_cohort_folder(drive_service, cohort_id)
 
         # Search for existing user folder: fullname|email
@@ -503,7 +510,7 @@ def get_folder_upload_url(
             subscriber_request.email,
             SPREADSHEET_ID or "(unset)",
         )
-        return create_subscriber_folder(subscriber_request, user_profile=user_profile)
+        return create_subscriber_folder(subscriber_request, user_profile=user_profile, cohort_id=cohort_id)
 
     except FileNotFoundError as e:
         logger.error("OAuth credentials missing for get_folder_upload_url: %s", e)
@@ -671,67 +678,51 @@ def upsert_renewal_to_spreadsheet(subscriber_request, folder_url, plan, user_pro
 def get_or_create_renewal_url(
     subscriber_request,
     plan,
+    cohort,
     user_profile: Optional["UserProfile"] = None,
 ):
     """
-    Get existing URL from spreadsheet or create new folder and log to sheet.
+    Get or create the renewal upload folder under the currently open cohort and log to sheet.
 
     For renewal requests:
-    1. First checks if user already has an entry in the spreadsheet
-    2. If found, updates status to 'Renewal Requested' and returns the existing folder URL
-    3. If not found, creates folder, upserts spreadsheet row (by email), and returns URL
+    1. Finds the user's ``fullname|email`` folder under ``cohort``'s Drive folder, or creates it
+       (folders from earlier cohorts are not reused)
+    2. Upserts the spreadsheet row (by email) with the new folder URL in column H
 
     Args:
         subscriber_request: SubscriberRequest instance
         plan: Renewal plan selected
-        user_profile: UserProfile for the renewing user (used for Drive cohort when request has no cohort)
+        cohort: Cohort whose registration window is currently open
+        user_profile: UserProfile for the renewing user
 
     Returns:
-        tuple: (folder_url, is_existing) where is_existing indicates if URL was from sheet
-               Returns (None, False) if operation fails
+        str: Folder URL, or None if the operation fails
     """
     try:
-        # First, check if URL exists in spreadsheet and update status/plan if found
-        existing_url = find_url_in_spreadsheet(
-            subscriber_request.email,
-            update_status=True,
-            plan=plan,
-            user_profile=user_profile
-        )
-        if existing_url:
-            logger.info(
-                "Renewal: reused folder URL from sheet email=%s spreadsheet_id=%s plan=%s",
-                subscriber_request.email,
-                SPREADSHEET_ID or "(unset)",
-                plan,
-            )
-            return (existing_url, True)
-
-        # No existing entry, create folder and log to sheet
-        folder_url = get_folder_upload_url(subscriber_request, user_profile=user_profile)
+        folder_url = get_folder_upload_url(subscriber_request, cohort_id=cohort.cohort_id)
         if folder_url:
             upsert_renewal_to_spreadsheet(subscriber_request, folder_url, plan, user_profile=user_profile)
             logger.info(
-                "Renewal: new Drive resolution + sheet upsert email=%s spreadsheet_id=%s plan=%s",
+                "Renewal: folder in current cohort + sheet upsert email=%s cohort=%s plan=%s",
                 subscriber_request.email,
-                SPREADSHEET_ID or "(unset)",
+                cohort.cohort_id,
                 plan,
             )
-            return (folder_url, False)
+            return folder_url
 
         logger.error(
-            "Renewal: no folder URL from Drive email=%s spreadsheet_id=%s",
+            "Renewal: no folder URL from Drive email=%s cohort=%s",
             subscriber_request.email,
-            SPREADSHEET_ID or "(unset)",
+            cohort.cohort_id,
         )
-        return (None, False)
+        return None
 
     except Exception as e:
         logger.exception(
             "get_or_create_renewal_url failed email=%s",
             getattr(subscriber_request, "email", ""),
         )
-        return (None, False)
+        return None
 
 
 def _normalize_sheet_header(cell: str) -> str:

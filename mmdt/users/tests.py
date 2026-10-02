@@ -344,7 +344,7 @@ class UserRenewalRequestAPITests(TestCase):
         # Mock Google API for all tests
         patcher = patch('api.views.get_or_create_renewal_url')
         self.mock_get_url = patcher.start()
-        self.mock_get_url.return_value = ('https://drive.google.com/test-folder', False)
+        self.mock_get_url.return_value = 'https://drive.google.com/test-folder'
         self.addCleanup(patcher.stop)
 
     def test_renewal_request_success(self):

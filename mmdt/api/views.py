@@ -252,8 +252,8 @@ class UserRenewalRequestView(APIView):
                 status=status.HTTP_409_CONFLICT,
             )
 
-        upload_url, is_existing = get_or_create_renewal_url(
-            subscriber, plan, user_profile=profile
+        upload_url = get_or_create_renewal_url(
+            subscriber, plan, active_cohort, user_profile=profile
         )
 
         if not upload_url:
@@ -263,10 +263,11 @@ class UserRenewalRequestView(APIView):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
-        if is_existing:
-            logger.info("Found existing URL in spreadsheet for user_id=%s", user.pk)
-        else:
-            logger.info("Created new folder and logged to spreadsheet for user_id=%s", user.pk)
+        logger.info(
+            "Renewal folder resolved under cohort=%s for user_id=%s",
+            active_cohort.cohort_id,
+            user.pk,
+        )
 
         updated = UserProfile.objects.filter(
             pk=profile.pk,
